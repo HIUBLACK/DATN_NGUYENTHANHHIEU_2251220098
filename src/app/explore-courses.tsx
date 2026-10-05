@@ -1,0 +1,7 @@
+import Link from "next/link";
+import { jobs } from "@/lib/jobs";
+
+export function ExploreCourses() {
+  return <section className="px-8 py-10"><div className="container mx-auto mb-12 text-center"><h2 className="text-3xl font-bold text-blue-gray-900">Việc làm nổi bật</h2><p className="mx-auto mt-2 max-w-2xl text-base text-gray-500">Cơ hội mới từ nhiều lĩnh vực đang chờ bạn khám phá.</p></div><div className="container mx-auto grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">{jobs.slice(0, 6).map((job) => <Link key={job.id} href={`/jobs/${job.id}`} className="rounded-2xl border border-blue-gray-50 bg-white p-5 transition hover:-translate-y-1 hover:shadow-xl"><div className="flex items-start gap-3"><span className="grid h-12 w-12 place-items-center rounded-xl bg-blue-50 text-lg font-bold text-blue-600">{job.logo}</span><div><h3 className="font-bold text-blue-gray-900">{job.title}</h3><p className="mt-1 text-sm text-gray-500">{job.company}</p></div></div><p className="mt-4 text-sm text-gray-500">{job.location} · {job.type}</p><div className="mt-3 flex items-center justify-between"><span className="font-bold text-green-700">{job.salary} triệu/tháng</span><span className="text-xs font-semibold text-blue-600">Phù hợp {job.match}%</span></div></Link>)}</div><div className="mt-10 text-center"><Link href="/jobs" className="inline-block rounded-lg bg-blue-600 px-6 py-3 text-sm font-bold text-white hover:bg-blue-700">Xem tất cả việc làm</Link></div></section>;
+}
+export default ExploreCourses;

@@ -1,0 +1,10 @@
+"use client";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { jobs, readIds, appliedKey } from "@/lib/jobs";
+import { DocumentTextIcon } from "@heroicons/react/24/outline";
+export default function ApplicationsPage() {
+  const [ids, setIds] = useState<number[]>([]);
+  useEffect(() => setIds(readIds(appliedKey)), []);
+  return <main className="mx-auto min-h-[65vh] max-w-6xl px-5 py-12 lg:px-8"><p className="text-xs font-bold uppercase tracking-widest text-blue-600">VIEJOB · Khu vực ứng viên</p><h1 className="mt-2 text-3xl font-black text-blue-gray-900">Đơn ứng tuyển</h1><p className="mt-2 text-gray-500">Theo dõi trạng thái các công việc bạn đã ứng tuyển.</p><div className="mt-7 overflow-hidden rounded-2xl border border-blue-gray-50 bg-white"><div className="hidden grid-cols-[1fr_180px_180px] gap-4 border-b bg-gray-50 px-5 py-3 text-xs font-bold text-gray-500 sm:grid"><span>VỊ TRÍ ỨNG TUYỂN</span><span>ĐỊA ĐIỂM</span><span>TRẠNG THÁI</span></div>{ids.length ? ids.map((id) => { const job = jobs.find((item) => item.id === id); if (!job) return null; return <div key={id} className="grid gap-3 border-b border-blue-gray-50 px-5 py-5 last:border-0 sm:grid-cols-[1fr_180px_180px] sm:items-center"><div><Link href={`/jobs/${job.id}`} className="font-bold text-blue-gray-900 hover:text-blue-600">{job.title}</Link><p className="mt-1 text-sm text-gray-500">{job.company}</p></div><span className="text-sm text-gray-500">{job.location}</span><span className="w-fit rounded-full bg-amber-50 px-3 py-1.5 text-xs font-bold text-amber-700">Đang chờ phản hồi</span></div>; }) : <div className="py-16 text-center"><DocumentTextIcon className="mx-auto h-10 w-10 text-blue-gray-300" /><p className="mt-3 font-bold text-blue-gray-800">Bạn chưa có đơn ứng tuyển nào</p><p className="mt-1 text-sm text-gray-500">Các công việc bạn ứng tuyển sẽ xuất hiện tại đây.</p><Link href="/jobs" className="mt-5 inline-block rounded-lg bg-blue-600 px-5 py-3 text-sm font-bold text-white">Khám phá việc làm</Link></div>}</div></main>;
+}
