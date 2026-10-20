@@ -1,32 +1,67 @@
-// @ts-nocheck Material Tailwind 2.1.2 prop types conflict with this project's React 18 types.
 "use client";
-import React from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Navbar as MTNavbar, Collapse, Button, IconButton, Typography } from "@material-tailwind/react";
-import { XMarkIcon, Bars3Icon, UserCircleIcon, MagnifyingGlassIcon, DocumentTextIcon } from "@heroicons/react/24/solid";
+import { usePathname } from "next/navigation";
+import { XMarkIcon, Bars3Icon, ArrowUpRightIcon, SparklesIcon } from "@heroicons/react/24/outline";
+
 type Account = { name: string; email: string; passwordHash: string };
-async function hashPassword(password: string) { const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password)); return Array.from(new Uint8Array(hash)).map((byte) => byte.toString(16).padStart(2, "0")).join(""); }
+async function hashPassword(password: string) {
+  const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(password));
+  return Array.from(new Uint8Array(hash)).map(byte => byte.toString(16).padStart(2, "0")).join("");
+}
+const links = [{ href: "/jobs", label: "Tìm việc làm" }, { href: "/applications", label: "Đơn ứng tuyển" }, { href: "/profile", label: "Hồ sơ của tôi" }];
 
 export function Navbar() {
-  const [open, setOpen] = React.useState(false);
-  const [user, setUser] = React.useState("");
-  const [auth, setAuth] = React.useState<"Đăng nhập" | "Đăng ký" | null>(null);
-  const [error, setError] = React.useState("");
-  React.useEffect(() => { const sync = () => setUser(localStorage.getItem("viejob-user") || ""); sync(); window.addEventListener("viejob-auth-changed", sync); return () => window.removeEventListener("viejob-auth-changed", sync); }, []);
-  function logout() { localStorage.removeItem("viejob-user"); setUser(""); }
-  async function submitAuth(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault(); setError(""); const data = new FormData(event.currentTarget); const email = String(data.get("email")).trim().toLowerCase(); const password = String(data.get("password")); const name = String(data.get("name") || email.split("@")[0]);
-    try { const accounts = JSON.parse(localStorage.getItem("viejob-accounts") || "[]") as Account[]; const existing = accounts.find((account) => account.email === email); const passwordHash = await hashPassword(password);
-      if (auth === "Đăng ký") { if (existing) { setError("Email này đã được đăng ký. Hãy đăng nhập."); return; } accounts.push({ name, email, passwordHash }); localStorage.setItem("viejob-accounts", JSON.stringify(accounts)); localStorage.setItem("viejob-profile", JSON.stringify({ name, email, phone: "", title: "", location: "", skills: "", about: "" })); }
-      else if (!existing || existing.passwordHash !== passwordHash) { setError("Email hoặc mật khẩu chưa chính xác."); return; }
-      localStorage.setItem("viejob-user", name); setUser(name); setAuth(null); window.dispatchEvent(new Event("viejob-auth-changed"));
-    } catch { setError("Trình duyệt hiện tại không hỗ trợ thao tác này."); }
+  const pathname = usePathname();
+  const [open, setOpen] = useState(false);
+  const [user, setUser] = useState("");
+  const [auth, setAuth] = useState<"Đăng nhập" | "Đăng ký" | null>(null);
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const sync = () => setUser(localStorage.getItem("viejob-user") || "");
+    sync(); window.addEventListener("viejob-auth-changed", sync); window.addEventListener("storage", sync);
+    return () => { window.removeEventListener("viejob-auth-changed", sync); window.removeEventListener("storage", sync); };
+  }, []);
+  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (auth) { dialog.current?.showModal(); const previous = document.body.style.overflow; document.body.style.overflow = "hidden"; return () => { document.body.style.overflow = previous; }; }
+    dialog.current?.close();
+  }, [auth]);
+  function openAuth(mode: "Đăng nhập" | "Đăng ký") { setError(""); setAuth(mode); setOpen(false); }
+  async function submitAuth(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setError(""); setPending(true);
+    const data = new FormData(event.currentTarget);
+    const email = String(data.get("email")).trim().toLowerCase();
+    const password = String(data.get("password"));
+    const name = String(data.get("name") || email.split("@")[0]).trim();
+    try {
+      const accounts = JSON.parse(localStorage.getItem("viejob-accounts") || "[]") as Account[];
+      const existing = accounts.find(account => account.email === email);
+      const passwordHash = await hashPassword(password);
+      if (auth === "Đăng ký") {
+        if (existing) { setError("Email này đã được đăng ký. Hãy đăng nhập."); return; }
+        accounts.push({ name, email, passwordHash });
+        localStorage.setItem("viejob-accounts", JSON.stringify(accounts));
+        localStorage.setItem("viejob-profile", JSON.stringify({ name, email, phone: "", title: "", location: "", skills: "", about: "" }));
+      } else if (!existing || existing.passwordHash !== passwordHash) { setError("Email hoặc mật khẩu chưa chính xác."); return; }
+      const displayName = auth === "Đăng ký" ? name : existing!.name;
+      localStorage.setItem("viejob-user", displayName); setUser(displayName); setAuth(null);
+      window.dispatchEvent(new Event("viejob-auth-changed"));
+    } catch { setError("Không thể lưu tài khoản trên trình duyệt này. Vui lòng thử lại."); }
+    finally { setPending(false); }
   }
-  const navLinks = <ul className="flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-8"><li><Link href="/jobs" className="flex items-center gap-2 font-medium text-gray-900"><MagnifyingGlassIcon className="h-5 w-5"/>Tìm việc</Link></li><li><Link href="/applications" className="flex items-center gap-2 font-medium text-gray-900"><DocumentTextIcon className="h-5 w-5"/>Đơn ứng tuyển</Link></li><li><Link href="/profile" className="flex items-center gap-2 font-medium text-gray-900"><UserCircleIcon className="h-5 w-5"/>Hồ sơ của tôi</Link></li></ul>;
-  const authButtons = user ? <><span className="max-w-32 truncate text-sm font-semibold text-gray-600">{user}</span><Link href="/profile"><Button variant="text">Tài khoản</Button></Link><Button color="blue" onClick={logout}>Đăng xuất</Button></> : <><Button variant="text" onClick={() => { setError(""); setAuth("Đăng nhập"); }}>Đăng nhập</Button><Button color="blue" onClick={() => { setError(""); setAuth("Đăng ký"); }}>Tạo tài khoản</Button></>;
+  const navLinks = links.map(link => <Link key={link.href} href={link.href} className={`nav-link ${pathname.startsWith(link.href) ? "active" : ""}`} aria-current={pathname.startsWith(link.href) ? "page" : undefined}>{link.label}</Link>);
+  const authButtons = user ? <><Link href="/profile" className="user-chip"><span>{user.charAt(0).toUpperCase()}</span>{user}</Link><button className="button button-soft" onClick={() => { localStorage.removeItem("viejob-user"); setUser(""); window.dispatchEvent(new Event("viejob-auth-changed")); }}>Đăng xuất</button></> : <><button className="login-button" onClick={() => openAuth("Đăng nhập")}>Đăng nhập</button><button className="button button-primary" onClick={() => openAuth("Đăng ký")}>Bắt đầu ngay <ArrowUpRightIcon /></button></>;
   return <>
-    <div className="sticky top-0 z-50 w-full"><MTNavbar blurred color="white" className="relative z-50 m-0 w-full max-w-none rounded-none border-0 px-4 py-3 sm:px-10"><div className="flex items-center justify-between"><Link href="/"><Typography color="blue-gray" className="text-xl font-black">VIE<span className="text-blue-600">JOB</span></Typography></Link><div className="hidden lg:block">{navLinks}</div><div className="hidden items-center gap-3 lg:flex">{authButtons}</div><IconButton variant="text" color="gray" onClick={() => setOpen(!open)} className="ml-auto inline-block lg:hidden">{open ? <XMarkIcon className="h-6 w-6"/> : <Bars3Icon className="h-6 w-6"/>}</IconButton></div><Collapse open={open}><div className="mt-3 border-t border-gray-200 px-2 pt-4">{navLinks}<div className="mt-5 flex gap-3">{authButtons}</div></div></Collapse></MTNavbar></div>
-    {auth && <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/40 p-4" onClick={() => setAuth(null)}><section className="w-full max-w-md rounded-2xl bg-white p-7 shadow-2xl" onClick={(event) => event.stopPropagation()}><div className="flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-blue-600">VIEJOB · Cơ hội dành cho bạn</p><h2 className="mt-1 text-2xl font-bold text-blue-gray-900">{auth}</h2></div><button aria-label="Đóng" onClick={() => setAuth(null)}><XMarkIcon className="h-6 w-6 text-gray-500"/></button></div><p className="mt-2 text-sm text-gray-500">{auth === "Đăng nhập" ? "Đăng nhập để quản lý hồ sơ và đơn ứng tuyển." : "Tạo tài khoản để lưu hồ sơ và ứng tuyển."}</p><form onSubmit={submitAuth} className="mt-5 space-y-4">{auth === "Đăng ký" && <label className="block text-sm font-semibold">Họ và tên<input name="name" required minLength={2} className="mt-1 w-full rounded-lg border border-blue-gray-100 px-3 py-3 font-normal outline-none focus:border-blue-500" placeholder="Nguyễn Minh Anh"/></label>}<label className="block text-sm font-semibold">Email<input name="email" type="email" required className="mt-1 w-full rounded-lg border border-blue-gray-100 px-3 py-3 font-normal outline-none focus:border-blue-500" placeholder="ban@email.com"/></label><label className="block text-sm font-semibold">Mật khẩu<input name="password" type="password" minLength={6} required className="mt-1 w-full rounded-lg border border-blue-gray-100 px-3 py-3 font-normal outline-none focus:border-blue-500" placeholder="Ít nhất 6 ký tự"/></label>{error && <p role="alert" className="rounded-lg bg-red-50 p-3 text-sm text-red-700">{error}</p>}<Button type="submit" color="blue" fullWidth>{auth}</Button></form><p className="mt-5 text-center text-sm text-gray-500">{auth === "Đăng nhập" ? "Chưa có tài khoản?" : "Đã có tài khoản?"}<button onClick={() => { setError(""); setAuth(auth === "Đăng nhập" ? "Đăng ký" : "Đăng nhập"); }} className="ml-1 font-bold text-blue-600">{auth === "Đăng nhập" ? "Đăng ký" : "Đăng nhập"}</button></p><p className="mt-4 text-center text-xs text-gray-400">Tài khoản demo được lưu trên trình duyệt này.</p></section></div>}
+    <header className="site-header"><div className="site-container navbar-inner"><Link href="/" aria-label="VIEJOB — Trang chủ" className="brand"><span className="brand-symbol">v<span>↗</span></span>viejob<span className="brand-period">.</span></Link><nav className="desktop-nav" aria-label="Điều hướng chính">{navLinks}</nav><div className="nav-actions">{authButtons}</div><button className="mobile-menu-button" aria-label={open ? "Đóng menu" : "Mở menu"} aria-expanded={open} aria-controls="mobile-navigation" onClick={() => setOpen(!open)}>{open ? <XMarkIcon /> : <Bars3Icon />}</button></div>{open && <nav id="mobile-navigation" className="mobile-nav" aria-label="Điều hướng di động">{navLinks}<div>{authButtons}</div></nav>}</header>
+    <dialog ref={dialog} className="auth-dialog" aria-labelledby="auth-title" onCancel={() => setAuth(null)} onClose={() => setAuth(null)} onClick={event => { if (event.target === event.currentTarget) setAuth(null); }}>
+      <div className="auth-content"><button className="dialog-close" aria-label="Đóng" onClick={() => setAuth(null)}><XMarkIcon /></button><span className="auth-symbol"><SparklesIcon /></span><span className="eyebrow">CHƯƠNG TIẾP THEO CỦA BẠN</span><h2 id="auth-title">{auth === "Đăng nhập" ? "Chào mừng trở lại." : "Bắt đầu điều mới."}</h2><p>{auth === "Đăng nhập" ? "Cơ hội tiếp theo vẫn đang chờ bạn." : "Tạo tài khoản và viết tiếp câu chuyện sự nghiệp."}</p>
+        <form key={auth} onSubmit={submitAuth} className="auth-form">{auth === "Đăng ký" && <label>Họ và tên<input name="name" autoComplete="name" required minLength={2} placeholder="Nguyễn Minh Anh" /></label>}<label>Email<input name="email" type="email" autoComplete="email" required placeholder="ban@email.com" /></label><label>Mật khẩu<input name="password" type="password" autoComplete={auth === "Đăng ký" ? "new-password" : "current-password"} minLength={6} required placeholder="Ít nhất 6 ký tự" /></label>{error && <p role="alert" className="form-error">{error}</p>}<button type="submit" disabled={pending} className="button button-primary">{pending ? "Đang xử lý…" : auth}<ArrowUpRightIcon /></button></form>
+        <p className="auth-switch">{auth === "Đăng nhập" ? "Chưa có tài khoản?" : "Đã có tài khoản?"} <button onClick={() => openAuth(auth === "Đăng nhập" ? "Đăng ký" : "Đăng nhập")}>{auth === "Đăng nhập" ? "Đăng ký ngay" : "Đăng nhập"}</button></p><p className="data-note">Tài khoản trải nghiệm được lưu trên trình duyệt này.</p>
+      </div>
+    </dialog>
   </>;
 }
 export default Navbar;

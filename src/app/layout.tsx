@@ -1,42 +1,26 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
-import { Layout, FixedPlugin, Navbar, Footer } from "@/components";
+import { Inter } from "next/font/google";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
+import { MotionEffects } from "@/components/motion-effects";
 
-const roboto = Roboto({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "700", "900"],
-  display: "swap",
-});
+const inter = Inter({ subsets: ["latin", "vietnamese"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "VIEJOB | Tìm việc làm phù hợp",
-  description:
-    "VIEJOB giúp bạn khám phá việc làm phù hợp, quản lý hồ sơ và theo dõi đơn ứng tuyển.",
+  title: "VIEJOB — Công việc phù hợp. Tương lai rộng mở.",
+  description: "Khám phá việc làm, xây dựng hồ sơ và theo dõi cơ hội nghề nghiệp của bạn cùng VIEJOB.",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi">
-      <head>
-        <script
-          defer
-          data-site="YOUR_DOMAIN_HERE"
-          src="https://api.nepcha.com/js/nepcha-analytics.js"
-        ></script>
-        <link rel="shortcut icon" href="/favicon.png" type="image/png" />
-      </head>
-      <body className={roboto.className}>
-        <Layout>
-          <Navbar />
-          {children}
-          <FixedPlugin />
-          <Footer />
-        </Layout>
+    <html lang="vi" className={inter.className}>
+      <body>
+        <a href="#main-content" className="skip-link">Đi đến nội dung chính</a>
+        <MotionEffects />
+        <Navbar />
+        <main id="main-content">{children}</main>
+        <Footer />
       </body>
     </html>
   );
