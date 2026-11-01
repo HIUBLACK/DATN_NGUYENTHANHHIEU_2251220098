@@ -16,7 +16,7 @@
                 data: form.serialize(), // serialize form data
                 beforeSend: function() {
                     alert.fadeOut();
-                    submit.html('Sending....'); // change submit button text
+                    submit.html('Đang gửi...'); // change submit button text
                 },
                 success: function(data) {
                     alert.html(data).fadeIn(); // fade in response data

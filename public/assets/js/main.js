@@ -16,6 +16,7 @@
     if(menu.length){
       menu.slicknav({
         prependTo: ".mobile_menu",
+        label: "Danh mục",
         closedSymbol: '+',
         openedSymbol:'-'
       });
@@ -193,6 +194,7 @@
 
 /* 8. sildeBar scroll */
     $.scrollUp({
+      scrollTitle: 'Về đầu trang',
       scrollName: 'scrollUp', // Element ID
       topDistance: '300', // Distance from top before showing element (px)
       topSpeed: 300, // Speed back to top (ms)
@@ -217,7 +219,16 @@
     
 // 11. ---- Mailchimp js --------//  
     function mailChimp() {
-      $('#mc_embed_signup').find('form').ajaxChimp();
+      $.ajaxChimp.translations.vi = {
+        submit: 'Đang gửi...',
+        0: 'Thư xác nhận đã được gửi. Vui lòng kiểm tra hộp thư của bạn.',
+        1: 'Vui lòng nhập địa chỉ thư điện tử hợp lệ.',
+        2: 'Địa chỉ thư điện tử phải chứa đúng một ký tự @.',
+        3: 'Tên miền sau ký tự @ không hợp lệ.',
+        4: 'Phần tên trước ký tự @ không hợp lệ.',
+        5: 'Vui lòng nhập địa chỉ thư điện tử đang sử dụng.'
+      };
+      $('#mc_embed_signup').find('form').ajaxChimp({ language: 'vi' });
     }
     mailChimp();
 
