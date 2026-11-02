@@ -1,0 +1,6 @@
+@props(['job'])
+<article class="job-card" data-job-card="{{ $job['id'] }}"><div class="job-top"><a class="company-logo {{ $job['company']['color'] }}" href="{{ route('companies') }}#company-{{ $job['company']['id'] }}" aria-label="{{ $job['company']['name'] }}">{{ $job['company']['initials'] }}</a><div><span class="company-name">{{ $job['company']['name'] }}</span><h3><a href="{{ route('jobs.show', $job['id']) }}">{{ $job['title'] }}</a></h3></div><button class="icon-button save-button" data-save="{{ $job['id'] }}" aria-label="Lưu việc: {{ $job['title'] }}" aria-pressed="false"><i class="far fa-bookmark" aria-hidden="true"></i></button></div>
+<div class="job-meta"><span><i class="fas fa-map-marker-alt" aria-hidden="true"></i> {{ $job['location'] }}</span><span>{{ $job['mode'] }}</span><span>{{ $job['level'] }}</span></div>
+<div class="skill-list">@foreach(array_slice($job['skills'],0,4) as $skill)<x-skill-tag :skill="$skill"/>@endforeach</div>
+<div class="job-bottom"><strong class="salary">{{ $job['min'] }}–{{ $job['max'] }} triệu <small>/ tháng</small></strong><x-status-badge :status="$job['status']"/></div>
+<div class="job-footnote"><span>Hạn: {{ $job['deadline'] }}</span><a href="{{ route('jobs.show', $job['id']) }}">Xem chi tiết ↗</a></div></article>

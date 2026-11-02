@@ -1,0 +1,3 @@
+@extends('Candidate.layout')
+@section('title','Thông báo')
+@section('candidate-content')<div class="workspace-heading"><div><h1>Cập nhật dành cho bạn</h1><p>Không bỏ lỡ bước tiến nào trong hành trình ứng tuyển.</p></div><button class="button secondary compact" data-read-all>Đánh dấu tất cả đã đọc</button></div><div class="segmented" id="notification-filter"><button class="active" data-status="all">Tất cả</button><button data-status="unread">Chưa đọc</button><button data-status="read">Đã đọc</button></div><section id="notification-list" aria-live="polite"></section><x-alert>Thông báo chỉ mô phỏng trên trình duyệt. Đang xem xét là thông báo nội bộ; ứng tuyển, phỏng vấn, trúng tuyển, từ chối và rút hồ sơ có nhãn sự kiện email nhưng chưa gửi email thật.</x-alert>@endsection
