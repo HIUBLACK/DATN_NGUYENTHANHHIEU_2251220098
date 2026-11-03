@@ -8,6 +8,24 @@ use Tests\TestCase;
 
 class CandidatePreviewTest extends TestCase
 {
+    public function test_jobs_discovery_requires_confirmed_cv_for_suggestions(): void
+    {
+        Storage::fake('local');
+        $this->get('/viec-lam')
+            ->assertSee('Các công ty nổi bật')
+            ->assertSee('Hoàn thiện CV để xem công việc gợi ý');
+
+        $resume = $this->uploadResume();
+        $this->post('/ung-vien/cv/'.$resume.'/skills', ['skills' => 'PHP, Laravel, MySQL'])
+            ->assertSessionHasNoErrors();
+
+        $this->get('/viec-lam')
+            ->assertOk()
+            ->assertViewHas('suggestedJobs', fn ($jobs) => count($jobs) === 3)
+            ->assertDontSee('Hoàn thiện CV để xem công việc gợi ý')
+            ->assertSee('phù hợp · Minh họa');
+    }
+
     private function uploadResume(): string
     {
         $file = UploadedFile::fake()->createWithContent('cv.pdf', "%PDF-1.4\n1 0 obj\n<< /Type /Catalog >>\nendobj\n%%EOF");

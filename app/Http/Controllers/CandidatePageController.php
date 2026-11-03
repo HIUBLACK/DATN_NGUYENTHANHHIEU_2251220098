@@ -43,7 +43,19 @@ class CandidatePageController extends Controller
 
         return view('Candidate.ca_pages.jobs', $this->sharedData() + [
             'title' => 'Tìm việc làm',
+            'page' => 'jobs',
             'jobs' => $paginator,
+            'suggestedJobs' => array_slice($this->catalog->recommendations($this->demo->mainResume(), []), 0, 3),
+            'featuredCompanies' => $this->catalog->jobs()->groupBy('company')->map(function ($companyJobs) {
+                $company = $companyJobs->first();
+
+                return [
+                    'name' => $company['company'],
+                    'logo' => $company['logo'],
+                    'locations' => $companyJobs->pluck('location')->unique()->implode(' · '),
+                    'openings' => $companyJobs->where('status', 'open')->count(),
+                ];
+            })->values(),
         ]);
     }
 
@@ -53,6 +65,7 @@ class CandidatePageController extends Controller
         abort_unless($job, 404);
 
         return view('Candidate.ca_pages.job', $this->sharedData() + [
+            'page' => 'job',
             'title' => $job['title'],
             'job' => $job,
             'applicationError' => $this->demo->applicationError($job),

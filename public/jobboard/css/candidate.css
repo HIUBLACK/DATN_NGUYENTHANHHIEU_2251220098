@@ -1,6 +1,10 @@
 /* Extensions use the original JobBoard palette, typography and Bootstrap controls. */
+:root {
+    --site-hero-image: url('../images/hero_1.jpg');
+}
+
 .jobboard-hero-image {
-    background-image: url('../images/hero_1.jpg');
+    background-image: var(--site-hero-image);
 }
 
 .candidate-row-action {
@@ -101,4 +105,186 @@ textarea:focus-visible {
     .candidate-actions .btn {
         margin-bottom: 8px;
     }
+}
+
+/* Job details: compact summary, reading column and company information. */
+.job-header-backdrop {
+    height: 112px;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), var(--site-hero-image);
+    background-position: center;
+    background-size: cover;
+}
+
+.job-detail-page {
+    padding: 24px 0 80px;
+    background: #f5f6f7;
+    color: #343a40;
+}
+
+.job-detail-breadcrumb {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+.job-detail-card {
+    padding: 28px;
+    margin-bottom: 24px;
+    border: 1px solid #eee;
+    border-radius: 7px;
+    background: #fff;
+}
+
+.job-detail-title {
+    margin-bottom: 12px;
+    font-size: 26px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.job-detail-salary {
+    margin-bottom: 24px;
+    color: #668b10;
+    font-size: 22px;
+    font-weight: 700;
+}
+
+.job-detail-label {
+    display: block;
+    margin-bottom: 4px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.job-detail-facts strong {
+    font-size: 15px;
+}
+
+.job-detail-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.job-detail-actions > button {
+    flex: 1;
+}
+
+.job-detail-actions .btn {
+    min-height: 46px;
+}
+
+.job-detail-heading {
+    margin-bottom: 24px;
+    padding-left: 14px;
+    border-left: 4px solid #89ba16;
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.job-detail-section {
+    margin-bottom: 28px;
+}
+
+.job-detail-section h3 {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.job-detail-section ul {
+    padding-left: 20px;
+    margin-bottom: 0;
+}
+
+.job-detail-section li {
+    margin-bottom: 8px;
+}
+
+.job-detail-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.job-detail-skills .badge {
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.job-detail-company {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.job-detail-company img {
+    width: 72px;
+    height: 72px;
+    object-fit: contain;
+    border: 1px solid #eee;
+    border-radius: 7px;
+}
+
+.job-detail-company h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.job-detail-info dt {
+    color: #6c757d;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.job-detail-info dd {
+    margin-bottom: 20px;
+}
+
+.job-detail-related {
+    margin-top: 12px;
+}
+
+.job-detail-related .job-listings {
+    background: #fff;
+}
+
+@media (max-width: 575.98px) {
+    .job-detail-card {
+        padding: 20px;
+    }
+
+    .job-detail-title {
+        font-size: 23px;
+    }
+
+    .job-detail-actions {
+        flex-direction: column;
+    }
+
+    .job-detail-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Decorative icons retain the visible labels for screen readers. */
+.job-detail-icon {
+    display: inline-block;
+    width: 1.25em;
+    margin-right: 6px;
+    color: #668b10;
+    text-align: center;
+    vertical-align: baseline;
+}
+
+.job-detail-label .job-detail-icon,
+.job-detail-info .job-detail-icon {
+    color: #789a27;
 }

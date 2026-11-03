@@ -13,8 +13,12 @@
         <link rel="stylesheet" href="{{ asset('jobboard/css/animate.min.css') }}">
         <link rel="stylesheet" href="{{ asset('jobboard/css/style.css') }}">
         <link rel="stylesheet" href="{{ asset('jobboard/css/candidate.css') }}">
+        <link rel="stylesheet" href="{{ asset('jobboard/css/theme.css') }}">
+        @if (($page ?? '') === 'jobs')
+            <link rel="stylesheet" href="{{ asset('jobboard/css/jobs.css') }}">
+        @endif
     </head>
-    <body id="top">
+    <body id="top" class="{{ ($page ?? '') === 'job' ? 'job-detail-layout' : (($page ?? '') === 'jobs' ? 'jobs-list-layout' : '') }}">
         <a class="sr-only sr-only-focusable" href="#main-content">Chuyển đến nội dung</a>
         <div id="overlayer"></div>
         <div class="loader">
@@ -26,9 +30,13 @@
         <div class="site-wrap">
             @include('Candidate.header')
 
+            @if (($page ?? '') === 'job')
+                <div class="job-header-backdrop" aria-hidden="true"></div>
+            @endif
+
             <main id="main-content">
                 @isset($title)
-                    @if (($page ?? '') !== 'about')
+                    @if (! in_array($page ?? '', ['about', 'job', 'jobs']))
                         @include('Candidate.page-hero')
                     @endif
                 @endisset
