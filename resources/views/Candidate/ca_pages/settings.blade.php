@@ -1,3 +1,29 @@
-@extends('Candidate.layout')
-@section('title','Cài đặt tài khoản')
-@section('candidate-content')<div class="workspace-heading"><div><h1>Cài đặt tài khoản</h1><p>Quản lý thông tin và trải nghiệm của bạn.</p></div></div><div class="panel"><h2 class="h4">Thông tin tài khoản</h2><p class="small">Vai trò: Ứng viên · Trạng thái: Bản demo giao diện</p><p id="account-email" class="small"></p><a class="back-link" href="{{ route('candidate.profile') }}">Cập nhật thông tin cá nhân ↗</a></div><form class="panel" data-demo-form="settings" novalidate><h2 class="h4">Đổi mật khẩu</h2><x-alert>Chưa kết nối xác thực. Không nhập mật khẩu thật. Dữ liệu mật khẩu không được lưu hoặc gửi đi.</x-alert><x-form-input name="current_password" label="Mật khẩu hiện tại" type="password" required autocomplete="current-password"/><label for="password">Mật khẩu mới *</label><div class="password-wrap"><input id="password" type="password" name="password" minlength="8" required autocomplete="new-password"><button type="button" data-toggle-password="password" aria-label="Hiển thị mật khẩu" aria-pressed="false"><i class="far fa-eye" aria-hidden="true"></i></button></div><span class="field-error" id="password-error"></span><x-form-input name="password_confirmation" label="Xác nhận mật khẩu mới" type="password" required autocomplete="new-password"/><button class="button mt-3">Kiểm tra biểu mẫu</button><div class="form-feedback" role="status"></div></form><div class="panel"><h2 class="h4">Dữ liệu trải nghiệm</h2><p class="small">Xóa CV, hồ sơ, việc đã lưu và thông báo demo trên trình duyệt này khi kết thúc trình diễn.</p><div class="actions"><button class="button danger" data-reset-demo>Xóa dữ liệu demo</button><button class="button secondary" data-logout>Đăng xuất demo</button></div></div>@endsection
+@extends('Candidate.master')
+
+@section('content')
+    <section class="site-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-6 mb-5">
+                    <h2 class="h4 mb-4">Đổi mật khẩu</h2>
+                    @include('Candidate.auth-form', ['mode' => 'settings', 'buttonLabel' => 'Kiểm tra biểu mẫu'])
+                </div>
+                <div class="col-lg-6">
+                    <div class="bg-light p-4 border rounded">
+                        <h2 class="h4">Thông tin tài khoản</h2>
+                        <p>{{ $demo['profile']['name'] }} · {{ $demo['profile']['email'] }}</p>
+                        <p>Vai trò: Ứng viên — chế độ minh họa, chưa xác thực thật.</p>
+                        <form action="{{ route('demo.leave') }}" method="post" class="mb-3">
+                            @csrf
+                            <button class="btn btn-light">Đăng xuất demo</button>
+                        </form>
+                        <form action="{{ route('demo.reset') }}" method="post" data-confirm="Xóa toàn bộ PDF, ảnh và dữ liệu của phiên demo này?">
+                            @csrf
+                            <button class="btn btn-outline-danger">Xóa dữ liệu demo</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+@endsection

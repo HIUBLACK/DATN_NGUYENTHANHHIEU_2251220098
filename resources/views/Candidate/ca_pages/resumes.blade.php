@@ -1,11 +1,32 @@
-@extends('Candidate.layout')
-@section('title','Quản lý CV PDF')
-@section('candidate-content')
-<div class="workspace-heading"><div><span class="eyebrow">ĐỂ KỸ NĂNG LÊN TIẾNG</span><h1>Hồ sơ của bạn</h1><p>Quản lý CV PDF và chọn hồ sơ phù hợp cho mỗi cơ hội.</p></div><span class="status" id="resume-count">0 / 10 CV</span></div>
-<x-alert>PDF được lưu cục bộ trong trình duyệt này, không tải lên máy chủ. Phân tích AI chưa kết nối; bạn có thể thử các trạng thái minh họa.</x-alert>
-<div class="upload-zone" id="upload-zone"><i class="far fa-file-pdf" aria-hidden="true"></i><h3>Kéo thả CV PDF vào đây</h3><p>Chỉ nhận PDF · Tối đa 5 MB/tệp · Tối đa 10 CV</p><label class="button" for="resume-upload">Chọn tệp PDF <span aria-hidden="true">↑</span></label><input class="visually-hidden" type="file" id="resume-upload" accept="application/pdf,.pdf" multiple><p class="small mt-3 mb-0">Không chỉnh sửa nội dung PDF trên hệ thống.</p></div>
-<div id="upload-error" class="notice notice-error" role="alert" hidden></div><x-loading-state id="upload-loading" hidden/>
-<section id="resume-list" aria-label="Danh sách CV" aria-live="polite"></section>
-<input type="file" id="resume-replace" accept="application/pdf,.pdf" class="visually-hidden" aria-label="Chọn PDF thay thế">
-<div class="panel mt-4"><h3>Các trạng thái phân tích</h3><div class="skill-list">@foreach(['pending','processing','needs_review','completed','failed'] as $status)<x-status-badge :status="$status"/>@endforeach</div><p class="small mt-3 mb-0">CV chính cần được xác nhận kỹ năng trước khi hiển thị gợi ý AI. PDF hợp lệ vẫn có thể dùng để ứng tuyển trong khi chờ phân tích.</p></div>
+@extends('Candidate.master')
+
+@section('content')
+    <section class="site-section">
+        <div class="container">
+            @include('Candidate.demo-notice')
+            <p>PDF được lưu riêng tư trên máy chủ chạy bản demo, chỉ truy cập qua phiên này. Dùng tệp mẫu để thử; có thể xóa toàn bộ tại Cài đặt tài khoản.</p>
+            <form action="{{ route('candidate.upload') }}" method="post" enctype="multipart/form-data" class="p-4 rounded candidate-dropzone mb-5" id="resume-dropzone" data-loading="resume-loading">
+                @csrf
+                <h2 class="h4">Tải CV PDF</h2>
+                <p>Kéo thả hoặc chọn tệp · Tối đa 5 MB · Tối đa 10 CV · Không có CV Builder.</p>
+                <label for="resume-pdf">Chọn tệp PDF</label>
+                <input type="file" id="resume-pdf" name="pdf" accept="application/pdf,.pdf" class="form-control-file mb-3" required>
+                <p id="selected-file-name" class="small candidate-file-name"></p>
+                <button class="btn btn-primary text-white">Tải CV lên</button>
+                <div id="resume-loading" class="candidate-loading mt-3" role="status" hidden>
+                    <span class="spinner-border spinner-border-sm text-primary" aria-hidden="true"></span>
+                    Đang tải lên...
+                </div>
+            </form>
+            <h2 class="h4 mb-4">CV của bạn ({{ count($demo['resumes']) }}/10)</h2>
+            @forelse ($demo['resumes'] as $resume)
+                @include('Candidate.resume-card')
+            @empty
+                @include('Candidate.empty-state', [
+                    'emptyTitle' => 'Chưa có CV chính',
+                    'emptyDescription' => 'Tải PDF đầu tiên để bắt đầu. Gợi ý AI đang tạm dừng.',
+                ])
+            @endforelse
+        </div>
+    </section>
 @endsection

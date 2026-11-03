@@ -1,3 +1,36 @@
-@extends('Candidate.layout')
-@section('title','Hồ sơ cá nhân')
-@section('candidate-content')<div class="workspace-heading"><div><h1>Câu chuyện nghề nghiệp của bạn</h1><p>Cập nhật thông tin để sẵn sàng với cơ hội mới.</p></div></div><x-alert>Thông tin chỉ lưu trên trình duyệt hiện tại. Hãy dùng dữ liệu minh họa khi trình diễn.</x-alert><form class="panel" id="profile-form" novalidate><div class="profile-avatar"><span class="avatar" id="profile-initials">MA</span><img id="avatar-preview" hidden alt="Ảnh đại diện của bạn"><div><label class="button secondary compact" for="avatar-upload">Chọn ảnh đại diện</label><input type="file" id="avatar-upload" accept="image/png,image/jpeg,image/webp" class="visually-hidden"><span class="small muted">JPG, PNG hoặc WebP · Tối đa 2 MB</span></div></div><div class="form-grid"><x-form-input name="profile-name" label="Họ và tên" required maxlength="100" autocomplete="name"/><x-form-input name="profile-email" label="Email" type="email" required autocomplete="email"/><x-form-input name="profile-phone" label="Số điện thoại" type="tel" autocomplete="tel"/><x-form-input name="profile-location" label="Địa điểm" placeholder="Ví dụ: TP. Hồ Chí Minh" maxlength="100"/><x-form-input name="profile-title" label="Vị trí chuyên môn" placeholder="Ví dụ: Lập trình viên Backend" maxlength="120"/><div><label for="profile-experience">Kinh nghiệm</label><select id="profile-experience" name="profile-experience"><option>Chưa có kinh nghiệm</option><option>Dưới 1 năm</option><option>1–3 năm</option><option>3–5 năm</option><option>Trên 5 năm</option></select></div><div class="span-2"><label for="profile-bio">Giới thiệu bản thân</label><textarea id="profile-bio" name="profile-bio" rows="5" maxlength="1500" placeholder="Chia sẻ thế mạnh, kinh nghiệm và định hướng của bạn..."></textarea></div></div><button class="button mt-4" type="submit">Lưu hồ sơ demo</button><div class="form-feedback" role="status"></div></form>@endsection
+@extends('Candidate.master')
+
+@section('content')
+    <section class="site-section">
+        <div class="container">
+            @include('Candidate.demo-notice')
+            <form action="{{ route('candidate.profile-save') }}" method="post" enctype="multipart/form-data" class="p-4 border rounded">
+                @csrf
+                <div class="form-group">
+                    <img src="{{ route('candidate.avatar') }}" alt="Ảnh đại diện" class="candidate-profile-avatar rounded-circle mb-3">
+                    <label for="avatar" class="d-block">Ảnh đại diện (JPG, PNG, WebP; tối đa 2 MB)</label>
+                    <input type="file" name="avatar" id="avatar" accept="image/jpeg,image/png,image/webp" class="form-control-file">
+                </div>
+                <div class="row">
+                    @foreach ($profileFields as $fieldName => $field)
+                        <div class="col-md-6">
+                            @include('Candidate.input', [
+                                'fieldName' => $fieldName,
+                                'fieldLabel' => $field['label'],
+                                'fieldType' => $field['type'],
+                                'fieldValue' => $demo['profile'][$fieldName],
+                                'required' => $field['required'],
+                                'maxLength' => 150,
+                            ])
+                        </div>
+                    @endforeach
+                </div>
+                <div class="form-group">
+                    <label for="bio">Giới thiệu bản thân</label>
+                    <textarea class="form-control" id="bio" name="bio" rows="5" maxlength="1500">{{ old('bio', $demo['profile']['bio']) }}</textarea>
+                </div>
+                <button class="btn btn-primary text-white">Cập nhật hồ sơ demo</button>
+            </form>
+        </div>
+    </section>
+@endsection

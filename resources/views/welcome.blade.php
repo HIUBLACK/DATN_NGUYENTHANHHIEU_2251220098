@@ -1,17 +1,14 @@
-@extends('layouts.public')
-@section('content')
-<section class="hero"><div class="page-container hero-grid"><div>
-<span class="pill">✦ NỀN TẢNG VIỆC LÀM DÀNH RIÊNG CHO CNTT</span>
-<h1>Đúng kỹ năng.<br>Đúng cơ hội.<br><span class="accent">Đúng tương lai.</span></h1>
-<p>Khám phá công việc công nghệ phù hợp với bạn. Để mỗi dòng mã hôm nay mở ra một hành trình mới.</p>
-<form class="search-bar" action="{{ route('jobs') }}" method="get"><label class="visually-hidden" for="hero-q">Vị trí, kỹ năng hoặc công ty</label><input id="hero-q" name="q" placeholder="Vị trí, kỹ năng hoặc công ty..."><label class="visually-hidden" for="hero-location">Địa điểm</label><select id="hero-location" name="location"><option value="">Mọi địa điểm</option>@foreach(['Hà Nội','TP. Hồ Chí Minh','Đà Nẵng'] as $city)<option>{{ $city }}</option>@endforeach</select><button class="button lime" type="submit"><i class="fas fa-search" aria-hidden="true"></i> Tìm việc</button></form>
-<div class="popular"><span>Được quan tâm:</span>@foreach(['Laravel','React','Python','DevOps'] as $keyword)<a href="{{ route('jobs', ['q'=>$keyword]) }}">{{ $keyword }}</a>@endforeach</div>
-</div><div class="hero-visual" aria-label="Minh họa gợi ý nghề nghiệp"><div class="code-window"><div class="window-dots"><b></b><b></b><b></b></div><span class="code-comment">// khởi tạo hành trình tiếp theo</span><div class="code-heading">const tươngLai = {<br>&nbsp; kỹNăng: <span>"của bạn"</span>,<br>&nbsp; cơHội: <span>"không giới hạn"</span><br>};</div><div class="match-preview"><header><span>✦ Gợi ý dành cho bạn</span><strong>86<span class="small">%</span></strong></header><h3>Lập trình viên Backend</h3><p>Kết nối kỹ năng với cơ hội phù hợp.</p><div class="skill-list"><x-skill-tag skill="PHP"/><x-skill-tag skill="Laravel"/><x-skill-tag skill="MySQL"/></div></div></div><div class="hero-note">Điểm phù hợp minh họa · Không phải xác suất trúng tuyển</div></div></div></section>
-<div class="page-container trust-row"><span>Khám phá các công ty công nghệ trong bản demo</span>@foreach($companies as $company)<strong>{{ $company['name'] }}</strong>@endforeach</div>
-<section class="section"><div class="page-container"><div class="section-head"><div><span class="eyebrow">TÌM HƯỚNG ĐI CỦA BẠN</span><h2>Mỗi thế mạnh, một cơ hội.</h2><p>Chọn lĩnh vực bạn muốn tạo nên khác biệt.</p></div><a href="{{ route('jobs') }}">Tất cả việc làm ↗</a></div><div class="category-grid">@foreach($categories as $category)<a class="category-card" href="{{ route('jobs', ['category'=>$category]) }}"><i class="fas fa-{{ ['code','laptop','cubes','mobile-alt','cloud','database','cogs','bug','pencil-alt'][$loop->index] }}" aria-hidden="true"></i><strong>{{ $category }}</strong><span>Khám phá cơ hội ↗</span></a>@endforeach<a class="category-card" href="{{ route('jobs') }}"><i class="fas fa-arrow-right" aria-hidden="true"></i><strong>Tất cả lĩnh vực</strong><span>Tìm công việc của bạn</span></a></div></div></section>
-<section class="section soft"><div class="page-container"><div class="section-head"><div><span class="eyebrow">CƠ HỘI ĐANG CHỜ BẠN</span><h2>Việc làm nổi bật</h2><p>Những vị trí CNTT trong danh mục minh họa.</p></div><a class="button secondary compact" href="{{ route('jobs') }}">Xem tất cả ↗</a></div><div class="job-grid">@foreach(array_slice($allJobs,0,4) as $job)<x-job-card :job="$job"/>@endforeach</div></div></section>
-<section class="section"><div class="page-container ai-banner"><div><span class="eyebrow">HIỂU KỸ NĂNG · GỢI ĐÚNG VIỆC</span><h2>Bớt tìm kiếm.<br>Thêm phù hợp.</h2><p>Khám phá trải nghiệm đề xuất công việc dựa trên CV. Nhìn rõ kỹ năng đáp ứng và những điều bạn có thể phát triển.</p><a href="{{ route('candidate.recommendations') }}" class="button">Trải nghiệm gợi ý AI ↗</a><p class="small mt-3">Giao diện minh họa; chưa chạy mô hình AI.</p></div><div class="ai-visual"><div class="score-ring"><strong>86%</strong><span>Điểm minh họa</span></div><div><h3>Backend Laravel</h3><p class="small">Kỹ năng đáp ứng</p><div class="skill-list"><x-skill-tag skill="PHP" tone="match"/><x-skill-tag skill="Laravel" tone="match"/></div><p class="small mt-3 mb-2">Có thể bổ sung</p><div class="skill-list"><x-skill-tag skill="Redis" tone="missing"/><x-skill-tag skill="Docker" tone="missing"/></div></div></div></div></section>
-<section class="section soft"><div class="page-container"><div class="section-head"><div><span class="eyebrow">MÔI TRƯỜNG MỚI · CẢM HỨNG MỚI</span><h2>Gặp gỡ nhà tuyển dụng</h2></div><a href="{{ route('companies') }}">Khám phá công ty ↗</a></div><div class="company-grid">@foreach($companies as $company)<x-company-card :company="$company"/>@endforeach</div></div></section>
-<section class="section"><div class="page-container"><div class="section-head"><div><span class="eyebrow">HÀNH TRÌNH THẬT ĐƠN GIẢN</span><h2>Ba bước đến cơ hội mới</h2></div></div><div class="step-grid">@foreach([['Tạo hồ sơ của bạn','Tải CV PDF và xác nhận những kỹ năng làm nên thế mạnh của bạn.'],['Khám phá việc phù hợp','Tìm kiếm theo mong muốn hoặc trải nghiệm danh sách đề xuất.'],['Chủ động ứng tuyển','Chọn CV, gửi lời giới thiệu và theo dõi hành trình ứng tuyển.']] as $step)<div><span class="step-number">0{{ $loop->iteration }}</span><h3>{{ $step[0] }}</h3><p>{{ $step[1] }}</p></div>@endforeach</div></div></section>
-<section class="section pt-0"><div class="page-container cta"><div><h2>Cơ hội tiếp theo bắt đầu từ bạn.</h2><p>Sẵn sàng cho một chương mới trong sự nghiệp công nghệ?</p></div><a class="button lime" href="{{ route('register') }}">Bắt đầu ngay ↗</a></div></section>
-@endsection
+
+<!doctype html>
+<html class="no-js" lang="vi">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+         <title>VIEJOB AI - Việc làm dành cho người Việt</title>
+        <meta name="description" content="Khám phá cơ hội việc làm, tìm kiếm công việc phù hợp và kết nối với nhà tuyển dụng cùng VIEJOB AI.">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="manifest" href="site.webmanifest">
+		<link rel="shortcut icon" type="image/x-icon" href="{{ asset('assets/img/favicon.ico') }}">
+
+
+</html>

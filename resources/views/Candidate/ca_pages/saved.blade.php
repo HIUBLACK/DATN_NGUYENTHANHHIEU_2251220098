@@ -1,3 +1,39 @@
-@extends('Candidate.layout')
-@section('title','Việc làm đã lưu')
-@section('candidate-content')<div class="workspace-heading"><div><h1>Những cơ hội bạn quan tâm</h1><p>Lưu lại hôm nay, sẵn sàng cho bước tiếp theo.</p></div><a class="button compact" href="{{ route('jobs') }}">Tìm thêm việc ↗</a></div><div class="segmented" id="saved-filter"><button class="active" data-status="all">Tất cả</button><button data-status="open">Đang tuyển</button><button data-status="closed">Đã đóng / hết hạn</button></div><section id="saved-list" aria-live="polite"></section><details class="panel mt-4"><summary class="small">Kiểm tra trạng thái minh họa</summary><p class="small mt-3">Thêm tin đã đóng, hết hạn và bị ẩn vào danh sách demo để xem cách hiển thị.</p><button class="button secondary compact" data-demo-saved>Thêm trạng thái mẫu</button></details>@endsection
+@extends('Candidate.master')
+
+@section('content')
+    <section class="site-section">
+        <div class="container">
+            @include('Candidate.demo-notice')
+            @forelse ($savedJobs as $savedJob)
+                @if ($savedJob)
+                    <ul class="job-listings mb-3">
+                        @include('Candidate.job-row', ['job' => $savedJob])
+                    </ul>
+                    @if ($savedJob['status'] === 'open')
+                        <a href="{{ route('jobs.show', $savedJob['id']) }}" class="btn btn-primary text-white mb-4">Xem và ứng tuyển</a>
+                    @else
+                        <button class="btn btn-light mb-4" disabled>Không nhận ứng tuyển</button>
+                    @endif
+                @else
+                    <div class="bg-light p-4 border rounded mb-3">
+                        <h2 class="h5">Công việc không khả dụng</h2>
+                        <p>Tin đã được ẩn. Nội dung chi tiết không được công khai.</p>
+                        <form action="{{ route('candidate.save', 999) }}" method="post">
+                            @csrf
+                            <button class="btn btn-light">Bỏ lưu</button>
+                        </form>
+                    </div>
+                @endif
+            @empty
+                @include('Candidate.empty-state', ['emptyTitle' => 'Chưa có việc làm đã lưu'])
+            @endforelse
+            <details class="mt-4">
+                <summary>Kiểm tra tin không khả dụng</summary>
+                <form action="{{ route('candidate.save', 999) }}" method="post" class="mt-3">
+                    @csrf
+                    <button class="btn btn-light">Thêm/bỏ tin ẩn minh họa</button>
+                </form>
+            </details>
+        </div>
+    </section>
+@endsection

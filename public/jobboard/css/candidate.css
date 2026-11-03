@@ -1,0 +1,104 @@
+/* Extensions use the original JobBoard palette, typography and Bootstrap controls. */
+.jobboard-hero-image {
+    background-image: url('../images/hero_1.jpg');
+}
+
+.candidate-row-action {
+    position: relative;
+    z-index: 3;
+}
+
+.job-listings .job-listing a.candidate-detail-link {
+    position: relative;
+    width: auto;
+    height: auto;
+    z-index: 3;
+}
+
+.job-listings .job-listing a.candidate-detail-link:hover {
+    border-left-width: 1px;
+}
+
+.candidate-avatar {
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+}
+
+.candidate-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.candidate-account:hover .dropdown-menu,
+.candidate-account:focus-within .dropdown-menu {
+    display: block;
+}
+
+.candidate-dropzone {
+    border: 2px dashed #89ba16;
+}
+
+.candidate-dropzone.is-dragging {
+    background-color: #f8f9fa;
+}
+
+.candidate-file-name {
+    overflow-wrap: anywhere;
+}
+
+.candidate-profile-avatar {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+.candidate-progress {
+    width: 100%;
+    height: 12px;
+    accent-color: #89ba16;
+}
+
+.candidate-timeline {
+    border-left: 2px solid #89ba16;
+    padding-left: 24px;
+    list-style: none;
+}
+
+.candidate-timeline li {
+    margin-bottom: 20px;
+}
+
+.candidate-notification-unread {
+    border-left: 4px solid #89ba16;
+}
+
+.candidate-loading[hidden] {
+    display: none;
+}
+
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+    outline: 2px solid #89ba16;
+    outline-offset: 3px;
+}
+
+@media (min-width: 1200px) and (max-width: 1450px) {
+    .site-navbar .site-navigation {
+        left: 42%;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .job-listing .job-listing-about {
+        width: auto;
+    }
+
+    .candidate-actions .btn {
+        margin-bottom: 8px;
+    }
+}
