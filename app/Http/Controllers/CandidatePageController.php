@@ -123,6 +123,7 @@ class CandidatePageController extends Controller
             'filterOptions' => $this->catalog->filters(),
             'statusLabels' => $this->catalog->statuses(),
             'demo' => $this->demo->state(),
+            'unreadNotificationCount' => collect($this->demo->state()['notifications'])->where('read', false)->count(),
             'mainResume' => $this->demo->mainResume(),
         ];
     }

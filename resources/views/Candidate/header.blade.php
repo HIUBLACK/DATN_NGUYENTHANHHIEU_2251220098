@@ -13,7 +13,7 @@
     <div class="container-fluid">
         <div class="row align-items-center">
             <div class="site-logo col-6">
-                <a href="{{ route('home') }}">VIEJOB AI</a>
+                <a href="{{ route('home') }}" class="site-brand" aria-label="VIEJOB — Trang chủ">VIE<span class="site-brand-accent">JOB</span></a>
             </div>
 
             <nav class="mx-auto site-navigation" aria-label="Điều hướng chính">
@@ -60,9 +60,7 @@
             <div class="right-cta-menu text-right d-flex align-items-center col-6">
                 <div class="ml-auto d-none d-xl-flex align-items-center">
                     @if ($demo['active'])
-                        <a class="text-white mr-3" href="{{ route('candidate.notifications') }}" aria-label="Thông báo">
-                            <span class="icon-bell" aria-hidden="true"></span>
-                        </a>
+                        @include('Candidate.notification-panel')
                         <a class="text-white mr-3" href="{{ route('candidate.messages') }}" aria-label="Tin nhắn">
                             <span class="icon-envelope" aria-hidden="true"></span>
                         </a>
@@ -70,9 +68,7 @@
                             <button class="btn btn-light rounded-circle p-0 candidate-avatar" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" aria-label="Tài khoản ứng viên">
                                 <img src="{{ route('candidate.avatar') }}" alt="Ảnh đại diện">
                             </button>
-                            <ul class="dropdown-menu dropdown-menu-right list-unstyled">
-                                @include('Candidate.account-links')
-                            </ul>
+                            @include('Candidate.account-panel')
                         </div>
                     @else
                         <a href="{{ route('login') }}" class="text-white mr-3">Đăng nhập</a>

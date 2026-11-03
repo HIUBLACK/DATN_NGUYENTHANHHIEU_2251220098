@@ -1,4 +1,45 @@
 document.addEventListener('DOMContentLoaded', function () {
+    document.querySelectorAll('[data-notification-panel]').forEach(function (panel) {
+        panel.addEventListener('click', function (event) {
+            event.stopPropagation();
+        });
+
+        const filters = panel.querySelectorAll('[data-notification-filter]');
+        const items = panel.querySelectorAll('[data-notification-state]');
+        const emptyMessage = panel.querySelector('[data-notification-empty]');
+
+        filters.forEach(function (button) {
+            button.addEventListener('click', function () {
+                let visibleCount = 0;
+
+                filters.forEach(function (filter) {
+                    filter.setAttribute('aria-pressed', String(filter === button));
+                });
+
+                items.forEach(function (item) {
+                    const matches = button.dataset.notificationFilter === 'all'
+                        || item.dataset.notificationState === button.dataset.notificationFilter;
+                    item.hidden = !matches;
+
+                    if (matches) {
+                        visibleCount++;
+                    }
+                });
+
+                if (emptyMessage) {
+                    emptyMessage.hidden = visibleCount > 0;
+                }
+            });
+        });
+    });
+
+    document.querySelectorAll('[data-account-panel]').forEach(function (panel) {
+        panel.addEventListener('click', function (event) {
+            // Keep Bootstrap from closing the menu while expanding a group.
+            event.stopPropagation();
+        });
+    });
+
     let pendingForm = null;
     const confirmationButton = document.getElementById('confirmation-submit');
     const confirmationMessage = document.getElementById('confirmation-message');
