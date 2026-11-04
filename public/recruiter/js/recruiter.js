@@ -1,0 +1,388 @@
+document.addEventListener('DOMContentLoaded', function () {
+    const seedElement = document.getElementById('recruiter-seed');
+    const routeElement = document.getElementById('recruiter-routes');
+    if (!seedElement || !routeElement) {
+        return;
+    }
+
+    const domain = window.RecruiterDomain;
+    const routes = routeElement.dataset;
+    const seed = JSON.parse(seedElement.textContent);
+    const storageKey = 'viejob-recruiter-preview-v1';
+    const page = document.body.dataset.recruiterPage;
+    const parameters = new URLSearchParams(window.location.search);
+    const selectedId = parameters.get('id');
+    const feedback = document.getElementById('recruiter-feedback');
+    const errorBox = document.getElementById('recruiter-error');
+    const modal = new bootstrap.Modal(document.getElementById('recruiter-confirm'));
+    let confirmationAction = null;
+    let jobPage = 1;
+    let state = structuredClone(seed);
+
+    try {
+        const stored = sessionStorage.getItem(storageKey);
+        if (stored) {
+            state = JSON.parse(stored);
+        }
+    } catch (error) {
+        showError('Không đọc được phiên demo. Đang hiển thị dữ liệu mẫu ban đầu.');
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '').replace(/[&<>"']/g, function (character) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
+        });
+    }
+
+    function timestamp() {
+        return new Intl.DateTimeFormat('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', dateStyle: 'short', timeStyle: 'short' }).format(new Date());
+    }
+
+    function showError(message) {
+        errorBox.textContent = message;
+        errorBox.hidden = false;
+        feedback.hidden = true;
+    }
+
+    function persist(message = 'Đã cập nhật mô phỏng trong tab này. Chưa lưu hoặc gửi dữ liệu thật.') {
+        try {
+            sessionStorage.setItem(storageKey, JSON.stringify(state));
+            feedback.textContent = message;
+            feedback.hidden = false;
+            errorBox.hidden = true;
+            return true;
+        } catch (error) {
+            showError('Trình duyệt không lưu được phiên demo. Hãy giảm kích thước logo hoặc cho phép bộ nhớ phiên.');
+            return false;
+        }
+    }
+
+    function confirmAction(message, action) {
+        document.getElementById('recruiter-confirm-message').textContent = message;
+        confirmationAction = action;
+        modal.show();
+    }
+
+    document.getElementById('recruiter-confirm-submit').addEventListener('click', function () {
+        modal.hide();
+        if (confirmationAction) {
+            try {
+                confirmationAction();
+            } catch (error) {
+                showError(error.message);
+            }
+            confirmationAction = null;
+        }
+    });
+
+    function jobById(id) {
+        return state.jobs.find(job => job.id === id);
+    }
+
+    function applicationById(id) {
+        return state.applications.find(application => application.id === id);
+    }
+
+    function url(name, id) {
+        return routes[name] + (id ? '?id=' + encodeURIComponent(id) : '');
+    }
+
+    function badge(status, labels) {
+        let tone = 'pending';
+        if (['open', 'approved', 'hired'].includes(status)) {
+            tone = 'success';
+        } else if (['closed', 'blocked', 'rejected', 'withdrawn'].includes(status)) {
+            tone = 'failed';
+        }
+        return '<span class="badge-table ' + tone + '">' + escapeHtml(labels[status] || status) + '</span>';
+    }
+
+    function empty(message) {
+        return '<div class="recruiter-empty"><i class="bi bi-inbox me-2" aria-hidden="true"></i>' + escapeHtml(message) + '</div>';
+    }
+
+    function logoMarkup(company) {
+        if (company.logo && /^data:image\/(png|jpeg|webp);base64,/.test(company.logo)) {
+            return '<img class="recruiter-logo-preview" src="' + escapeHtml(company.logo) + '" alt="Logo doanh nghiệp minh họa">';
+        }
+        return '<div class="recruiter-company-icon"><i class="bi bi-building" aria-hidden="true"></i></div>';
+    }
+
+    function setupCompanyForm() {
+        const form = document.getElementById('company-form');
+        const isCreate = window.location.pathname.endsWith('/tao');
+        let logo = isCreate ? '' : state.company.logo;
+        const preview = document.getElementById('company-logo-preview');
+        if (!isCreate) {
+            Object.entries(state.company).forEach(function ([field, value]) {
+                if (form.elements[field]) {
+                    form.elements[field].value = value;
+                }
+            });
+        }
+        if (logo) {
+            preview.src = logo;
+            preview.hidden = false;
+        }
+        document.getElementById('company-logo').addEventListener('change', function (event) {
+            const file = event.target.files[0];
+            if (!file) {
+                return;
+            }
+            if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+                event.target.value = '';
+                showError('Logo phải là PNG, JPG hoặc WebP và không vượt quá 2 MB.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.addEventListener('load', function () {
+                logo = reader.result;
+                preview.src = logo;
+                preview.hidden = false;
+            });
+            reader.readAsDataURL(file);
+        });
+        form.addEventListener('input', function (event) {
+            if (event.target.setCustomValidity) {
+                event.target.setCustomValidity('');
+            }
+        });
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            if (!validateForm(form)) {
+                return;
+            }
+            state.company = Object.fromEntries(new FormData(form));
+            state.company.logo = logo;
+            if (persist()) {
+                feedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        });
+    }
+
+    function fillOptions() {
+        document.querySelectorAll('[data-options]').forEach(function (select) {
+            const labels = { activity: domain.activityLabels, moderation: domain.moderationLabels, application: domain.applicationLabels }[select.dataset.options];
+            select.innerHTML = '<option value="">Tất cả</option>' + Object.entries(labels).map(function ([value, label]) {
+                return '<option value="' + value + '">' + label + '</option>';
+            }).join('');
+        });
+    }
+
+    function validateForm(form, draftOnly = false) {
+        form.querySelectorAll('input, textarea, select').forEach(function (input) {
+            input.setCustomValidity('');
+            if (input.required && !String(input.value).trim()) {
+                input.setCustomValidity('Vui lòng điền trường bắt buộc.');
+            }
+        });
+        if (draftOnly) {
+            const title = form.elements.title;
+            title.setCustomValidity(title.value.trim() ? '' : 'Vui lòng nhập tiêu đề bản nháp.');
+            return title.reportValidity();
+        }
+        if (form.id === 'job-form') {
+            if (Number(form.elements.salary_max.value) < Number(form.elements.salary_min.value)) {
+                form.elements.salary_max.setCustomValidity('Lương tối đa phải lớn hơn hoặc bằng lương tối thiểu.');
+            }
+            if (form.elements.deadline.value < domain.localDate()) {
+                form.elements.deadline.setCustomValidity('Hạn ứng tuyển không được ở quá khứ.');
+            }
+        }
+        form.classList.add('was-validated');
+        return form.reportValidity();
+    }
+
+    function setupJobForm() {
+        const form = document.getElementById('job-form');
+        const editor = document.getElementById('job-editor');
+        const preview = document.getElementById('job-preview');
+        let job = selectedId ? jobById(selectedId) : null;
+        const isEditRoute = window.location.pathname.endsWith('/chinh-sua');
+        if ((isEditRoute && !job) || (job && ['blocked', 'closed'].includes(job.activity))) {
+            editor.innerHTML = empty('Tin không tồn tại hoặc không được chỉnh sửa ở trạng thái hiện tại.');
+            return;
+        }
+        if (job) {
+            Object.entries(job.content).forEach(function ([field, value]) {
+                if (form.elements[field]) {
+                    form.elements[field].value = value;
+                }
+            });
+            document.getElementById('job-version-warning').hidden = !job.published;
+        }
+        document.getElementById('preview-job').addEventListener('click', function () {
+            const content = Object.fromEntries(new FormData(form));
+            document.getElementById('job-preview-content').innerHTML = previewMarkup(content);
+            editor.hidden = true;
+            preview.hidden = false;
+            preview.scrollIntoView({ block: 'start' });
+        });
+        document.getElementById('back-to-editor').addEventListener('click', function () {
+            preview.hidden = true;
+            editor.hidden = false;
+            document.getElementById('preview-job').focus();
+        });
+        form.addEventListener('input', function (event) {
+            if (event.target.setCustomValidity) {
+                event.target.setCustomValidity('');
+            }
+        });
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const intent = event.submitter?.value || 'draft';
+            if (!validateForm(form, intent === 'draft')) {
+                return;
+            }
+            const content = Object.fromEntries(new FormData(form));
+            function saveVersion() {
+                if (!job) {
+                    job = { id: crypto.randomUUID(), created: domain.localDate(), activity: 'draft', published: null };
+                    state.jobs.unshift(job);
+                }
+                job.content = content;
+                job.moderation = intent === 'submit' ? 'pending' : 'draft';
+                job.submitted = intent === 'submit' ? timestamp() : null;
+                job.reason = '';
+                if (persist(intent === 'submit' ? 'Đã mô phỏng trạng thái chờ duyệt. Chưa gửi Admin; nội dung chưa được công khai.' : 'Đã lưu bản nháp demo trong tab. Chưa lưu lên máy chủ.')) {
+                    history.replaceState(null, '', url('jobEdit', job.id));
+                    feedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+            if (intent === 'submit') {
+                confirmAction('Tin mới hoặc bản chỉnh sửa cần Admin duyệt trước khi công khai. Thao tác này chỉ mô phỏng trạng thái chờ duyệt, không gửi dữ liệu thật.', saveVersion);
+            } else {
+                saveVersion();
+            }
+        });
+    }
+
+    function updateNotificationIndicator() {
+        document.querySelector('[data-unread-indicator]').hidden = !state.notifications.some(notification => !notification.read);
+    }
+
+    function connectFilters(formId, render) {
+        const form = document.getElementById(formId);
+        form.addEventListener('submit', event => event.preventDefault());
+        form.addEventListener('input', function () {
+            jobPage = 1;
+            render();
+        });
+        form.addEventListener('reset', function () {
+            setTimeout(function () {
+                jobPage = 1;
+                render();
+            }, 0);
+        });
+    }
+
+    document.addEventListener('click', function (event) {
+        const jobButton = event.target.closest('[data-job-action]');
+        if (jobButton) {
+            const job = jobById(jobButton.dataset.jobId);
+            confirmAction('Xác nhận ' + jobButton.textContent.toLowerCase() + '? Đây là thay đổi mô phỏng, chưa cập nhật tin thật.', function () {
+                domain.transitionJob(job, jobButton.dataset.jobAction);
+                persist();
+                if (page === 'jobs') {
+                    renderJobs();
+                } else {
+                    renderJobDetail();
+                }
+            });
+        }
+        const pageButton = event.target.closest('[data-job-page]');
+        if (pageButton) {
+            jobPage = Number(pageButton.dataset.jobPage);
+            renderJobs();
+        }
+        const statusButton = event.target.closest('[data-application-status]');
+        if (statusButton) {
+            confirmAction('Chuyển hồ sơ sang ' + statusButton.textContent + '? Chỉ cập nhật dữ liệu demo, không gửi email.', function () {
+                domain.transitionApplication(applicationById(selectedId), statusButton.dataset.applicationStatus, timestamp());
+                persist();
+                renderApplicationDetail();
+            });
+        }
+        const notificationButton = event.target.closest('[data-read-notification]');
+        if (notificationButton) {
+            const notification = state.notifications.find(item => item.id === notificationButton.dataset.readNotification);
+            notification.read = true;
+            persist();
+            renderNotifications();
+            updateNotificationIndicator();
+        }
+        if (event.target.closest('[data-exit-demo]')) {
+            feedback.textContent = 'Chưa có phiên đăng nhập Recruiter thật để đăng xuất. Bạn có thể dùng trang Tài khoản để đến màn hình đăng nhập hiện có.';
+            feedback.hidden = false;
+            feedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    });
+
+    const { companyMarkup, previewMarkup, renderDashboard, renderCompany, jobActions, renderJobs, renderJobDetail, cvActions, renderApplications, renderApplicationDetail, renderNotifications } = window.createRecruiterViews({
+        domain, routes, selectedId, escapeHtml, empty, badge, url, jobById, logoMarkup, applicationById,
+        get state() {
+            return state;
+        },
+        get jobPage() {
+            return jobPage;
+        },
+        set jobPage(value) {
+            jobPage = value;
+        }
+    });
+
+    fillOptions();
+    updateNotificationIndicator();
+    if (page === 'dashboard') {
+        renderDashboard();
+    } else if (page === 'company') {
+        renderCompany();
+    } else if (page === 'company-form') {
+        setupCompanyForm();
+    } else if (page === 'jobs') {
+        connectFilters('job-filters', renderJobs);
+        renderJobs();
+    } else if (page === 'job-form') {
+        setupJobForm();
+    } else if (page === 'job-detail') {
+        renderJobDetail();
+    } else if (page === 'applications') {
+        const select = document.getElementById('application-job');
+        select.innerHTML = '<option value="">Tất cả tin</option>' + state.jobs.map(job => '<option value="' + escapeHtml(job.id) + '">' + escapeHtml(job.content.title) + '</option>').join('');
+        select.value = parameters.get('jobId') || '';
+        connectFilters('application-filters', renderApplications);
+        renderApplications();
+    } else if (page === 'application-detail') {
+        renderApplicationDetail();
+        document.getElementById('application-note-form').addEventListener('submit', function (event) {
+            event.preventDefault();
+            const input = document.getElementById('application-note');
+            const text = input.value.trim();
+            if (!text) {
+                showError('Vui lòng nhập nội dung ghi chú.');
+                return;
+            }
+            applicationById(selectedId).notes.unshift({ text, date: timestamp(), actor: 'Nhà tuyển dụng demo' });
+            persist();
+            input.value = '';
+            renderApplicationDetail();
+        });
+    } else if (page === 'notifications') {
+        document.getElementById('notification-filter').addEventListener('change', renderNotifications);
+        document.getElementById('read-all-notifications').addEventListener('click', function () {
+            state.notifications.forEach(notification => notification.read = true);
+            persist();
+            renderNotifications();
+            updateNotificationIndicator();
+        });
+        renderNotifications();
+    } else if (page === 'account') {
+        document.getElementById('reset-recruiter-demo').addEventListener('click', function () {
+            confirmAction('Đặt lại toàn bộ dữ liệu Recruiter demo trong tab này? Không tác động dữ liệu ứng viên hoặc database.', function () {
+                state = structuredClone(seed);
+                persist('Đã đặt lại dữ liệu Recruiter demo của tab này.');
+                updateNotificationIndicator();
+            });
+        });
+    }
+});

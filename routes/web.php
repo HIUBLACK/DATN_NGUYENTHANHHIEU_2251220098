@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CandidateDemoController;
 use App\Http\Controllers\CandidatePageController;
+use App\Http\Controllers\RecruiterPageController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CandidatePageController::class, 'home'])->name('home');
@@ -11,7 +12,6 @@ Route::get('/viec-lam/{id}', [CandidatePageController::class, 'job'])->whereNumb
 $publicPages = [
     'cong-ty' => ['companies', 'Công ty'],
     'gioi-thieu' => ['about', 'Giới thiệu'],
-    'nha-tuyen-dung' => ['employer', 'Nhà tuyển dụng'],
     'dang-nhap' => ['login', 'Đăng nhập'],
     'dang-ky' => ['register', 'Đăng ký'],
     'quen-mat-khau' => ['forgot', 'Quên mật khẩu'],
@@ -63,3 +63,11 @@ Route::post('/ung-vien/rut-ho-so/{id}', [CandidateDemoController::class, 'withdr
 Route::post('/ung-vien/thong-bao/{id}', [CandidateDemoController::class, 'readNotification'])->name('candidate.read');
 Route::post('/ung-vien/ho-so', [CandidateDemoController::class, 'profile'])->name('candidate.profile-save');
 Route::get('/ung-vien/anh-dai-dien', [CandidateDemoController::class, 'avatar'])->name('candidate.avatar');
+
+require __DIR__.'/recruiter.php';
+
+Route::get('/nha-tuyen-dung', [RecruiterPageController::class, 'show'])
+    ->defaults('page', 'dashboard')
+    ->defaults('title', 'Tổng quan tuyển dụng')
+    ->defaults('section', 'dashboard')
+    ->name('employer');

@@ -1,0 +1,347 @@
+﻿/* Additional Recruiter UI uses Spark Admin tokens and existing components. */
+[hidden] {
+    display: none !important;
+}
+
+.recruiter-sidebar-button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.recruiter-demo-notice {
+    font-size: 14px;
+}
+
+.recruiter-logo-preview {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+}
+
+.recruiter-company-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: var(--radius-lg);
+    background: var(--brand-forest-dark);
+    color: var(--brand-lime);
+    font-size: 36px;
+}
+
+.recruiter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.table-custom {
+    min-width: 800px;
+}
+
+.table-custom td:nth-child(2) {
+    min-width: 220px;
+    max-width: 350px;
+    white-space: normal;
+}
+
+.recruiter-content-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.recruiter-preview-title {
+    font-size: 26px;
+    font-weight: 700;
+}
+
+.recruiter-salary {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--brand-forest-medium);
+}
+
+.recruiter-section-title {
+    padding-left: 12px;
+    border-left: 4px solid var(--brand-lime);
+    font-size: 19px;
+    font-weight: 700;
+}
+
+.recruiter-timeline {
+    padding-left: 24px;
+    border-left: 2px solid var(--brand-lime);
+    list-style: none;
+}
+
+.recruiter-timeline li {
+    margin-bottom: 20px;
+}
+
+.recruiter-pdf {
+    width: 100%;
+    height: 640px;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+}
+
+.recruiter-filter-select {
+    max-width: 260px;
+}
+
+.recruiter-notification {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.recruiter-notification.is-unread {
+    background: var(--brand-lime-translucent);
+}
+
+.recruiter-empty {
+    padding: 36px 20px;
+    text-align: center;
+    color: var(--text-muted-green);
+}
+
+.recruiter-stat-icon {
+    color: var(--brand-forest-medium);
+    font-size: 25px;
+}
+
+.recruiter-note {
+    padding: 16px 0;
+    border-top: 1px solid var(--border-light);
+}
+
+.recruiter-page-number[aria-current="page"] {
+    color: var(--brand-forest-dark);
+    background: var(--brand-lime);
+}
+
+@media (max-width: 575.98px) {
+    .page-header {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .recruiter-notification {
+        flex-direction: column;
+    }
+
+    .recruiter-pdf {
+        height: 440px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar-wrapper,
+    .main-wrapper,
+    .card {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* Nút thao tác có viền rõ, giữ màu của Spark Admin. */
+.main-wrapper .btn-light,
+.main-wrapper .btn-outline-dark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    border: 1px solid var(--brand-forest-dark);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--brand-forest-dark);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.main-wrapper .btn-dark-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.main-wrapper .btn-light:hover,
+.main-wrapper .btn-outline-dark:hover {
+    background: var(--brand-forest-dark);
+    color: #fff;
+}
+
+.main-wrapper .btn:focus-visible,
+.main-wrapper .btn-dark-custom:focus-visible {
+    outline: 3px solid var(--brand-lime);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 1px var(--brand-forest-dark);
+}
+
+.main-wrapper .btn:disabled {
+    border-color: var(--border-light);
+    background: #f4f6f5;
+    color: var(--text-muted-green);
+    opacity: 0.65;
+}
+
+.table-custom .recruiter-order {
+    width: 64px;
+    min-width: 64px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.table-custom .recruiter-actions {
+    min-width: 190px;
+}
+
+.main-wrapper .recruiter-page-number[aria-current="page"] {
+    background: var(--brand-lime);
+    color: var(--brand-forest-dark);
+}
+
+/* Dashboard charts: values remain readable without relying on color. */
+.recruiter-chart-ring {
+    display: grid;
+    place-items: center;
+    width: 210px;
+    height: 210px;
+    margin: 16px auto 24px;
+    border-radius: 50%;
+}
+
+.recruiter-chart-ring > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    background: #fff;
+}
+
+.recruiter-chart-ring strong {
+    font-size: 36px;
+    line-height: 1.3;
+}
+
+.recruiter-chart-ring span {
+    font-size: 13px;
+    color: var(--text-muted-green);
+}
+
+.recruiter-chart-legend,
+.recruiter-chart-bars {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.recruiter-chart-legend li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 0;
+    font-size: 14px;
+}
+
+.recruiter-chart-legend strong {
+    margin-left: auto;
+}
+
+.recruiter-chart-marker {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.recruiter-chart-bars li {
+    display: grid;
+    grid-template-columns: 120px minmax(0, 1fr) 24px;
+    align-items: center;
+    gap: 12px;
+    margin: 28px 0;
+    font-size: 14px;
+}
+
+.recruiter-chart-track {
+    height: 24px;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #f0f4f1;
+}
+
+.recruiter-chart-bar {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: #072f1f;
+}
+
+.recruiter-chart-bar-reviewing {
+    background: #507c66;
+}
+
+.recruiter-chart-bar-interview {
+    background: #839d46;
+}
+
+.recruiter-chart-bar-hired {
+    background: #b4f105;
+}
+
+.recruiter-chart-bar-rejected {
+    background: #b25949;
+}
+
+.recruiter-chart-bar-withdrawn {
+    background: #94aaa1;
+}
+
+.recruiter-attention-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 100%;
+    padding: 18px;
+    border: 1px solid #b9c9c0;
+    border-radius: 12px;
+    color: var(--brand-forest-dark);
+    text-decoration: none;
+}
+
+.recruiter-attention-link:hover {
+    border-color: var(--brand-forest-dark);
+    background: #f1f7e7;
+}
+
+.recruiter-attention-link:focus-visible {
+    outline: 3px solid var(--brand-forest-dark);
+    outline-offset: 3px;
+}
+
+.recruiter-attention-link strong {
+    margin-left: auto;
+    font-size: 24px;
+}
+
+@media (max-width: 575.98px) {
+    .recruiter-chart-bars li {
+        grid-template-columns: 100px minmax(0, 1fr) 20px;
+        gap: 8px;
+        font-size: 13px;
+    }
+}
