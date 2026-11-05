@@ -71,3 +71,5 @@ Route::get('/nha-tuyen-dung', [RecruiterPageController::class, 'show'])
     ->defaults('title', 'Tổng quan tuyển dụng')
     ->defaults('section', 'dashboard')
     ->name('employer');
+
+require __DIR__.'/admin.php';
