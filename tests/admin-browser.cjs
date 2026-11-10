@@ -16,7 +16,7 @@ const base = 'http://127.0.0.1:8012/admin';
     page.on('request', request => {
         if (request.method() !== 'GET') writes.push(request.method() + ' ' + request.url());
     });
-    const paths = ['', '/nguoi-dung', '/nguoi-dung/chi-tiet?id=3', '/nguoi-dung/lich-su?id=10', '/doanh-nghiep', '/doanh-nghiep/chi-tiet?id=1', '/tin-tuyen-dung', '/kiem-duyet', '/tin-tuyen-dung/chi-tiet?id=1', '/tin-tuyen-dung/lich-su?id=1', '/ung-tuyen', '/ung-tuyen/chi-tiet?id=1', '/ky-nang', '/ky-nang/ten-dong-nghia', '/tai-khoan'];
+    const paths = ['', '/nguoi-dung', '/nguoi-dung/chi-tiet?id=3', '/nguoi-dung/lich-su?id=10', '/doanh-nghiep', '/doanh-nghiep/chi-tiet?id=1', '/tin-tuyen-dung', '/kiem-duyet', '/tin-tuyen-dung/chi-tiet?id=1', '/tin-tuyen-dung/lich-su?id=1', '/ung-tuyen', '/ung-tuyen/chi-tiet?id=1', '/tai-khoan'];
     fs.mkdirSync('storage/app/private/admin-checks', { recursive: true });
     for (const width of [1440, 768, 390]) {
         await page.setViewportSize({ width, height: 1000 });
@@ -96,37 +96,13 @@ const base = 'http://127.0.0.1:8012/admin';
     assert.equal(await page.locator('#admin-table-body tr').count(), 3);
     await page.goto(base + '/ung-tuyen/chi-tiet?id=1');
     assert.equal(await page.locator('[data-action], iframe, a[download]').count(), 0);
-    await page.goto(base + '/ky-nang/ten-dong-nghia');
-    await page.locator('[data-skill-edit=""]').click();
-    await page.locator('#skill-name').fill(' javascript ');
-    await page.locator('#admin-skill-form button[type="submit"]').click();
-    assert(await page.locator('#skill-error').isVisible());
-    await page.locator('#skill-name').fill('ECMAScript demo');
-    await page.locator('#skill-target').selectOption('1');
-    assert((await page.locator('#skill-mapping-preview').innerText()).includes('JavaScript'));
-    await page.locator('#admin-skill-form button[type="submit"]').click();
-    await page.waitForTimeout(350);
-    await page.locator('#admin-search').fill('ECMAScript');
-    assert.equal(await page.locator('#admin-table-body tr').count(), 1);
-    await page.locator('[data-alias-toggle]').click();
-    await page.locator('#admin-confirm-submit').click();
-    await page.waitForTimeout(350);
-    assert((await page.locator('#admin-table-body').innerText()).includes('Vô hiệu hóa'));
-    await page.goto(base + '/ky-nang');
-    await page.locator('[data-skill-edit=""]').click();
-    await page.locator('#skill-name').fill('Kỹ năng thử');
-    await page.locator('#skill-normalized').fill('ky-nang-thu');
-    await page.locator('#admin-skill-form button[type="submit"]').click();
-    await page.waitForTimeout(350);
-    await page.locator('#admin-search').fill('Kỹ năng thử');
-    assert.equal(await page.locator('#admin-table-body tr').count(), 1);
     for (const path of ['/nguoi-dung/chi-tiet?id=missing', '/tin-tuyen-dung/chi-tiet?id=missing', '/ung-tuyen/chi-tiet?id=missing']) {
         await page.goto(base + path);
         assert((await page.locator('#admin-detail').innerText()).includes('Không tìm thấy'));
     }
     assert.deepEqual(errors, []);
     assert.deepEqual(writes, []);
-    console.log('PASS: Admin 15 pages x 3 widths; filters; date chart totals; protected accounts; moderation; version comparison; company lock; unlock closed; read-only applications; skills/aliases validation; no mutation requests.');
+    console.log('PASS: Admin 13 pages x 3 widths; filters; date chart totals; protected accounts; moderation; version comparison; company lock; unlock closed; read-only applications; no mutation requests.');
     await browser.close();
 })().catch(error => {
     console.error(error);

@@ -9,8 +9,6 @@ function seed() {
         users: [{ id: '1', role: 'admin', name: 'Admin', status: 'active', history: [] }, { id: '2', role: 'admin', status: 'active', history: [] }, { id: '3', role: 'candidate', status: 'active', history: [] }],
         companies: [{ id: '1', status: 'active', history: [] }],
         jobs: [{ id: '1', companyId: '1', activity: 'open', moderation: 'pending', version: 2, publishedVersion: 1, content: { title: 'New', deadline: '2099-01-01' }, published: { title: 'Old', deadline: '2099-01-01' }, history: [] }],
-        skills: [{ id: '1', name: 'JavaScript', normalized: 'javascript' }, { id: '2', name: 'Git', normalized: 'git' }],
-        aliases: [{ id: '1', name: 'JS', skillId: '1', status: 'inactive' }]
     };
 }
 
@@ -69,12 +67,3 @@ test('company lock leaves individual job and moderation states intact', function
     assert.deepEqual(state.jobs, original);
 });
 
-test('aliases reject normalized collisions without merging distinct skills', function () {
-    const state = seed();
-    for (const name of [' javascript ', ' js ', 'Git']) {
-        assert.throws(() => domain.validateAlias(state, { name, skillId: '1' }), /trùng/);
-    }
-    assert.doesNotThrow(() => domain.validateSkill(state, { name: 'GitHub', normalized: 'github' }));
-    assert.throws(() => domain.validateSkill(state, { name: 'JavaScript', normalized: 'other' }), /trùng/);
-    assert.doesNotThrow(() => domain.validateAlias(state, { name: 'JS', skillId: '1' }, '1'));
-});

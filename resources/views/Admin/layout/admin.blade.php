@@ -54,8 +54,8 @@
             data-queue="{{ route('admin.jobs.queue') }}"
             data-applications="{{ route('admin.applications.index') }}"
             data-application-detail="{{ route('admin.applications.show') }}"
-            data-skills="{{ route('admin.skills.index') }}"
-            data-aliases="{{ route('admin.skills.aliases') }}">
+            data-occupations="{{ route('admin.occupations.index') }}"
+            data-specialties="{{ route('admin.specialties.index') }}">
         </div>
         <script src="{{ asset('admin-assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ asset('admin-assets/js/dashboard.js') }}"></script>
@@ -67,7 +67,8 @@
         <script src="{{ asset('admin-assets/js/admin-ui.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin-lists.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin-details.js') }}"></script>
-        <script src="{{ asset('admin-assets/js/admin-skills.js') }}"></script>
+        <script src="{{ asset('admin-assets/js/admin-categories-domain.js') }}"></script>
+        <script src="{{ asset('admin-assets/js/admin-categories.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin.js') }}"></script>
     </body>
 </html>

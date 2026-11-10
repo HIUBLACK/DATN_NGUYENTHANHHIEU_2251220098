@@ -89,29 +89,5 @@
         record(state, item, action === 'lock' ? 'Khóa' : 'Mở khóa', reason.trim(), item[field]);
     }
 
-    function validateSkill(state, value, id) {
-        const name = normalize(value.name);
-        const normalized = normalize(value.normalized);
-        if (!name || !normalized) {
-            throw new Error('Vui lòng nhập tên kỹ năng và tên chuẩn hóa.');
-        }
-        const keys = [name, normalized];
-        const duplicate = state.skills.some(skill => skill.id !== id && [normalize(skill.name), normalize(skill.normalized)].some(key => keys.includes(key)));
-        const aliasDuplicate = state.aliases.some(alias => keys.includes(normalize(alias.name)));
-        if (duplicate || aliasDuplicate) {
-            throw new Error('Tên trùng với kỹ năng chuẩn hoặc tên đồng nghĩa đã có.');
-        }
-    }
-
-    function validateAlias(state, value, id) {
-        const name = normalize(value.name);
-        if (!name || !state.skills.some(skill => skill.id === value.skillId)) {
-            throw new Error('Nhập tên đồng nghĩa và chọn kỹ năng chuẩn.');
-        }
-        if (state.skills.some(skill => [normalize(skill.name), normalize(skill.normalized)].includes(name)) || state.aliases.some(alias => alias.id !== id && normalize(alias.name) === name)) {
-            throw new Error('Tên đồng nghĩa trùng tên chuẩn hoặc ánh xạ khác, kể cả ánh xạ đã vô hiệu hóa.');
-        }
-    }
-
-    root.AdminDomain = { labels, normalize, today, applyAction, validateSkill, validateAlias };
+    root.AdminDomain = { labels, normalize, today, applyAction };
 })(typeof window === 'undefined' ? globalThis : window);

@@ -1,8 +1,7 @@
 window.createAdminList = function (context) {
     const { escape, badge, link, lockButton } = AdminUI;
     const { page, routes } = context;
-    const kind = page.split('.')[0];
-    const collection = page === 'skills.aliases' ? 'aliases' : kind;
+    const collection = page.split('.')[0];
     const form = document.getElementById('admin-filters');
     let currentPage = 1;
     const pageSize = 6;
@@ -15,11 +14,16 @@ window.createAdminList = function (context) {
         return link(routes[route] + '?id=' + encodeURIComponent(id), label);
     }
 
-    function skillEdit(item) {
+    function categoryActions(item) {
+        const disabled = item.status === 'inactive';
         return `
-            <button type="button" class="btn btn-outline-dark btn-sm" data-skill-edit="${escape(item.id)}">
+            <button type="button" class="btn btn-outline-dark btn-sm" data-category-edit="${escape(item.id)}">
                 <i class="bi bi-pencil-square" aria-hidden="true"></i>
                 Chỉnh sửa
+            </button>
+            <button type="button" class="btn btn-outline-dark btn-sm" data-category-toggle="${escape(item.id)}">
+                <i class="bi bi-${disabled ? 'toggle-off' : 'toggle-on'}" aria-hidden="true"></i>
+                ${disabled ? 'Hiện' : 'Ẩn'}
             </button>`;
     }
 
@@ -65,27 +69,29 @@ window.createAdminList = function (context) {
                 ['Thao tác', item => detailLink('applicationDetail', item.id, 'Xem lịch sử')]
             ];
         }
-        if (collection === 'aliases') {
+        if (collection === 'occupations') {
             return [
-                ['ID', item => escape(item.id)],
-                ['Tên đồng nghĩa', item => escape(item.name)],
-                ['Kỹ năng chuẩn', item => escape(related('skills', item.skillId)?.name)],
-                ['Trạng thái', item => badge(item.status)],
-                ['Thao tác', item => skillEdit(item) + `
-                    <button type="button" class="btn btn-outline-dark btn-sm" data-alias-toggle="${escape(item.id)}">
-                        <i class="bi bi-toggle-on" aria-hidden="true"></i>
-                        ${item.status === 'active' ? 'Vô hiệu hóa' : 'Kích hoạt'}
-                    </button>`]
+                ['Mã nhóm nghề', item => escape(item.id)],
+                ['Tên nhóm nghề', item => escape(item.name)],
+                ['Mô tả ngắn', item => escape(item.description || '—')],
+                ['Số chuyên môn', item => context.state.specialties.filter(specialty => specialty.occupationId === item.id).length],
+                ['Trạng thái', item => badge(item.status, item.status === 'active' ? 'Đang hiện' : 'Đã ẩn')],
+                ['Ngày tạo', item => escape(item.created)],
+                ['Thao tác', item => categoryActions(item) + link(routes.specialties + '?occupationId=' + encodeURIComponent(item.id), 'Chuyên môn', 'list-ul')]
             ];
         }
-        return [
-            ['ID', item => escape(item.id)],
-            ['Kỹ năng / Tên chuẩn hóa', item => `<strong>${escape(item.name)}</strong><div>${escape(item.normalized)}</div>`],
-            ['Tên đồng nghĩa', item => context.state.aliases.filter(alias => alias.skillId === item.id).length],
-            ['Trạng thái', item => badge(item.status)],
-            ['Ngày tạo', item => escape(item.created)],
-            ['Thao tác', item => skillEdit(item) + link(routes.aliases + '?skillId=' + encodeURIComponent(item.id), 'Ánh xạ', 'diagram-3')]
-        ];
+        if (collection === 'specialties') {
+            return [
+                ['Mã chuyên môn', item => escape(item.id)],
+                ['Tên chuyên môn', item => escape(item.name)],
+                ['Nhóm nghề', item => escape(related('occupations', item.occupationId)?.name)],
+                ['Mô tả', item => escape(item.description || '—')],
+                ['Trạng thái', item => badge(item.status, item.status === 'active' ? 'Đang hiện' : 'Đã ẩn')],
+                ['Ngày tạo', item => escape(item.created)],
+                ['Thao tác', item => categoryActions(item)]
+            ];
+        }
+        return [];
     }
 
     function addFilter(name, label, options) {
@@ -125,19 +131,21 @@ window.createAdminList = function (context) {
             addFilter('jobId', 'Tin tuyển dụng', context.state.jobs.map(job => [job.id, job.content.title]));
             addFilter('status', 'Trạng thái', statusOptions(['applied', 'reviewing', 'interview', 'hired', 'rejected', 'withdrawn']));
         } else {
-            addFilter('status', 'Trạng thái', statusOptions(['users', 'companies'].includes(collection) ? ['active', 'blocked'] : ['active', 'inactive']));
+            const options = ['occupations', 'specialties'].includes(collection)
+                ? [['active', 'Hiện'], ['inactive', 'Ẩn']]
+                : statusOptions(['active', 'blocked']);
+            addFilter('status', 'Trạng thái', options);
         }
-        if (collection === 'aliases') {
-            addFilter('skillId', 'Kỹ năng chuẩn', context.state.skills.map(skill => [skill.id, skill.name]));
-            form.elements.skillId.value = new URLSearchParams(location.search).get('skillId') || '';
+        if (collection === 'specialties') {
+            addFilter('occupationId', 'Nhóm nghề', context.state.occupations.map(group => [group.id, group.name]));
+            form.elements.occupationId.value = new URLSearchParams(location.search).get('occupationId') || '';
         }
-        if (kind === 'skills') {
+        if (['occupations', 'specialties'].includes(collection)) {
             document.getElementById('admin-list-actions').innerHTML = `
-                <button type="button" class="btn-dark-custom" data-skill-edit="">
+                <button type="button" class="btn-dark-custom" data-category-edit="">
                     <i class="bi bi-plus-circle" aria-hidden="true"></i>
-                    ${collection === 'aliases' ? 'Thêm tên đồng nghĩa' : 'Thêm kỹ năng'}
-                </button>
-                ${link(collection === 'aliases' ? routes.skills : routes.aliases, collection === 'aliases' ? 'Danh mục kỹ năng' : 'Tên đồng nghĩa', 'diagram-3')}`;
+                    ${collection === 'occupations' ? 'Thêm nhóm nghề' : 'Thêm chuyên môn'}
+                </button>`;
         }
         form.addEventListener('submit', event => event.preventDefault());
         form.addEventListener('input', function () {

@@ -16,8 +16,8 @@ $adminPages = [
     'tin-tuyen-dung/lich-su' => ['jobs.history', 'Lịch sử kiểm duyệt', 'jobs'],
     'ung-tuyen' => ['applications.index', 'Giám sát ứng tuyển', 'applications'],
     'ung-tuyen/chi-tiet' => ['applications.show', 'Lịch sử xử lý hồ sơ', 'applications'],
-    'ky-nang' => ['skills.index', 'Danh mục kỹ năng CNTT', 'skills'],
-    'ky-nang/ten-dong-nghia' => ['skills.aliases', 'Ánh xạ tên đồng nghĩa', 'skills'],
+    'danh-muc/nhom-nghe' => ['occupations.index', 'Nhóm nghề CNTT', 'occupations'],
+    'danh-muc/chuyen-mon' => ['specialties.index', 'Chuyên môn CNTT', 'specialties'],
     'tai-khoan' => ['account', 'Tài khoản quản trị', 'account'],
 ];
 

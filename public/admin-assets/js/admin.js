@@ -26,10 +26,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const stored = sessionStorage.getItem(storageKey);
         if (stored) {
             const parsed = JSON.parse(stored);
-            if (!['users', 'companies', 'jobs', 'applications', 'skills', 'aliases'].every(key => Array.isArray(parsed[key]))) {
+            if (!['users', 'companies', 'jobs', 'applications'].every(key => Array.isArray(parsed[key]))) {
                 throw new Error('Dữ liệu phiên không hợp lệ.');
             }
             state = parsed;
+            // Bổ sung danh mục cho phiên demo cũ mà không đặt lại các thao tác Admin.
+            if (!Array.isArray(state.occupations) || !Array.isArray(state.specialties)) {
+                state.occupations = structuredClone(seed.occupations);
+                state.specialties = structuredClone(seed.specialties);
+            }
         }
     } catch (failure) {
         showError('Không đọc được phiên demo. Đang dùng dữ liệu mẫu ban đầu.');
@@ -92,7 +97,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (document.getElementById('admin-filters')) {
         list = window.createAdminList(context);
-        window.setupAdminSkills(context, list);
+        window.setupAdminCategories(context, list);
     }
     if (page === 'dashboard') {
         window.setupAdminDashboard(context);

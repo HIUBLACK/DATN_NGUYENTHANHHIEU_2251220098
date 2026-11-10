@@ -3,14 +3,14 @@ window.AdminUI = (function () {
         return String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
     }
 
-    function badge(status) {
+    function badge(status, label = null) {
         let tone = 'pending';
         if (['active', 'open', 'approved', 'hired'].includes(status)) {
             tone = 'success';
         } else if (['blocked', 'closed', 'rejected', 'inactive'].includes(status)) {
             tone = 'failed';
         }
-        return `<span class="badge-table ${tone}">${escape(AdminDomain.labels[status] || status)}</span>`;
+        return `<span class="badge-table ${tone}">${escape(label || AdminDomain.labels[status] || status)}</span>`;
     }
 
     function link(url, label, icon = 'eye') {
