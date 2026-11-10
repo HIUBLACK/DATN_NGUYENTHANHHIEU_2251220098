@@ -52,6 +52,8 @@ window.createRecruiterViews = function (context) {
                     <div class="card p-4 mb-4">${companyMarkup()}</div>
                     <div class="card p-4">
                         <h3 class="h5">Thông tin chung</h3>
+                        <p>Nhóm nghề: ${escapeHtml(context.state.occupations.find(group => group.id === content.occupationId)?.name || content.occupationId || 'Chưa chọn')}</p>
+                        <p>Chuyên môn: ${escapeHtml(context.state.specialties.find(specialty => specialty.id === content.specialtyId)?.name || content.specialtyId || 'Chưa chọn')}</p>
                         <p>Vị trí: ${escapeHtml(content.position)}</p>
                         <p>Kinh nghiệm: ${escapeHtml(content.experience)}</p>
                         <p class="mb-0">Số lượng: ${escapeHtml(content.quantity)}</p>

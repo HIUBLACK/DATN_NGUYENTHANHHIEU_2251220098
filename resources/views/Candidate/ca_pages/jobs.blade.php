@@ -33,6 +33,35 @@
                         Lọc công việc
                     </div>
                     <div class="row">
+                        <div class="col-sm-6 col-lg-3 form-group">
+                            <label for="filter-occupationId">Nhóm nghề CNTT</label>
+                            <select id="filter-occupationId" name="occupationId" class="form-control">
+                                <option value="">Tất cả nhóm nghề</option>
+                                @foreach ($occupationOptions as $group)
+                                    @if ($group['status'] === 'active')
+                                        <option value="{{ $group['id'] }}" @selected(request('occupationId') === $group['id'])>{{ $group['name'] }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-sm-6 col-lg-3 form-group">
+                            <label for="filter-specialtyId">Chuyên môn CNTT</label>
+                            <select id="filter-specialtyId" name="specialtyId" class="form-control">
+                                <option value="">Tất cả chuyên môn</option>
+                                @foreach ($specialtyOptions as $specialty)
+                                    @if ($specialty['status'] === 'active' && $specialty['occupationId'] === request('occupationId'))
+                                        <option value="{{ $specialty['id'] }}" @selected(request('specialtyId') === $specialty['id'])>{{ $specialty['name'] }}</option>
+                                    @endif
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-sm-6 col-lg-3 form-group">
+                            <label for="filter-sort">Sắp xếp</label>
+                            <select id="filter-sort" name="sort" class="form-control">
+                                <option value="newest" @selected(request('sort', 'newest') === 'newest')>Ngày đăng mới nhất</option>
+                                <option value="salary" @selected(request('sort') === 'salary')>Mức lương cao nhất</option>
+                            </select>
+                        </div>
                         @foreach ($filterOptions as $field => [$label, $options])
                             @if ($field !== 'location')
                                 <div class="col-sm-6 col-lg-3 form-group">
@@ -78,6 +107,18 @@
                     Việc làm đã lưu
                 </a>
             </div>
+            <nav class="mb-4" aria-label="Khám phá theo nhóm nghề và chuyên môn">
+                <h3 class="h5">Khám phá theo nhóm nghề</h3>
+                <div id="occupation-navigation" class="d-flex flex-wrap">
+                    @foreach ($occupationOptions as $group)
+                        @if ($group['status'] === 'active')
+                            <a class="btn btn-outline-primary btn-sm mr-2 mb-2" href="{{ route('jobs', array_merge(request()->except('page', 'specialtyId'), ['occupationId' => $group['id']])) }}">{{ $group['name'] }}</a>
+                        @endif
+                    @endforeach
+                </div>
+                <h3 class="h6 mt-2">Chuyên môn trong nhóm đã chọn</h3>
+                <div id="specialty-navigation" class="d-flex flex-wrap"></div>
+            </nav>
             <p class="jobs-demo-note">
                 <span class="icon-info-circle mr-2" aria-hidden="true"></span>
                 Dữ liệu minh họa. Công ty và công việc chưa kết nối dữ liệu tuyển dụng thực tế.
@@ -116,4 +157,6 @@
         </div>
     </section>
     @include('Candidate.jobs-discovery')
+    <script type="application/json" id="candidate-occupation-data">{!! Illuminate\Support\Js::encode(['occupations' => $occupationOptions, 'specialties' => $specialtyOptions]) !!}</script>
+    <script src="{{ asset('jobboard/js/job-category-filters.js') }}" defer></script>
 @endsection

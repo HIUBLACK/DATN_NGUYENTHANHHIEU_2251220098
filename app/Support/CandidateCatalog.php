@@ -19,6 +19,7 @@ class CandidateCatalog
             ['Chuyên viên dữ liệu', 'Python, SQL, Power BI', 'TP. Hồ Chí Minh'],
             ['Kỹ sư AI/ML', 'Python, PyTorch', 'Đà Nẵng'],
             ['Kỹ sư kiểm thử tự động', 'Java, Selenium', 'Hà Nội'],
+            ['Backend Developer tại Đà Nẵng', 'PHP, Laravel, MySQL', 'Đà Nẵng'],
         ];
 
         $companies = ['Nexa Technology', 'GreenByte', 'CloudNine', 'Pixel Studio', 'Viet Software'];
@@ -35,7 +36,17 @@ class CandidateCatalog
                 $status = 'expired';
             }
 
+            $specialtyIds = ['CM-002', 'CM-001', 'CM-010', 'CM-011', 'CM-003', 'CM-004', 'CM-012', 'CM-007', 'CM-008', 'CM-005', 'CM-002'];
+            $specialty = collect(app(OccupationCatalog::class)->specialties())->firstWhere('id', $specialtyIds[$index]);
             $jobs[] = [
+                'occupationId' => $specialty['occupationId'],
+                'specialtyId' => $specialty['id'],
+                'experience' => $index === 5 ? 'Chưa có kinh nghiệm' : ($index % 2 === 0 ? '1–3 năm' : 'Trên 3 năm'),
+                'posted_at' => now('Asia/Ho_Chi_Minh')->subDays($index)->format('Y-m-d'),
+                'moderation' => 'approved',
+                'blocked' => false,
+                'company_status' => 'active',
+                'recruiter_status' => 'active',
                 'id' => $index + 1,
                 'title' => $position[0],
                 'skills' => explode(', ', $position[1]),
@@ -66,13 +77,15 @@ class CandidateCatalog
             'location' => ['Địa điểm', ['Hà Nội', 'TP. Hồ Chí Minh', 'Đà Nẵng']],
             'level' => ['Cấp bậc', ['Thực tập sinh', 'Có kinh nghiệm']],
             'mode' => ['Hình thức làm việc', ['Tại văn phòng', 'Từ xa', 'Kết hợp']],
+            'experience' => ['Kinh nghiệm', ['Chưa có kinh nghiệm', '1–3 năm', 'Trên 3 năm']],
+            'skill' => ['Kỹ năng yêu cầu', $this->jobs()->pluck('skills')->flatten()->unique()->sort()->values()->all()],
             'type' => ['Loại công việc', ['Toàn thời gian', 'Bán thời gian', 'Thực tập']],
         ];
     }
 
     public function search(array $filters): Collection
     {
-        return $this->jobs()->filter(function (array $job) use ($filters) {
+        $results = $this->publicJobs()->filter(function (array $job) use ($filters) {
             $keyword = mb_strtolower(trim($filters['q'] ?? ''));
             $searchText = mb_strtolower($job['title'].' '.$job['company'].' '.implode(' ', $job['skills']));
 
@@ -80,14 +93,37 @@ class CandidateCatalog
                 return false;
             }
 
-            foreach (['location', 'level', 'mode', 'type'] as $field) {
+            foreach (['location', 'level', 'mode', 'type', 'experience', 'occupationId', 'specialtyId'] as $field) {
                 if (! empty($filters[$field]) && $job[$field] !== $filters[$field]) {
                     return false;
                 }
             }
 
+            if (! empty($filters['skill']) && ! in_array($filters['skill'], $job['skills'], true)) {
+                return false;
+            }
+
             return $job['salary_max'] >= (int) ($filters['salary'] ?? 0);
-        })->values();
+        });
+
+        return (($filters['sort'] ?? 'newest') === 'salary'
+            ? $results->sortByDesc('salary_max')
+            : $results->sortByDesc('posted_at'))->values();
+    }
+
+    public function isPublic(array $job): bool
+    {
+        return $job['moderation'] === 'approved'
+            && $job['status'] === 'open'
+            && ! $job['blocked']
+            && $job['deadline']->toDateString() >= now('Asia/Ho_Chi_Minh')->toDateString()
+            && $job['company_status'] === 'active'
+            && $job['recruiter_status'] === 'active';
+    }
+
+    public function publicJobs(): Collection
+    {
+        return $this->jobs()->filter(fn (array $job) => $this->isPublic($job))->values();
     }
 
     public function statuses(): array

@@ -58,6 +58,7 @@
             <script src="{{ asset('recruiter/js/recruiter-charts.js') }}"></script>
         @endif
         <script src="{{ asset('recruiter/js/recruiter-views.js') }}"></script>
+        <script src="{{ asset('recruiter/js/recruiter-categories.js') }}"></script>
         <script src="{{ asset('recruiter/js/recruiter.js') }}"></script>
     </body>
 </html>

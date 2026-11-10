@@ -28,6 +28,29 @@ document.addEventListener('DOMContentLoaded', function () {
         showError('Không đọc được phiên demo. Đang hiển thị dữ liệu mẫu ban đầu.');
     }
 
+    state.occupations = structuredClone(seed.occupations);
+    state.specialties = structuredClone(seed.specialties);
+    try {
+        const adminState = JSON.parse(sessionStorage.getItem('viejob-admin-preview-v1') || 'null');
+        if (Array.isArray(adminState?.occupations) && Array.isArray(adminState?.specialties)) {
+            state.occupations = adminState.occupations;
+            state.specialties = adminState.specialties;
+        }
+    } catch (error) {
+        showError('Không đọc được danh mục Admin demo. Đang dùng danh mục mẫu.');
+    }
+    // Bổ sung phân loại cho tin mẫu ở phiên cũ; không ghi đè lựa chọn đã lưu.
+    state.jobs.forEach(function (job) {
+        const original = seed.jobs.find(item => item.id === job.id);
+        for (const version of ['content', 'published']) {
+            if (job[version] && !('occupationId' in job[version]) && original?.[version]) {
+                job[version].occupationId = original[version].occupationId;
+                job[version].specialtyId = original[version].specialtyId;
+            }
+        }
+    });
+    let categorySelection = null;
+
     function escapeHtml(value) {
         return String(value ?? '').replace(/[&<>"']/g, function (character) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character];
@@ -176,6 +199,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 input.setCustomValidity('Vui lòng điền trường bắt buộc.');
             }
         });
+        if (form.id === 'job-form' && categorySelection && !categorySelection.validate(draftOnly)) {
+            return false;
+        }
         if (draftOnly) {
             const title = form.elements.title;
             title.setCustomValidity(title.value.trim() ? '' : 'Vui lòng nhập tiêu đề bản nháp.');
@@ -211,6 +237,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             document.getElementById('job-version-warning').hidden = !job.published;
         }
+        categorySelection = window.setupRecruiterCategories(form, state, job?.content || {});
         document.getElementById('preview-job').addEventListener('click', function () {
             const content = Object.fromEntries(new FormData(form));
             document.getElementById('job-preview-content').innerHTML = previewMarkup(content);

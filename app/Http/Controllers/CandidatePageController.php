@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Services\CandidateDemo;
 use App\Support\CandidateCatalog;
+use App\Support\OccupationCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
@@ -29,6 +30,11 @@ class CandidatePageController extends Controller
             'mode' => ['nullable', 'string', 'max:100'],
             'type' => ['nullable', 'string', 'max:100'],
             'salary' => ['nullable', 'integer', 'min:0'],
+            'occupationId' => ['nullable', 'string', 'max:30'],
+            'specialtyId' => ['nullable', 'string', 'max:30'],
+            'experience' => ['nullable', 'string', 'max:100'],
+            'skill' => ['nullable', 'string', 'max:100'],
+            'sort' => ['nullable', 'in:newest,salary'],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
         $jobs = $this->catalog->search($filters);
@@ -46,7 +52,7 @@ class CandidatePageController extends Controller
             'page' => 'jobs',
             'jobs' => $paginator,
             'suggestedJobs' => array_slice($this->catalog->recommendations($this->demo->mainResume(), []), 0, 3),
-            'featuredCompanies' => $this->catalog->jobs()->groupBy('company')->map(function ($companyJobs) {
+            'featuredCompanies' => $this->catalog->publicJobs()->groupBy('company')->map(function ($companyJobs) {
                 $company = $companyJobs->first();
 
                 return [
@@ -119,7 +125,9 @@ class CandidatePageController extends Controller
     private function sharedData(): array
     {
         return [
-            'catalogJobs' => $this->catalog->jobs(),
+            'catalogJobs' => $this->catalog->publicJobs(),
+            'occupationOptions' => app(OccupationCatalog::class)->occupations(),
+            'specialtyOptions' => app(OccupationCatalog::class)->specialties(),
             'filterOptions' => $this->catalog->filters(),
             'statusLabels' => $this->catalog->statuses(),
             'demo' => $this->demo->state(),

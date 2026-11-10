@@ -7,6 +7,15 @@
             <p class="small text-muted-green">Các trường có * là bắt buộc khi gửi duyệt. Bản nháp chỉ yêu cầu tiêu đề.</p>
             <div class="row g-3">
                 <div class="col-12 col-lg-6 form-group-custom">
+                    <label for="occupationId" class="form-label-custom">Nhóm nghề CNTT *</label>
+                    <select id="occupationId" name="occupationId" class="form-select-custom" required></select>
+                </div>
+                <div class="col-12 col-lg-6 form-group-custom">
+                    <label for="specialtyId" class="form-label-custom">Chuyên môn CNTT *</label>
+                    <select id="specialtyId" name="specialtyId" class="form-select-custom" required></select>
+                    <p class="small text-muted-green mt-2">Chọn nhóm nghề trước. Giá trị đã lưu bị ẩn vẫn được giữ cho tin cũ.</p>
+                </div>
+                <div class="col-12 col-lg-6 form-group-custom">
                     <label for="title" class="form-label-custom">Tiêu đề tuyển dụng *</label>
                     <input id="title" name="title" type="text" class="form-control-custom" required maxlength="150">
                 </div>

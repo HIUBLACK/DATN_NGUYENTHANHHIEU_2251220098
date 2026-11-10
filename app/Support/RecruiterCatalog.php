@@ -28,7 +28,11 @@ class RecruiterCatalog
         ];
 
         foreach ($states as $index => [$title, $activity, $moderation]) {
+            $specialtyIds = ['CM-002', 'CM-001', 'CM-010', 'CM-012', 'CM-004', 'CM-007', 'CM-008', 'CM-002'];
+            $specialty = collect(app(OccupationCatalog::class)->specialties())->firstWhere('id', $specialtyIds[$index]);
             $content = [
+                'occupationId' => $specialty['occupationId'],
+                'specialtyId' => $specialty['id'],
                 'title' => $title,
                 'position' => 'Kỹ sư phần mềm',
                 'description' => "Phát triển sản phẩm công nghệ.\nPhối hợp kiểm thử và cải tiến chất lượng phần mềm.",
@@ -78,6 +82,8 @@ class RecruiterCatalog
         }
 
         return [
+            'occupations' => app(OccupationCatalog::class)->occupations(),
+            'specialties' => app(OccupationCatalog::class)->specialties(),
             'company' => $company,
             'jobs' => $jobs,
             'applications' => $applications,
