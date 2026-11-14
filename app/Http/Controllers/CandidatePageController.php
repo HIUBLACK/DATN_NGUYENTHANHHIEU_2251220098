@@ -6,6 +6,7 @@ use App\Services\CandidateDemo;
 use App\Services\CompanyProfiles;
 use App\Support\CandidateCatalog;
 use App\Support\CompanyDemoCatalog;
+use App\Support\JobCategoryCatalog;
 use App\Support\OccupationCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -26,6 +27,9 @@ class CandidatePageController extends Controller
     public function jobs(Request $request): View
     {
         $filters = $request->validate([
+            'browse' => ['nullable', 'in:industry,skill,specialtyId,level,company,location'],
+            'industry' => ['nullable', 'string', 'max:120'],
+            'company' => ['nullable', 'string', 'max:120'],
             'q' => ['nullable', 'string', 'max:100'],
             'location' => ['nullable', 'string', 'max:100'],
             'level' => ['nullable', 'string', 'max:100'],
@@ -162,6 +166,8 @@ class CandidatePageController extends Controller
     private function sharedData(): array
     {
         return [
+            'jobCategories' => app(JobCategoryCatalog::class)->data(),
+            'jobMenuGroups' => ['industry' => 'lĩnh vực', 'skill' => 'kỹ năng', 'specialtyId' => 'chuyên môn', 'level' => 'cấp bậc', 'company' => 'công ty', 'location' => 'thành phố'],
             'catalogJobs' => $this->catalog->publicJobs(),
             'occupationOptions' => app(OccupationCatalog::class)->occupations(),
             'specialtyOptions' => app(OccupationCatalog::class)->specialties(),

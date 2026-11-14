@@ -21,9 +21,7 @@
                     <li>
                         <a href="{{ route('home') }}">Trang chủ</a>
                     </li>
-                    <li>
-                        <a href="{{ route('jobs') }}">Việc làm</a>
-                    </li>
+                    @include('Candidate.job-menu')
                     <li>
                         <a href="{{ route('companies') }}">Công ty</a>
                     </li>

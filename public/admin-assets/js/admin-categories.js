@@ -12,6 +12,10 @@ window.setupAdminCategories = function (context, list) {
 
     function updateWarning() {
         warning.hidden = form.elements.status.value !== 'inactive';
+        if (!['occupations', 'specialties'].includes(list.collection)) {
+            warning.textContent = 'Danh mục ẩn không hiển thị trong menu khám phá việc làm. Dữ liệu cũ vẫn giữ nguyên.';
+            return;
+        }
         warning.textContent = isSpecialty
             ? 'Chuyên môn ẩn không được dùng cho dữ liệu mới. Dữ liệu cũ và danh mục vẫn được giữ lại.'
             : 'Chỉ có thể ẩn nhóm khi không còn chuyên môn đang hiện. Nhóm sẽ không được chọn cho chuyên môn mới.';
@@ -22,7 +26,7 @@ window.setupAdminCategories = function (context, list) {
         const item = context.state[list.collection].find(entry => entry.id === selectedId);
         form.reset();
         error.hidden = true;
-        const label = isSpecialty ? 'chuyên môn' : 'nhóm nghề';
+        const label = { occupations: 'nhóm nghề', specialties: 'chuyên môn', industries: 'lĩnh vực', skills: 'kỹ năng', levels: 'cấp bậc' }[list.collection];
         document.getElementById('category-modal-title').textContent = (item ? 'Chỉnh sửa ' : 'Thêm ') + label;
         document.getElementById('category-name-label').textContent = 'Tên ' + label + ' *';
         document.getElementById('category-parent-group').hidden = !isSpecialty;
@@ -111,6 +115,9 @@ window.setupAdminCategories = function (context, list) {
             message += isSpecialty
                 ? 'Chuyên môn ẩn không được dùng cho dữ liệu mới. Chỉ hiện khi nhóm nghề đang hiện.'
                 : 'Không thể ẩn nhóm còn chuyên môn đang hiện. Nhóm ẩn không được chọn cho dữ liệu mới.';
+            if (!['occupations', 'specialties'].includes(list.collection)) {
+                message = (item.status === 'active' ? 'Ẩn' : 'Hiện') + ' “' + item.name + '”? Danh mục ẩn không xuất hiện trong menu khám phá việc làm.';
+            }
             context.confirm(message, false, function () {
                 context.commit(next => AdminCategories.toggle(next, list.collection, item.id));
                 list.render();

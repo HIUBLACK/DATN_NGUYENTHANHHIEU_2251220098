@@ -45,6 +45,16 @@ document.addEventListener('DOMContentLoaded', function () {
         showError('Không đọc được phiên demo. Đang dùng dữ liệu mẫu ban đầu.');
     }
 
+    ['industries', 'skills', 'levels'].forEach(function (key) {
+        if (!Array.isArray(state[key])) {
+            state[key] = structuredClone(seed[key]);
+        }
+        state[key] = state[key].map(function (item) {
+            const original = seed[key].find(entry => entry.id === item.id);
+            return { ...original, ...item };
+        });
+    });
+
     function commit(change) {
         const next = structuredClone(state);
         change(next);

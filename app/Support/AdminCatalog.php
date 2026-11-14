@@ -70,7 +70,7 @@ class AdminCatalog
         $occupations = app(OccupationCatalog::class)->occupations();
         $specialties = app(OccupationCatalog::class)->specialties();
 
-        return compact('users', 'companies', 'jobs', 'applications', 'occupations', 'specialties') + ['currentAdminId' => '1', 'today' => $this->date(0)];
+        return app(JobCategoryCatalog::class)->data() + compact('users', 'companies', 'jobs', 'applications', 'occupations', 'specialties') + ['currentAdminId' => '1', 'today' => $this->date(0)];
     }
 
     private function jobs(): array

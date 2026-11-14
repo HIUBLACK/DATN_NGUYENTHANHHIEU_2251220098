@@ -4,7 +4,7 @@
     }
 
     function validate(state, collection, value, id = null) {
-        if (!['occupations', 'specialties'].includes(collection)) {
+        if (!['occupations', 'specialties', 'industries', 'skills', 'levels'].includes(collection)) {
             throw new Error('Danh mục không hợp lệ.');
         }
         const name = normalize(value.name);
@@ -19,9 +19,12 @@
             throw new Error('Danh mục không còn tồn tại.');
         }
         const duplicate = state[collection].some(entry => entry.id !== id && normalize(entry.name) === name
-            && (collection === 'occupations' || entry.occupationId === value.occupationId));
+            && (collection !== 'specialties' || entry.occupationId === value.occupationId));
         if (duplicate) {
-            throw new Error(collection === 'occupations' ? 'Tên nhóm nghề đã tồn tại, kể cả nhóm ẩn.' : 'Tên chuyên môn đã tồn tại trong nhóm nghề này, kể cả chuyên môn ẩn.');
+            throw new Error(collection !== 'specialties' ? 'Tên danh mục đã tồn tại, kể cả mục ẩn.' : 'Tên chuyên môn đã tồn tại trong nhóm nghề này, kể cả chuyên môn ẩn.');
+        }
+        if (collection !== 'specialties' && collection !== 'occupations') {
+            return;
         }
         if (collection === 'occupations') {
             if (value.status === 'inactive' && state.specialties.some(specialty => specialty.occupationId === id && specialty.status === 'active')) {
@@ -50,7 +53,10 @@
             Object.assign(item, fields);
             return;
         }
-        const prefix = collection === 'occupations' ? 'NN-' : 'CM-';
+        if (['industries', 'skills', 'levels'].includes(collection)) {
+            fields.filterValue = fields.name;
+        }
+        const prefix = { occupations: 'NN-', specialties: 'CM-', industries: 'LV-', skills: 'KN-', levels: 'CB-' }[collection];
         const number = Math.max(0, ...state[collection].map(entry => Number(entry.id.slice(3)) || 0)) + 1;
         state[collection].unshift({ id: prefix + String(number).padStart(3, '0'), created, ...fields });
     }

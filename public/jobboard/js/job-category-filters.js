@@ -46,10 +46,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateSpecialties(selected = '') {
         const items = categories.specialties.filter(specialty => specialty.status === 'active'
-            && specialty.occupationId === groupSelect.value
+            && (!groupSelect.value || specialty.occupationId === groupSelect.value)
             && activeGroups.some(group => group.id === specialty.occupationId));
-        specialtySelect.replaceChildren(new Option(groupSelect.value ? 'Tất cả chuyên môn' : 'Chọn nhóm nghề trước', ''));
-        specialtySelect.disabled = !groupSelect.value;
+        specialtySelect.replaceChildren(new Option('Tất cả chuyên môn', ''));
+        specialtySelect.disabled = false;
         items.forEach(specialty => specialtySelect.add(new Option(specialty.name, specialty.id)));
         specialtySelect.value = selected;
         const navigation = document.getElementById('specialty-navigation');
@@ -59,6 +59,13 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
     updateSpecialties(requestedSpecialty);
+    specialtySelect.addEventListener('change', function () {
+        const specialty = categories.specialties.find(item => item.id === specialtySelect.value);
+        if (specialty) {
+            groupSelect.value = specialty.occupationId;
+            updateSpecialties(specialty.id);
+        }
+    });
     groupSelect.addEventListener('change', function () {
         updateSpecialties();
     });

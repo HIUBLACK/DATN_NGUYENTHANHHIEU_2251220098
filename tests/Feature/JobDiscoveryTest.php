@@ -28,6 +28,25 @@ class JobDiscoveryTest extends TestCase
         $this->get(route('jobs', $filters))->assertOk()->assertSee('Backend Developer tại Đà Nẵng');
     }
 
+    public function test_menu_filters_use_exact_company_and_industry(): void
+    {
+        $catalog = app(CandidateCatalog::class);
+        $filters = [
+            'industry' => 'Phát triển phần mềm',
+            'company' => 'Nexa Technology',
+            'skill' => 'PHP',
+            'level' => 'Có kinh nghiệm',
+            'location' => 'Đà Nẵng',
+        ];
+        $this->assertSame([11], $catalog->search($filters)->pluck('id')->all());
+        $this->assertCount(0, $catalog->search(array_replace($filters, ['company' => 'Nexa'])));
+        $this->assertCount(0, $catalog->search(array_replace($filters, ['industry' => 'Dữ liệu và AI'])));
+        $this->get(route('jobs', $filters))->assertOk()->assertSee('Backend Developer tại Đà Nẵng');
+        foreach (['linh-vuc', 'ky-nang', 'cap-bac'] as $path) {
+            $this->get('/admin/danh-muc/'.$path)->assertOk()->assertSee('admin-category-form');
+        }
+    }
+
     public function test_every_publication_condition_is_required(): void
     {
         $catalog = app(CandidateCatalog::class);

@@ -46,12 +46,12 @@
                 <li class="sidebar-menu-item">
                     <button type="button" class="sidebar-menu-link admin-sidebar-button" data-bs-toggle="collapse"
                         data-bs-target="#admin-category-menu" aria-controls="admin-category-menu"
-                        aria-expanded="{{ in_array($section, ['occupations', 'specialties']) ? 'true' : 'false' }}">
+                        aria-expanded="{{ in_array($section, ['occupations', 'specialties', 'industries', 'skills', 'levels']) ? 'true' : 'false' }}">
                         <i class="bi bi-diagram-3" aria-hidden="true"></i>
                         <span>Quản lý danh mục</span>
                         <i class="bi bi-chevron-down ms-auto" aria-hidden="true"></i>
                     </button>
-                    <ul id="admin-category-menu" @class(['sidebar-menu-list', 'collapse', 'ms-3', 'show' => in_array($section, ['occupations', 'specialties'])])>
+                    <ul id="admin-category-menu" @class(['sidebar-menu-list', 'collapse', 'ms-3', 'show' => in_array($section, ['occupations', 'specialties', 'industries', 'skills', 'levels'])])>
                         <li class="sidebar-menu-item">
                             <a href="{{ route('admin.occupations.index') }}" @class(['sidebar-menu-link', 'active' => $section === 'occupations'])>
                                 <i class="bi bi-collection" aria-hidden="true"></i>
@@ -62,6 +62,24 @@
                             <a href="{{ route('admin.specialties.index') }}" @class(['sidebar-menu-link', 'active' => $section === 'specialties'])>
                                 <i class="bi bi-person-workspace" aria-hidden="true"></i>
                                 <span>Chuyên môn CNTT</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{{ route('admin.industries.index') }}" @class(['sidebar-menu-link', 'active' => $section === 'industries'])>
+                                <i class="bi bi-buildings" aria-hidden="true"></i>
+                                <span>Lĩnh vực</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{{ route('admin.skills.index') }}" @class(['sidebar-menu-link', 'active' => $section === 'skills'])>
+                                <i class="bi bi-code-slash" aria-hidden="true"></i>
+                                <span>Kỹ năng</span>
+                            </a>
+                        </li>
+                        <li class="sidebar-menu-item">
+                            <a href="{{ route('admin.levels.index') }}" @class(['sidebar-menu-link', 'active' => $section === 'levels'])>
+                                <i class="bi bi-bar-chart-steps" aria-hidden="true"></i>
+                                <span>Cấp bậc</span>
                             </a>
                         </li>
                     </ul>

@@ -18,6 +18,9 @@ $adminPages = [
     'ung-tuyen/chi-tiet' => ['applications.show', 'Lịch sử xử lý hồ sơ', 'applications'],
     'danh-muc/nhom-nghe' => ['occupations.index', 'Nhóm nghề CNTT', 'occupations'],
     'danh-muc/chuyen-mon' => ['specialties.index', 'Chuyên môn CNTT', 'specialties'],
+    'danh-muc/linh-vuc' => ['industries.index', 'Lĩnh vực', 'industries'],
+    'danh-muc/ky-nang' => ['skills.index', 'Kỹ năng', 'skills'],
+    'danh-muc/cap-bac' => ['levels.index', 'Cấp bậc', 'levels'],
     'tai-khoan' => ['account', 'Tài khoản quản trị', 'account'],
 ];
 

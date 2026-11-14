@@ -39,6 +39,7 @@ class CandidateCatalog
             $specialtyIds = ['CM-002', 'CM-001', 'CM-010', 'CM-011', 'CM-003', 'CM-004', 'CM-012', 'CM-007', 'CM-008', 'CM-005', 'CM-002'];
             $specialty = collect(app(OccupationCatalog::class)->specialties())->firstWhere('id', $specialtyIds[$index]);
             $jobs[] = [
+                'industry' => ['Phát triển phần mềm', 'Phát triển phần mềm', 'Hạ tầng và điện toán đám mây', 'Thiết kế sản phẩm số', 'Phát triển phần mềm', 'Phát triển phần mềm', 'Phát triển phần mềm', 'Dữ liệu và AI', 'Dữ liệu và AI', 'Phát triển phần mềm', 'Phát triển phần mềm'][$index],
                 'occupationId' => $specialty['occupationId'],
                 'specialtyId' => $specialty['id'],
                 'experience' => $index === 5 ? 'Chưa có kinh nghiệm' : ($index % 2 === 0 ? '1–3 năm' : 'Trên 3 năm'),
@@ -75,11 +76,13 @@ class CandidateCatalog
     public function filters(): array
     {
         return [
+            'industry' => ['Lĩnh vực', array_column(app(JobCategoryCatalog::class)->data()['industries'], 'name')],
+            'company' => ['Công ty', $this->publicJobs()->pluck('company')->unique()->values()->all()],
             'location' => ['Địa điểm', ['Hà Nội', 'TP. Hồ Chí Minh', 'Đà Nẵng']],
-            'level' => ['Cấp bậc', ['Thực tập sinh', 'Có kinh nghiệm']],
+            'level' => ['Cấp bậc', array_column(app(JobCategoryCatalog::class)->data()['levels'], 'name')],
             'mode' => ['Hình thức làm việc', ['Tại văn phòng', 'Từ xa', 'Kết hợp']],
             'experience' => ['Kinh nghiệm', ['Chưa có kinh nghiệm', '1–3 năm', 'Trên 3 năm']],
-            'skill' => ['Kỹ năng yêu cầu', $this->jobs()->pluck('skills')->flatten()->unique()->sort()->values()->all()],
+            'skill' => ['Kỹ năng yêu cầu', array_column(app(JobCategoryCatalog::class)->data()['skills'], 'name')],
             'type' => ['Loại công việc', ['Toàn thời gian', 'Bán thời gian', 'Thực tập']],
         ];
     }
@@ -94,7 +97,7 @@ class CandidateCatalog
                 return false;
             }
 
-            foreach (['location', 'level', 'mode', 'type', 'experience', 'occupationId', 'specialtyId'] as $field) {
+            foreach (['industry', 'company', 'location', 'level', 'mode', 'type', 'experience', 'occupationId', 'specialtyId'] as $field) {
                 if (! empty($filters[$field]) && $job[$field] !== $filters[$field]) {
                     return false;
                 }

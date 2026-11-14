@@ -18,6 +18,7 @@
             <link rel="stylesheet" href="{{ asset('jobboard/css/jobs.css') }}">
         @endif
         <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
+        <link rel="stylesheet" href="{{ asset('jobboard/css/job-menu.css') }}">
     </head>
     <body id="top" class="{{ ($page ?? '') === 'job' ? 'job-detail-layout' : (($page ?? '') === 'jobs' ? 'jobs-list-layout' : '') }}">
         <a class="sr-only sr-only-focusable" href="#main-content">Chuyển đến nội dung</a>
@@ -82,5 +83,7 @@
         <script src="{{ asset('jobboard/js/navigation-bridge.js') }}"></script>
         <script src="{{ asset('jobboard/js/custom.js') }}"></script>
         <script src="{{ asset('jobboard/js/candidate.js') }}"></script>
+        <script type="application/json" id="job-menu-data">{!! Illuminate\Support\Js::encode(['categories' => $jobCategories, 'occupations' => $occupationOptions, 'specialties' => $specialtyOptions, 'filters' => $filterOptions, 'url' => route('jobs')]) !!}</script>
+        <script src="{{ asset('jobboard/js/job-menu.js') }}"></script>
     </body>
 </html>

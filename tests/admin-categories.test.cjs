@@ -56,3 +56,21 @@ test('existing inactive specialty can be edited but cannot be moved to another i
     assert.equal(state.specialties[0].description, 'Updated');
     assert.throws(() => categories.save(state, 'specialties', { ...value, occupationId: 'NN-002' }, 'CM-001'), /ẩn/);
 });
+
+
+test('new catalog types validate unique names and keep hidden records editable', function () {
+    const state = { industries: [], skills: [], levels: [] };
+    for (const collection of Object.keys(state)) {
+        const value = { name: 'Mục mẫu', description: 'Mô tả', status: 'active' };
+        categories.save(state, collection, value, null, '2026-11-14');
+        const id = state[collection][0].id;
+        categories.toggle(state, collection, id);
+        assert.equal(state[collection][0].status, 'inactive');
+        assert.throws(() => categories.save(state, collection, { ...value, name: ' MỤC   MẪU ' }, null, '2026-11-14'), /đã tồn tại/);
+        categories.save(state, collection, { ...value, name: 'Mục đã sửa', status: 'inactive' }, id, '2026-11-14');
+        categories.toggle(state, collection, id);
+        assert.equal(state[collection].length, 1);
+        assert.equal(state[collection][0].status, 'active');
+        assert.equal(state[collection][0].name, 'Mục đã sửa');
+    }
+});

@@ -91,6 +91,16 @@ window.createAdminList = function (context) {
                 ['Thao tác', item => categoryActions(item)]
             ];
         }
+        if (['industries', 'skills', 'levels'].includes(collection)) {
+            return [
+                ['Mã danh mục', item => escape(item.id)],
+                ['Tên danh mục', item => escape(item.name)],
+                ['Mô tả', item => escape(item.description || '—')],
+                ['Trạng thái', item => badge(item.status, item.status === 'active' ? 'Đang hiện' : 'Đã ẩn')],
+                ['Ngày tạo', item => escape(item.created)],
+                ['Thao tác', item => categoryActions(item)]
+            ];
+        }
         return [];
     }
 
@@ -131,7 +141,7 @@ window.createAdminList = function (context) {
             addFilter('jobId', 'Tin tuyển dụng', context.state.jobs.map(job => [job.id, job.content.title]));
             addFilter('status', 'Trạng thái', statusOptions(['applied', 'reviewing', 'interview', 'hired', 'rejected', 'withdrawn']));
         } else {
-            const options = ['occupations', 'specialties'].includes(collection)
+            const options = ['occupations', 'specialties', 'industries', 'skills', 'levels'].includes(collection)
                 ? [['active', 'Hiện'], ['inactive', 'Ẩn']]
                 : statusOptions(['active', 'blocked']);
             addFilter('status', 'Trạng thái', options);
@@ -140,11 +150,11 @@ window.createAdminList = function (context) {
             addFilter('occupationId', 'Nhóm nghề', context.state.occupations.map(group => [group.id, group.name]));
             form.elements.occupationId.value = new URLSearchParams(location.search).get('occupationId') || '';
         }
-        if (['occupations', 'specialties'].includes(collection)) {
+        if (['occupations', 'specialties', 'industries', 'skills', 'levels'].includes(collection)) {
             document.getElementById('admin-list-actions').innerHTML = `
                 <button type="button" class="btn-dark-custom" data-category-edit="">
                     <i class="bi bi-plus-circle" aria-hidden="true"></i>
-                    ${collection === 'occupations' ? 'Thêm nhóm nghề' : 'Thêm chuyên môn'}
+                    Thêm ${ { occupations: 'nhóm nghề', specialties: 'chuyên môn', industries: 'lĩnh vực', skills: 'kỹ năng', levels: 'cấp bậc' }[collection] }
                 </button>`;
         }
         form.addEventListener('submit', event => event.preventDefault());
