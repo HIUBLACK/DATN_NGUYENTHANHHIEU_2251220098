@@ -14,9 +14,10 @@
         <link rel="stylesheet" href="{{ asset('jobboard/css/style.css') }}">
         <link rel="stylesheet" href="{{ asset('jobboard/css/candidate.css') }}">
         <link rel="stylesheet" href="{{ asset('jobboard/css/theme.css') }}">
-        @if (($page ?? '') === 'jobs')
+        @if (in_array($page ?? '', ['jobs', 'company']))
             <link rel="stylesheet" href="{{ asset('jobboard/css/jobs.css') }}">
         @endif
+        <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
     </head>
     <body id="top" class="{{ ($page ?? '') === 'job' ? 'job-detail-layout' : (($page ?? '') === 'jobs' ? 'jobs-list-layout' : '') }}">
         <a class="sr-only sr-only-focusable" href="#main-content">Chuyển đến nội dung</a>

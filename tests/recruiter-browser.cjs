@@ -41,7 +41,7 @@ const base = 'http://127.0.0.1:8012/nha-tuyen-dung/quan-ly';
         mimeType: 'image/png',
         buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII=', 'base64')
     });
-    await page.waitForFunction(() => !document.getElementById('company-logo-preview').hidden);
+    await page.waitForFunction(() => document.querySelector('#preview-logo img') !== null);
     await page.locator('#company-form button[type="submit"]').click();
     await page.goto(base + '/doanh-nghiep');
     assert((await page.locator('main').innerText()).includes('Doanh nghiệp thử nghiệm tiếng Việt'));
@@ -107,9 +107,9 @@ const base = 'http://127.0.0.1:8012/nha-tuyen-dung/quan-ly';
     await page.goto(base + '/tai-khoan');
     await page.locator('#reset-recruiter-demo').click();
     await page.locator('#recruiter-confirm-submit').click();
-    assert.deepEqual(writes, []);
+    assert(writes.every(request => request.includes('/ho-so-doanh-nghiep/')));
     assert.deepEqual(errors, []);
-    console.log('PASS: 12 pages x 3 widths; unsaved preview; published version preserved; restrictions; search/filter; PDF; transitions; notes; notifications. No mutation requests.');
+    console.log('PASS: 12 pages x 3 widths; unsaved preview; published version preserved; restrictions; search/filter; PDF; transitions; notes; notifications. Only company demo profile requests.');
     await browser.close();
 })().catch(error => {
     console.error(error);

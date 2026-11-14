@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Services\CandidateDemo;
+use App\Services\CompanyProfiles;
 use App\Support\CandidateCatalog;
+use App\Support\CompanyDemoCatalog;
 use App\Support\OccupationCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -78,11 +80,46 @@ class CandidatePageController extends Controller
         ]);
     }
 
+    public function demoCompany(int $id, CompanyDemoCatalog $companies): View
+    {
+        $profile = $companies->find($id);
+        abort_unless($profile && $profile['status'] === 'active', 404);
+
+        return view('Candidate.ca_pages.company', $this->sharedData() + [
+            'page' => 'company',
+            'title' => $profile['name'],
+            'companyProfile' => $profile,
+            'companyJobs' => $this->catalog->publicJobs()->where('company', $profile['name']),
+        ]);
+    }
+
+    public function company(string $company, CompanyProfiles $profiles): View
+    {
+        $record = $profiles->find($company);
+        abort_unless($record && $record['status'] === 'active', 404);
+        $profile = $profiles->publicData($record);
+
+        return view('Candidate.ca_pages.company', $this->sharedData() + [
+            'page' => 'company',
+            'title' => $profile['name'],
+            'companyProfile' => $profile,
+            'companyJobs' => collect(),
+        ]);
+    }
+
     public function page(Request $request): View
     {
         $page = $request->route()->defaults['page'];
         $title = $request->route()->defaults['title'];
         $data = $this->sharedData() + ['title' => $title, 'page' => $page];
+
+        if ($page === 'companies') {
+            $data['companyProfiles'] = app(CompanyDemoCatalog::class)->profiles();
+            $preview = session('company_profile_preview');
+            $data['ownCompanyPreview'] = is_array($preview) && $preview['status'] === 'active'
+                ? app(CompanyProfiles::class)->publicData($preview) + ['id' => $preview['id']]
+                : null;
+        }
 
         if ($page === 'skills') {
             $data['resume'] = $this->demo->resume((string) $request->query('cv', ''));

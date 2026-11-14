@@ -8,7 +8,7 @@
         <div class="d-flex flex-wrap gap-2">
             <a href="{{ route('login') }}" class="btn-dark-custom">Đến trang đăng nhập hiện có</a>
             <button type="button" class="btn btn-light" data-exit-demo>Đăng xuất — xem thông tin</button>
-            <button type="button" id="reset-recruiter-demo" class="btn btn-outline-danger">Đặt lại dữ liệu demo của tab</button>
+            <button type="button" id="reset-recruiter-demo" class="btn btn-outline-danger">Đặt lại tin và hồ sơ ứng tuyển demo</button>
         </div>
     </div>
 @endsection

@@ -127,7 +127,9 @@
                     <section class="job-detail-card">
                         <div class="job-detail-company">
                             <img src="{{ asset('jobboard/images/'.$job['logo']) }}" alt="Logo minh họa {{ $job['company'] }}">
-                            <h2>{{ $job['company'] }}</h2>
+                            <h2>
+                                <a href="{{ route('companies.demo', $job['company_demo_id']) }}">{{ $job['company'] }}</a>
+                            </h2>
                         </div>
                         <dl class="job-detail-info mb-0">
                             <dt>

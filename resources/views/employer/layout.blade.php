@@ -9,6 +9,7 @@
         <link rel="stylesheet" href="{{ asset('recruiter/libs/bootstrap-icons/bootstrap-icons.css') }}">
         <link rel="stylesheet" href="{{ asset('recruiter/css/main.css') }}">
         <link rel="stylesheet" href="{{ asset('recruiter/css/recruiter.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
     </head>
     <body data-recruiter-page="{{ $page }}">
         @include('employer.component.sidebar')
@@ -31,10 +32,22 @@
             <main id="recruiter-content">
                 <div class="alert alert-light border recruiter-demo-notice" role="note">
                     <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
-                    Bản demo giao diện. Thao tác chỉ mô phỏng trong tab trình duyệt, chưa lưu database, gửi Admin, gửi email hoặc xử lý AI thật.
+                    Bản demo giao diện. Thao tác trong phiên thử nghiệm, chưa lưu database, gửi Admin, gửi email hoặc xử lý AI thật.
                 </div>
                 <div id="recruiter-feedback" class="alert alert-success" role="status" hidden></div>
                 <div id="recruiter-error" class="alert alert-danger" role="alert" hidden></div>
+                @if (session('company_notice'))
+                    <div class="alert alert-success" role="status">{{ session('company_notice') }}</div>
+                @endif
+                @if ($errors->any())
+                    <div class="alert alert-danger" role="alert">
+                        <ul class="mb-0">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 @yield('content')
             </main>
             @include('employer.component.footer')
@@ -57,8 +70,10 @@
         @if ($page === 'dashboard')
             <script src="{{ asset('recruiter/js/recruiter-charts.js') }}"></script>
         @endif
+        <script src="{{ asset('recruiter/js/recruiter-ai.js') }}"></script>
         <script src="{{ asset('recruiter/js/recruiter-views.js') }}"></script>
         <script src="{{ asset('recruiter/js/recruiter-categories.js') }}"></script>
+        <script src="{{ asset('recruiter/js/company-profile-form.js') }}"></script>
         <script src="{{ asset('recruiter/js/recruiter.js') }}"></script>
     </body>
 </html>

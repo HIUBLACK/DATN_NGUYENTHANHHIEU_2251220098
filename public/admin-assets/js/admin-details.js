@@ -44,13 +44,16 @@ window.renderAdminDetail = function (context) {
     if (collection === 'companies') {
         const jobs = state.jobs.filter(job => job.companyId === id);
         container.innerHTML = `
-            <section class="card p-4">
-                <h2 class="h4">
-                    <i class="bi bi-building me-2" aria-hidden="true"></i>
-                    ${escape(item.name)}
+            <div class="admin-actions mb-3">
+                ${link(routes.companies, 'Danh sách doanh nghiệp', 'arrow-left')}
+            </div>
+            ${window.renderAdminCompanyProfile(item)}
+            <section class="card p-4 mt-4">
+                <h2 class="h5 mb-3">
+                    <i class="bi bi-shield-lock me-2" aria-hidden="true"></i>
+                    Thông tin quản lý và liên hệ
                 </h2>
-                <div class="mb-3">${badge(item.status)}</div>
-                ${details([['Recruiter quản lý', related('users', item.managerId)?.name], ['Website', item.website], ['Địa chỉ', item.address], ['Email', item.email], ['Điện thoại', item.phone], ['Giới thiệu', item.description]])}
+                ${details([['Mã doanh nghiệp', 'DN-' + item.id], ['Recruiter quản lý', related('users', item.managerId)?.name], ['Email liên hệ', item.email], ['Điện thoại', item.phone]])}
                 <p class="alert alert-light border">Khóa doanh nghiệp làm các tin không đủ điều kiện hiển thị. Giữ nguyên trạng thái và phiên bản từng tin; mở khóa không tự duyệt hoặc mở lại tin đã đóng.</p>
                 <div class="admin-actions">${lockButton('companies', item)}</div>
             </section>

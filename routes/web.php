@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CandidateDemoController;
 use App\Http\Controllers\CandidatePageController;
+use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\RecruiterPageController;
 use Illuminate\Support\Facades\Route;
 
@@ -73,3 +74,8 @@ Route::get('/nha-tuyen-dung', [RecruiterPageController::class, 'show'])
     ->name('employer');
 
 require __DIR__.'/admin.php';
+
+Route::get('/cong-ty/mau/{id}', [CandidatePageController::class, 'demoCompany'])->whereNumber('id')->name('companies.demo');
+Route::get('/cong-ty/{company}', [CandidatePageController::class, 'company'])->whereUuid('company')->name('companies.show');
+Route::get('/cong-ty/{company}/anh/{slot}', [CompanyProfileController::class, 'media'])
+    ->whereUuid('company')->where('slot', 'logo|cover|office-[0-5]')->name('companies.media');

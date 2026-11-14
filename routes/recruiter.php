@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\RecruiterPageController;
 use Illuminate\Support\Facades\Route;
 
@@ -33,3 +34,8 @@ foreach ($recruiterPages as $path => [$page, $title, $section]) {
         ->defaults('section', $section)
         ->name('recruiter.'.$name);
 }
+
+Route::post('/nha-tuyen-dung/ho-so-doanh-nghiep', [CompanyProfileController::class, 'store'])
+    ->middleware('throttle:20,1')->block()->name('recruiter.company-store');
+Route::put('/nha-tuyen-dung/ho-so-doanh-nghiep/{company}', [CompanyProfileController::class, 'update'])
+    ->middleware('throttle:20,1')->whereUuid('company')->block()->name('recruiter.company-update');

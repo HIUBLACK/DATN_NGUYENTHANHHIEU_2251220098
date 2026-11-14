@@ -14,6 +14,17 @@ class RecruiterCatalog
             'email' => 'recruiter@example.com',
             'phone' => '0900000000',
             'logo' => '',
+            'short_name' => 'VietTech',
+            'summary' => 'Cùng xây dựng sản phẩm công nghệ cho người Việt.',
+            'founded_year' => 2020,
+            'size' => '51–200',
+            'industry' => 'Công nghệ thông tin',
+            'company_type' => 'Công ty sản phẩm',
+            'country' => 'Việt Nam',
+            'working_hours' => 'Thứ Hai – Thứ Sáu, 8:30–17:30',
+            'ot_policy' => 'Chỉ làm thêm khi có thỏa thuận trước.',
+            'benefits' => 'Đào tạo chuyên môn, bảo hiểm và hoạt động nội bộ.',
+            'technologies' => 'PHP, Laravel, MySQL, JavaScript',
         ];
         $jobs = [];
         $states = [

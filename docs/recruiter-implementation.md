@@ -67,3 +67,7 @@ php artisan serve --host=127.0.0.1 --port=8012
 Dữ liệu mẫu không phải dữ liệu tuyển dụng thật. Các route demo hiện chưa có phân quyền Recruiter. Khi tích hợp cần xác thực/Policy kiểm tra quyền sở hữu doanh nghiệp, tin và hồ sơ; validation server; lưu bản công khai và bản chờ duyệt riêng; duyệt bởi Admin; giao dịch cập nhật trạng thái/lịch sử; ghi chú nội bộ; thông báo thật; upload logo và CV qua storage có kiểm tra; tải CV qua endpoint có quyền truy cập. Không dùng URL PDF công khai như mẫu cho CV thật.
 
 Tài khoản và đăng xuất thật, gửi email, lưu database và công khai tin chưa được triển khai trong nhiệm vụ giao diện này. Giao diện ứng viên hiện có được giữ nguyên; điểm vào nhà tuyển dụng trên header dẫn đến tổng quan mới.
+
+## Cập nhật hồ sơ doanh nghiệp 11/11/2026
+
+Hồ sơ doanh nghiệp đã mở rộng và chuyển sang lưu trong phiên Laravel để kiểm tra ảnh phía server; không dùng database. Các thao tác tin/ứng tuyển/thông báo vẫn dùng sessionStorage. Nút đặt lại dữ liệu tab không xóa hồ sơ doanh nghiệp và ảnh của phiên. Xem `docs/company-profile-demo.md` để biết phạm vi, giới hạn và cách kiểm tra mới.

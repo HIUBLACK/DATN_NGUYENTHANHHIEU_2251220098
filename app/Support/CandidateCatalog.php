@@ -52,6 +52,7 @@ class CandidateCatalog
                 'skills' => explode(', ', $position[1]),
                 'location' => $position[2],
                 'company' => $companies[$index % 5],
+                'company_demo_id' => $index % 5 + 1,
                 'logo' => 'job_logo_'.(($index % 5) + 1).'.jpg',
                 'salary_min' => 15 + $index * 2,
                 'salary_max' => 25 + $index * 3,

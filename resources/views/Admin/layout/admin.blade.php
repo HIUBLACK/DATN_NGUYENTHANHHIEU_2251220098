@@ -8,6 +8,7 @@
         <link rel="stylesheet" href="{{ asset('admin-assets/libs/bootstrap/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ asset('admin-assets/libs/bootstrap-icons/bootstrap-icons.css') }}">
         <link rel="stylesheet" href="{{ asset('admin-assets/css/main.css') }}">
+        <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
         <link rel="stylesheet" href="{{ asset('admin-assets/css/admin.css') }}">
     </head>
     <body data-admin-page="{{ $page }}">
@@ -66,6 +67,7 @@
         <script src="{{ asset('admin-assets/js/admin-domain.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin-ui.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin-lists.js') }}"></script>
+        <script src="{{ asset('admin-assets/js/admin-company-profile.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin-details.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin-categories-domain.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin-categories.js') }}"></script>

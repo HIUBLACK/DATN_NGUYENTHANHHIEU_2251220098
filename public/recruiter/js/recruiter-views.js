@@ -92,8 +92,11 @@ window.createRecruiterViews = function (context) {
     }
 
     function renderCompany() {
-        document.getElementById('company-details').innerHTML = companyMarkup();
-        const openJobs = context.state.jobs.filter(job => job.activity === 'open' && job.published && !domain.isExpired(job));
+        const details = document.getElementById('company-details');
+        if (details) {
+            details.innerHTML = companyMarkup();
+        }
+        const openJobs = context.state.jobs.filter(job => context.state.company.status !== 'blocked' && job.activity === 'open' && job.published && !domain.isExpired(job));
         document.getElementById('company-open-jobs').innerHTML = openJobs.map(function (job) {
             return `
                 <div class="col-md-6">
@@ -196,8 +199,10 @@ window.createRecruiterViews = function (context) {
         const applications = context.state.applications.filter(function (application) {
             return application.name.toLocaleLowerCase('vi').includes(filters.q.trim().toLocaleLowerCase('vi'))
                 && (!filters.status || application.status === filters.status)
-                && (!filters.jobId || application.jobId === filters.jobId);
+                && (!filters.jobId || application.jobId === filters.jobId)
+                && RecruiterAI.matches(application, filters.aiStatus);
         });
+        RecruiterAI.sort(applications, filters.sort);
         document.getElementById('application-count').textContent = applications.length + ' hồ sơ minh họa';
         document.getElementById('application-table-body').innerHTML = applications.map(function (application, index) {
             const job = jobById(application.jobId);
@@ -210,6 +215,7 @@ window.createRecruiterViews = function (context) {
                     </td>
                     <td>${escapeHtml(application.date)}</td>
                     <td>${badge(application.status, domain.applicationLabels)}</td>
+                    <td>${RecruiterAI.summary(application, url('applicationDetail', application.id))}</td>
                     <td>
                         <div class="recruiter-actions">
                             <a class="btn btn-light btn-sm" href="${url('applicationDetail', application.id)}"><i class="bi bi-person-lines-fill" aria-hidden="true"></i> Chi tiết</a>
@@ -217,7 +223,7 @@ window.createRecruiterViews = function (context) {
                         </div>
                     </td>
                 </tr>`;
-        }).join('') || '<tr><td colspan="5">' + empty('Không có ứng viên phù hợp. Hãy xóa từ khóa hoặc mở rộng bộ lọc.') + '</td></tr>';
+        }).join('') || '<tr><td colspan="6">' + empty('Không có ứng viên phù hợp. Hãy xóa từ khóa hoặc mở rộng bộ lọc.') + '</td></tr>';
     }
 
     function renderApplicationDetail() {
@@ -235,6 +241,7 @@ window.createRecruiterViews = function (context) {
             return '<li><strong>' + escapeHtml(domain.applicationLabels[event.status]) + '</strong><p class="small mb-0">' + escapeHtml(event.date) + ' · ' + escapeHtml(event.actor) + '</p></li>';
         }).join('');
         container.innerHTML = `
+            ${RecruiterAI.detail(application, job)}
             <div class="row g-4">
                 <div class="col-lg-8">
                     <div class="card p-4 mb-4">

@@ -28,6 +28,8 @@ document.addEventListener('DOMContentLoaded', function () {
         showError('Không đọc được phiên demo. Đang hiển thị dữ liệu mẫu ban đầu.');
     }
 
+    RecruiterAI.seed(state.applications);
+    state.company = structuredClone(seed.company);
     state.occupations = structuredClone(seed.occupations);
     state.specialties = structuredClone(seed.specialties);
     try {
@@ -125,62 +127,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function logoMarkup(company) {
+        if (company.logo_url) {
+            return '<img class="recruiter-logo-preview" src="' + escapeHtml(company.logo_url) + '" alt="Logo doanh nghiệp">';
+        }
         if (company.logo && /^data:image\/(png|jpeg|webp);base64,/.test(company.logo)) {
             return '<img class="recruiter-logo-preview" src="' + escapeHtml(company.logo) + '" alt="Logo doanh nghiệp minh họa">';
         }
         return '<div class="recruiter-company-icon"><i class="bi bi-building" aria-hidden="true"></i></div>';
-    }
-
-    function setupCompanyForm() {
-        const form = document.getElementById('company-form');
-        const isCreate = window.location.pathname.endsWith('/tao');
-        let logo = isCreate ? '' : state.company.logo;
-        const preview = document.getElementById('company-logo-preview');
-        if (!isCreate) {
-            Object.entries(state.company).forEach(function ([field, value]) {
-                if (form.elements[field]) {
-                    form.elements[field].value = value;
-                }
-            });
-        }
-        if (logo) {
-            preview.src = logo;
-            preview.hidden = false;
-        }
-        document.getElementById('company-logo').addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            if (!file) {
-                return;
-            }
-            if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
-                event.target.value = '';
-                showError('Logo phải là PNG, JPG hoặc WebP và không vượt quá 2 MB.');
-                return;
-            }
-            const reader = new FileReader();
-            reader.addEventListener('load', function () {
-                logo = reader.result;
-                preview.src = logo;
-                preview.hidden = false;
-            });
-            reader.readAsDataURL(file);
-        });
-        form.addEventListener('input', function (event) {
-            if (event.target.setCustomValidity) {
-                event.target.setCustomValidity('');
-            }
-        });
-        form.addEventListener('submit', function (event) {
-            event.preventDefault();
-            if (!validateForm(form)) {
-                return;
-            }
-            state.company = Object.fromEntries(new FormData(form));
-            state.company.logo = logo;
-            if (persist()) {
-                feedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        });
     }
 
     function fillOptions() {
@@ -365,7 +318,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } else if (page === 'company') {
         renderCompany();
     } else if (page === 'company-form') {
-        setupCompanyForm();
+        window.setupCompanyProfileForm();
     } else if (page === 'jobs') {
         connectFilters('job-filters', renderJobs);
         renderJobs();
@@ -381,6 +334,18 @@ document.addEventListener('DOMContentLoaded', function () {
         renderApplications();
     } else if (page === 'application-detail') {
         renderApplicationDetail();
+        document.addEventListener('click', function (event) {
+            if (!event.target.closest('[data-ai-retry]')) {
+                return;
+            }
+            const application = applicationById(selectedId);
+            if (application?.ai?.status !== 'failed') {
+                return;
+            }
+            application.ai.status = 'pending';
+            persist('Đã mô phỏng yêu cầu thử lại. Chưa gửi tác vụ tới AI Service.');
+            renderApplicationDetail();
+        });
         document.getElementById('application-note-form').addEventListener('submit', function (event) {
             event.preventDefault();
             const input = document.getElementById('application-note');
@@ -405,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function () {
         renderNotifications();
     } else if (page === 'account') {
         document.getElementById('reset-recruiter-demo').addEventListener('click', function () {
-            confirmAction('Đặt lại toàn bộ dữ liệu Recruiter demo trong tab này? Không tác động dữ liệu ứng viên hoặc database.', function () {
+            confirmAction('Đặt lại tin, hồ sơ ứng tuyển và thông báo demo trong tab? Hồ sơ doanh nghiệp và ảnh đã lưu trong phiên được giữ nguyên.', function () {
                 state = structuredClone(seed);
                 persist('Đã đặt lại dữ liệu Recruiter demo của tab này.');
                 updateNotificationIndicator();

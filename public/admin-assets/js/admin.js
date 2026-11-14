@@ -30,6 +30,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 throw new Error('Dữ liệu phiên không hợp lệ.');
             }
             state = parsed;
+            // Bổ sung trường hồ sơ mới, giữ nguyên trạng thái và lịch sử của phiên cũ.
+            state.companies = state.companies.map(function (company) {
+                const defaults = seed.companies.find(entry => entry.id === company.id);
+                return { ...defaults, ...company };
+            });
             // Bổ sung danh mục cho phiên demo cũ mà không đặt lại các thao tác Admin.
             if (!Array.isArray(state.occupations) || !Array.isArray(state.specialties)) {
                 state.occupations = structuredClone(seed.occupations);
