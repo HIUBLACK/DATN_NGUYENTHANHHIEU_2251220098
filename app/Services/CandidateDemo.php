@@ -132,26 +132,9 @@ class CandidateDemo
             if ($action === 'sample') {
                 $item['recognized'] = ['php', 'Laravel', 'mysql', 'REST API'];
                 $item['skills'] = ['PHP', 'Laravel', 'MySQL', 'REST API'];
-                $item['status'] = 'needs_review';
-            }
-
-            if ($action === 'skills') {
-                $skills = array_filter(array_map('trim', explode(',', $input['skills'])));
-                $standardNames = ['php' => 'PHP', 'mysql' => 'MySQL', 'rest api' => 'REST API', 'laravel' => 'Laravel'];
-                $normalized = [];
-
-                foreach ($skills as $skill) {
-                    $key = mb_strtolower($skill);
-                    $normalized[$key] = $standardNames[$key] ?? $skill;
-                }
-
-                if ($normalized === []) {
-                    $this->reject('skills', 'Cần ít nhất một kỹ năng để xác nhận.');
-                }
-
-                $item['skills'] = array_values($normalized);
                 $item['status'] = 'completed';
             }
+
         }
 
         $this->update('resumes', $resumes);

@@ -8,7 +8,7 @@ use Tests\TestCase;
 
 class CandidatePreviewTest extends TestCase
 {
-    public function test_jobs_discovery_requires_confirmed_cv_for_suggestions(): void
+    public function test_jobs_discovery_requires_analyzed_cv_for_suggestions(): void
     {
         Storage::fake('local');
         $this->get('/viec-lam')
@@ -16,7 +16,7 @@ class CandidatePreviewTest extends TestCase
             ->assertSee('Hoàn thiện CV để xem công việc gợi ý');
 
         $resume = $this->uploadResume();
-        $this->post('/ung-vien/cv/'.$resume.'/skills', ['skills' => 'PHP, Laravel, MySQL'])
+        $this->post('/ung-vien/cv/'.$resume.'/sample')
             ->assertSessionHasNoErrors();
 
         $this->get('/viec-lam')
@@ -37,7 +37,7 @@ class CandidatePreviewTest extends TestCase
     public function test_all_pages_render_without_database(): void
     {
         $paths = ['/', '/viec-lam', '/viec-lam/1', '/cong-ty', '/gioi-thieu', '/nha-tuyen-dung', '/dang-nhap', '/dang-ky', '/quen-mat-khau', '/dat-lai-mat-khau'];
-        foreach (['cv', 'ky-nang', 'goi-y-ai', 'da-luu', 'ung-tuyen', 'thong-bao', 'tin-nhan', 'ho-so', 'cai-dat'] as $page) {
+        foreach (['cv', 'goi-y-ai', 'da-luu', 'ung-tuyen', 'thong-bao', 'tin-nhan', 'ho-so', 'cai-dat'] as $page) {
             $paths[] = '/ung-vien/'.$page;
         }
         foreach ($paths as $path) {
@@ -62,13 +62,15 @@ class CandidatePreviewTest extends TestCase
         $this->get('/ung-vien/cv/'.$second.'/pdf')->assertNotFound();
     }
 
-    public function test_upload_limit_and_skills_normalization(): void
+    public function test_upload_limit_and_analysis_without_confirmation(): void
     {
         Storage::fake('local');
         $first = $this->uploadResume();
-        $this->post('/ung-vien/cv/'.$first.'/skills', ['skills' => 'php, PHP, mysql, Laravel'])->assertSessionHasNoErrors();
-        $this->assertSame(['PHP', 'MySQL', 'Laravel'], session('candidate_preview.resumes.0.skills'));
+        $this->post('/ung-vien/cv/'.$first.'/sample')->assertSessionHasNoErrors();
+        $this->assertSame(['PHP', 'Laravel', 'MySQL', 'REST API'], session('candidate_preview.resumes.0.skills'));
         $this->assertSame('completed', session('candidate_preview.resumes.0.status'));
+        $this->post('/ung-vien/cv/'.$first.'/skills', ['skills' => 'PHP'])->assertNotFound();
+        $this->get('/ung-vien/ky-nang')->assertNotFound();
         for ($index = 1; $index < 10; $index++) {
             $this->uploadResume();
         }

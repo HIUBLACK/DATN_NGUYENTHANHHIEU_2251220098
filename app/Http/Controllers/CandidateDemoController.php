@@ -44,8 +44,7 @@ class CandidateDemoController extends Controller
         $rules = match ($action) {
             'rename' => ['name' => ['required', 'string', 'max:100']],
             'delete' => ['replacement' => ['nullable', 'uuid']],
-            'state' => ['status' => ['required', 'in:pending,processing,needs_review,failed']],
-            'skills' => ['skills' => ['required', 'string', 'max:1500']],
+            'state' => ['status' => ['required', 'in:pending,processing,failed']],
             default => [],
         };
         $input = $request->validate($rules, [

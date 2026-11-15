@@ -6,7 +6,7 @@
                     <span class="icon-lightbulb-o mr-2" aria-hidden="true"></span>
                     Công việc gợi ý
                 </h2>
-                <p>Khám phá cơ hội theo CV chính đã xác nhận kỹ năng.</p>
+                <p>Khám phá cơ hội theo CV chính đã phân tích.</p>
             </div>
             <a href="{{ route('candidate.recommendations') }}" class="jobs-saved-link">
                 Xem tất cả gợi ý
@@ -31,7 +31,7 @@
                 <span class="icon-file-text jobs-suggestion-empty-icon" aria-hidden="true"></span>
                 <div>
                     <h3>Hoàn thiện CV để xem công việc gợi ý</h3>
-                    <p>Gợi ý đang tạm dừng. Hãy tải CV PDF, chọn CV chính và xác nhận kỹ năng để trải nghiệm gợi ý minh họa.</p>
+                    <p>Gợi ý đang tạm dừng. Hãy tải CV PDF, chọn CV chính và nạp kết quả phân tích mẫu để trải nghiệm gợi ý minh họa.</p>
                     <a href="{{ route('candidate.resumes') }}" class="btn btn-primary">Hoàn thiện CV</a>
                 </div>
             </div>

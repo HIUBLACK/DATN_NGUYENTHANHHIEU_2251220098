@@ -22,28 +22,6 @@ document.addEventListener('DOMContentLoaded', function () {
     activeGroups.forEach(group => groupSelect.add(new Option(group.name, group.id)));
     groupSelect.value = requestedGroup;
 
-    function navigationLink(item, field) {
-        const url = new URL(location.href);
-        url.searchParams.delete('page');
-        if (field === 'occupationId') {
-            url.searchParams.delete('specialtyId');
-        } else {
-            url.searchParams.set('occupationId', item.occupationId);
-        }
-        url.searchParams.set(field, item.id);
-        const link = document.createElement('a');
-        link.className = 'btn btn-outline-primary btn-sm mr-2 mb-2';
-        link.href = url.toString();
-        link.textContent = item.name;
-        if (parameters.get(field) === item.id) {
-            link.classList.add('active');
-            link.setAttribute('aria-current', 'page');
-        }
-        return link;
-    }
-    const groupNavigation = document.getElementById('occupation-navigation');
-    groupNavigation.replaceChildren(...activeGroups.map(group => navigationLink(group, 'occupationId')));
-
     function updateSpecialties(selected = '') {
         const items = categories.specialties.filter(specialty => specialty.status === 'active'
             && (!groupSelect.value || specialty.occupationId === groupSelect.value)
@@ -52,11 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
         specialtySelect.disabled = false;
         items.forEach(specialty => specialtySelect.add(new Option(specialty.name, specialty.id)));
         specialtySelect.value = selected;
-        const navigation = document.getElementById('specialty-navigation');
-        navigation.replaceChildren(...items.map(specialty => navigationLink(specialty, 'specialtyId')));
-        if (!items.length) {
-            navigation.textContent = groupSelect.value ? 'Nhóm này chưa có chuyên môn đang hiện.' : 'Chọn nhóm nghề để khám phá chuyên môn.';
-        }
+
     }
     updateSpecialties(requestedSpecialty);
     specialtySelect.addEventListener('change', function () {

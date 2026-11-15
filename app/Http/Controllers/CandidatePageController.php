@@ -54,6 +54,9 @@ class CandidatePageController extends Controller
         );
 
         return view('Candidate.ca_pages.jobs', $this->sharedData() + [
+            'advancedFiltersOpen' => count(array_filter(array_intersect_key($filters, array_flip(['specialtyId', 'industry', 'skill', 'company', 'experience', 'type'])))) > 0
+                || ($filters['sort'] ?? 'newest') !== 'newest'
+                || in_array($filters['browse'] ?? '', ['industry', 'skill', 'specialtyId', 'company'], true),
             'title' => 'Tìm việc làm',
             'page' => 'jobs',
             'jobs' => $paginator,
@@ -123,10 +126,6 @@ class CandidatePageController extends Controller
             $data['ownCompanyPreview'] = is_array($preview) && $preview['status'] === 'active'
                 ? app(CompanyProfiles::class)->publicData($preview) + ['id' => $preview['id']]
                 : null;
-        }
-
-        if ($page === 'skills') {
-            $data['resume'] = $this->demo->resume((string) $request->query('cv', ''));
         }
 
         if ($page === 'saved') {

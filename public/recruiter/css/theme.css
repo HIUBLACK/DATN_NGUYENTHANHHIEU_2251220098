@@ -1,0 +1,165 @@
+/* Đồng bộ màu Candidate; chỉ tải trong layout Recruiter. */
+:root {
+    --bs-body-bg: #f5f6f7;
+    --brand-forest-dark: #10365b;
+    --brand-forest-medium: #0069d1;
+    --brand-forest-light: #194b7c;
+    --brand-lime: #0069d1;
+    --brand-lime-hover: #004b96;
+    --brand-lime-translucent: rgba(0, 105, 209, 0.12);
+    --text-main: #24364b;
+    --text-muted-green: #66788a;
+    --text-sidebar-muted: #c4d5e6;
+    --border-light: #e2e8ef;
+}
+
+.btn-dark-custom,
+.main-wrapper .btn-dark-custom {
+    background: #0069d1;
+    color: #fff;
+}
+
+.btn-dark-custom:hover,
+.main-wrapper .btn-dark-custom:hover {
+    background: #004b96;
+    color: #fff;
+}
+
+.sidebar-brand i,
+.sidebar-menu-link.active i,
+.sidebar-menu-link:hover i {
+    color: #fff;
+}
+
+.sidebar-menu-link.active {
+    background: #0069d1;
+    color: #fff;
+}
+
+.recruiter-company-icon {
+    background: #e8f2fc;
+    color: #0069d1;
+}
+
+.main-wrapper .recruiter-page-number[aria-current="page"] {
+    color: #fff;
+}
+
+.main-wrapper .company-cover-placeholder {
+    background: linear-gradient(120deg, #e8f3ff, #c5def7);
+}
+
+.main-wrapper .company-profile h3 {
+    border-color: #0069d1;
+}
+
+.recruiter-chart-bar {
+    background: #0069d1;
+}
+
+.recruiter-chart-bar-reviewing {
+    background: #4599ed;
+}
+
+.recruiter-chart-bar-interview {
+    background: #7e9bc2;
+}
+
+.recruiter-chart-bar-hired {
+    background: #25856c;
+}
+
+.recruiter-attention-link {
+    border-color: #c2dcf5;
+}
+
+.recruiter-attention-link:hover {
+    background: #e8f2fc;
+}
+
+
+/* Sidebar trắng, dải navbar xanh liền với logo. */
+.sidebar-wrapper {
+    padding-top: 0;
+    background: #fff;
+    border-right: 1px solid #e2e8ef;
+}
+
+.sidebar-brand {
+    min-height: 80px;
+    flex-shrink: 0;
+    margin: 0 -1.5rem 24px;
+    padding: 0 2rem;
+    background: #0069d1;
+    color: #fff;
+}
+
+.sidebar-menu-title,
+.sidebar-profile-email {
+    color: #66788a;
+}
+
+.sidebar-menu-link {
+    color: #34465a;
+}
+
+.sidebar-menu-link:hover {
+    color: #0069d1;
+    background: #e8f2fc;
+}
+
+.sidebar-menu-link:hover i {
+    color: #0069d1;
+}
+
+.sidebar-menu-link.active,
+.sidebar-menu-link.active:hover {
+    color: #fff;
+    background: #0069d1;
+}
+
+.sidebar-menu-link.active i {
+    color: #fff;
+}
+
+.sidebar-profile {
+    color: #24364b;
+    background: #f3f7fc;
+    border-color: #e2e8ef;
+}
+
+.navbar-custom {
+    min-height: 80px;
+    height: 80px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    background: #0069d1;
+    border-bottom: 0;
+}
+
+.navbar-profile-name,
+.navbar-profile-btn,
+.navbar-profile-btn:hover {
+    color: #fff;
+}
+
+.navbar-custom .btn-quick-action {
+    background: #fff;
+    color: #0069d1;
+}
+
+.navbar-custom .btn-quick-action:hover {
+    background: #e8f2fc;
+    color: #004b96;
+}
+
+body.sidebar-minimized .sidebar-wrapper {
+    padding-top: 0;
+}
+
+body.sidebar-minimized .sidebar-brand {
+    width: calc(100% + 1.5rem);
+    margin-left: -0.75rem;
+    margin-right: -0.75rem;
+    padding: 0;
+}

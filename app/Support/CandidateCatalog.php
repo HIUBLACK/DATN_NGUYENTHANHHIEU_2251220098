@@ -138,8 +138,8 @@ class CandidateCatalog
             'expired' => 'Hết hạn',
             'pending' => 'Chờ phân tích',
             'processing' => 'Đang phân tích',
-            'needs_review' => 'Cần xác nhận',
-            'completed' => 'Đã xác nhận',
+            'needs_review' => 'Đã phân tích',
+            'completed' => 'Đã phân tích',
             'failed' => 'Phân tích thất bại',
             'applied' => 'Đã ứng tuyển',
             'reviewing' => 'Đang xem xét',
@@ -152,7 +152,7 @@ class CandidateCatalog
 
     public function recommendations(?array $resume, array $filters): array
     {
-        if (! $resume || $resume['status'] !== 'completed') {
+        if (! $resume || ! in_array($resume['status'], ['completed', 'needs_review'], true)) {
             return [];
         }
 

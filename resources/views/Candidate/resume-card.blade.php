@@ -17,12 +17,11 @@
             Đang phân tích (trạng thái minh họa).
         </p>
     @elseif ($resume['status'] === 'failed')
-        <p class="text-danger">Phân tích thất bại — trạng thái mẫu. Bạn có thể thử lại hoặc nhập kỹ năng.</p>
+        <p class="text-danger">Phân tích thất bại — trạng thái mẫu. Bạn có thể nạp kết quả phân tích mẫu để thử lại.</p>
     @endif
     <div class="candidate-actions mb-3">
         <a class="btn btn-light" href="{{ route('candidate.pdf', $resume['id']) }}" target="_blank" rel="noopener">Xem PDF</a>
         <a class="btn btn-light" href="{{ route('candidate.pdf', ['id' => $resume['id'], 'download' => 1]) }}">Tải xuống</a>
-        <a class="btn btn-outline-primary" href="{{ route('candidate.skills', ['cv' => $resume['id']]) }}">Xác nhận kỹ năng</a>
     </div>
     @unless ($resume['main'])
         <form method="post" action="{{ route('candidate.resume-action', [$resume['id'], 'main']) }}" class="mb-3">
@@ -30,6 +29,11 @@
             <button class="btn btn-primary text-white">Đặt làm CV chính</button>
         </form>
     @endunless
+    <form action="{{ route('candidate.resume-action', [$resume['id'], 'sample']) }}" method="post" class="mb-3">
+        @csrf
+        <button class="btn btn-outline-primary" type="submit">Nạp kết quả phân tích mẫu</button>
+        <p class="small mt-2 mb-0">Dữ liệu minh họa, không trích xuất PDF. Kết quả được dùng trực tiếp để gợi ý việc làm.</p>
+    </form>
     <details>
         <summary>Đổi tên, thay PDF và tùy chọn khác</summary>
         <div class="row mt-3">
@@ -54,7 +58,7 @@
                     @csrf
                     <label for="resume-status-{{ $resume['id'] }}">Thử trạng thái phân tích (không chạy AI)</label>
                     <select class="form-control mb-2" id="resume-status-{{ $resume['id'] }}" name="status">
-                        @foreach (['pending', 'processing', 'needs_review', 'failed'] as $status)
+                        @foreach (['pending', 'processing', 'failed'] as $status)
                             <option value="{{ $status }}" @selected($status === $resume['status'])>{{ $statusLabels[$status] }}</option>
                         @endforeach
                     </select>

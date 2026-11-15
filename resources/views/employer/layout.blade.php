@@ -10,6 +10,7 @@
         <link rel="stylesheet" href="{{ asset('recruiter/css/main.css') }}">
         <link rel="stylesheet" href="{{ asset('recruiter/css/recruiter.css') }}">
         <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
+        <link rel="stylesheet" href="{{ asset('recruiter/css/theme.css') }}">
     </head>
     <body data-recruiter-page="{{ $page }}">
         @include('employer.component.sidebar')

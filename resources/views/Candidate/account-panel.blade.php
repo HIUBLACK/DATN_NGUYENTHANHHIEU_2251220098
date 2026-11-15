@@ -28,7 +28,6 @@
             </summary>
             <div class="account-panel-links">
                 <a href="{{ route('candidate.resumes') }}">CV của tôi</a>
-                <a href="{{ route('candidate.skills', ['cv' => $mainResume['id'] ?? '']) }}">Xác nhận kỹ năng CV chính</a>
             </div>
         </details>
         <a href="{{ route('candidate.notifications') }}" class="account-panel-direct">

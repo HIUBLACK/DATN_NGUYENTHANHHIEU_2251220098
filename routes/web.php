@@ -28,7 +28,6 @@ foreach ($publicPages as $path => [$page, $title]) {
 
 $candidatePages = [
     'cv' => ['resumes', 'Quản lý CV'],
-    'ky-nang' => ['skills', 'Xác nhận kỹ năng CV'],
     'goi-y-ai' => ['recommendations', 'Việc làm gợi ý AI'],
     'da-luu' => ['saved', 'Việc làm đã lưu'],
     'ung-tuyen' => ['applications', 'Hồ sơ ứng tuyển'],
@@ -56,7 +55,7 @@ Route::post('/ung-vien/cv', [CandidateDemoController::class, 'upload'])->name('c
 Route::post('/ung-vien/cv/{id}/pdf', [CandidateDemoController::class, 'upload'])->name('candidate.replace');
 Route::get('/ung-vien/cv/{id}/pdf', [CandidateDemoController::class, 'pdf'])->name('candidate.pdf');
 Route::post('/ung-vien/cv/{id}/{action}', [CandidateDemoController::class, 'resumeAction'])
-    ->whereIn('action', ['main', 'rename', 'delete', 'state', 'sample', 'skills'])
+    ->whereIn('action', ['main', 'rename', 'delete', 'state', 'sample'])
     ->name('candidate.resume-action');
 Route::post('/ung-vien/luu/{id}', [CandidateDemoController::class, 'save'])->whereNumber('id')->name('candidate.save');
 Route::post('/ung-vien/ung-tuyen/{id}', [CandidateDemoController::class, 'apply'])->whereNumber('id')->block()->name('candidate.apply');

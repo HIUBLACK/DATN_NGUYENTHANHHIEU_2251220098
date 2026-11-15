@@ -9,7 +9,7 @@
                 <h2 class="h5">CV chính: {{ $mainResume['name'] ?? 'Chưa có' }}</h2>
                 <a class="btn btn-outline-primary" href="{{ route('candidate.resumes') }}">Thay đổi CV chính</a>
             </div>
-            @if ($mainResume && $mainResume['status'] === 'completed')
+            @if ($mainResume && in_array($mainResume['status'], ['completed', 'needs_review']))
                 <form method="get" class="row mb-4">
                     <div class="col-md-5 form-group">
                         <label for="recommend-location">Địa điểm</label>
@@ -52,7 +52,7 @@
             @else
                 @include('Candidate.empty-state', [
                     'emptyTitle' => 'Gợi ý AI đang tạm dừng',
-                    'emptyDescription' => 'Cần CV chính hợp lệ đã xác nhận kỹ năng. Hãy tải PDF và xác nhận trước khi tiếp tục.',
+                    'emptyDescription' => 'Cần CV chính hợp lệ đã phân tích. Hãy tải PDF và nạp kết quả phân tích mẫu trước khi tiếp tục.',
                     'emptyUrl' => route('candidate.resumes'),
                     'emptyAction' => 'Hoàn thiện CV',
                 ])
