@@ -63,6 +63,13 @@
                     </div>
                 @endif
 
+                @if (request()->routeIs('candidate.*'))
+                    <div class="container pt-3">
+                        <div class="alert alert-info" role="note">
+                            Bạn đã đăng nhập. Nội dung CV, hồ sơ cá nhân và ứng tuyển hiện vẫn là demo trong phiên; chưa lưu nghiệp vụ vào database.
+                        </div>
+                    </div>
+                @endif
                 @yield('content')
             </main>
 
@@ -83,6 +90,7 @@
         <script src="{{ asset('jobboard/js/navigation-bridge.js') }}"></script>
         <script src="{{ asset('jobboard/js/custom.js') }}"></script>
         <script src="{{ asset('jobboard/js/candidate.js') }}"></script>
+        <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
         <script type="application/json" id="job-menu-data">{!! Illuminate\Support\Js::encode(['categories' => $jobCategories, 'occupations' => $occupationOptions, 'specialties' => $specialtyOptions, 'filters' => $filterOptions, 'url' => route('jobs')]) !!}</script>
         <script src="{{ asset('jobboard/js/job-menu.js') }}"></script>
     </body>

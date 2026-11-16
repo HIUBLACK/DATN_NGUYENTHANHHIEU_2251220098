@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
     const seed = JSON.parse(seedElement.textContent);
-    const storageKey = 'viejob-admin-preview-v1';
+    const storageKey = 'viejob-admin-preview-v1-user-' + document.body.dataset.previewUser;
     const page = document.body.dataset.adminPage;
     const routes = routeElement.dataset;
     const feedback = document.getElementById('admin-feedback');
@@ -135,11 +135,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 commit(next => AdminDomain.applyAction(next, collection, id, action, text));
                 render();
             });
-        }
-        if (event.target.closest('[data-admin-logout]')) {
-            feedback.textContent = 'Đây là phiên giao diện demo, chưa có đăng nhập Admin thật để đăng xuất. Dùng mục Tài khoản để mở trang đăng nhập hiện có.';
-            feedback.hidden = false;
-            feedback.scrollIntoView({ block: 'center' });
         }
     });
     const reset = document.getElementById('admin-reset');

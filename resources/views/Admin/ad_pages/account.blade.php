@@ -2,13 +2,18 @@
 
 @section('content')
     <div class="card p-4">
-        <h2 class="h4">Admin mẫu 1</h2>
-        <p>admin1@example.com · Quản trị viên demo</p>
-        <p>Chưa tích hợp phiên đăng nhập Admin. Không thay đổi vai trò hoặc thông tin tài khoản thật tại đây.</p>
-        <div class="admin-actions">
-            <a href="{{ route('login') }}" class="btn btn-outline-dark">Đến trang đăng nhập hiện có</a>
-            <button type="button" class="btn btn-outline-dark" data-admin-logout>Đăng xuất</button>
-            <button type="button" class="btn btn-outline-dark" id="admin-reset">Đặt lại dữ liệu Admin demo</button>
+        <h2 class="h5">Tài khoản quản trị viên</h2>
+        <p>{{ auth()->user()->name }} · {{ auth()->user()->email }}</p>
+        <p>Tài khoản đã đăng nhập. Các thao tác nghiệp vụ trên trang hiện vẫn dùng dữ liệu demo.</p>
+        @include('auth.password-errors')
+        @include('Candidate.auth-form', ['mode' => 'settings', 'buttonLabel' => 'Đổi mật khẩu'])
+        @include('auth.google-link')
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <form action="{{ route('logout') }}" method="post">
+                @csrf
+                <button type="submit" class="btn btn-outline-dark">Đăng xuất</button>
+            </form>
+            <button type="button" id="admin-reset" class="btn btn-outline-danger">Đặt lại dữ liệu nghiệp vụ demo</button>
         </div>
     </div>
 @endsection

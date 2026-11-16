@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use App\Support\RecruiterCatalog;
-use Tests\TestCase;
+use Tests\AuthenticatedDemoTestCase;
 
-class RecruiterPageTest extends TestCase
+class RecruiterPageTest extends AuthenticatedDemoTestCase
 {
+    protected UserRole $demoRole = UserRole::Recruiter;
+
     public function test_recruiter_pages_render_with_separate_template_and_demo_data(): void
     {
         $names = ['dashboard', 'company', 'company-create', 'company-edit', 'jobs', 'job-create', 'job-edit', 'job-detail', 'applications', 'application-detail', 'notifications', 'account'];

@@ -13,6 +13,6 @@
     </div>
     <a href="{{ route('admin.account') }}" class="navbar-profile-btn text-decoration-none">
         <i class="bi bi-person-badge fs-4" aria-hidden="true"></i>
-        <span class="d-none d-md-inline">Quản trị viên demo</span>
+        <span class="d-none d-md-inline">{{ auth()->user()->name }}</span>
     </a>
 </header>

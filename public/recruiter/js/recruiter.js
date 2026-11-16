@@ -8,7 +8,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const domain = window.RecruiterDomain;
     const routes = routeElement.dataset;
     const seed = JSON.parse(seedElement.textContent);
-    const storageKey = 'viejob-recruiter-preview-v1';
+    const storageKey = 'viejob-recruiter-preview-v1-user-' + document.body.dataset.previewUser;
     const page = document.body.dataset.recruiterPage;
     const parameters = new URLSearchParams(window.location.search);
     const selectedId = parameters.get('id');
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
     state.occupations = structuredClone(seed.occupations);
     state.specialties = structuredClone(seed.specialties);
     try {
-        const adminState = JSON.parse(sessionStorage.getItem('viejob-admin-preview-v1') || 'null');
+        const adminState = JSON.parse(sessionStorage.getItem('viejob-admin-preview-v1-user-' + document.body.dataset.previewUser) || 'null');
         if (Array.isArray(adminState?.occupations) && Array.isArray(adminState?.specialties)) {
             state.occupations = adminState.occupations;
             state.specialties = adminState.specialties;
@@ -290,11 +290,6 @@ document.addEventListener('DOMContentLoaded', function () {
             persist();
             renderNotifications();
             updateNotificationIndicator();
-        }
-        if (event.target.closest('[data-exit-demo]')) {
-            feedback.textContent = 'Chưa có phiên đăng nhập Recruiter thật để đăng xuất. Bạn có thể dùng trang Tài khoản để đến màn hình đăng nhập hiện có.';
-            feedback.hidden = false;
-            feedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     });
 

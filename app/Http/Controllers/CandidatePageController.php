@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Services\CandidateDemo;
 use App\Services\CompanyProfiles;
 use App\Support\CandidateCatalog;
@@ -164,6 +165,9 @@ class CandidatePageController extends Controller
 
     private function sharedData(): array
     {
+        $demo = $this->demo->state();
+        $demo['active'] = auth()->check() && auth()->user()->role === UserRole::Candidate;
+
         return [
             'jobCategories' => app(JobCategoryCatalog::class)->data(),
             'jobMenuGroups' => ['industry' => 'lĩnh vực', 'skill' => 'kỹ năng', 'specialtyId' => 'chuyên môn', 'level' => 'cấp bậc', 'company' => 'công ty', 'location' => 'thành phố'],
@@ -172,7 +176,7 @@ class CandidatePageController extends Controller
             'specialtyOptions' => app(OccupationCatalog::class)->specialties(),
             'filterOptions' => $this->catalog->filters(),
             'statusLabels' => $this->catalog->statuses(),
-            'demo' => $this->demo->state(),
+            'demo' => $demo,
             'unreadNotificationCount' => collect($this->demo->state()['notifications'])->where('read', false)->count(),
             'mainResume' => $this->demo->mainResume(),
         ];

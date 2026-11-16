@@ -1,4 +1,4 @@
-<div class="form-group">
+<div class="form-group mb-3">
     <label class="text-black" for="{{ $passwordId }}">{{ $passwordLabel }}</label>
     <div class="input-group">
         <input
@@ -7,7 +7,7 @@
             id="{{ $passwordId }}"
             name="{{ $passwordName }}"
             minlength="8"
-            autocomplete="new-password"
+            autocomplete="{{ $passwordAutocomplete ?? 'new-password' }}"
             required
         >
         <div class="input-group-append">

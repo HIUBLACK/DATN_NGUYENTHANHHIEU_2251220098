@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Tests\TestCase;
+use Tests\AuthenticatedDemoTestCase;
 
-class CompanyProfileTest extends TestCase
+class CompanyProfileTest extends AuthenticatedDemoTestCase
 {
+    protected UserRole $demoRole = UserRole::Recruiter;
+
     private function image(string $name = 'image.png'): UploadedFile
     {
         return UploadedFile::fake()->createWithContent($name, base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aX1cAAAAASUVORK5CYII='));

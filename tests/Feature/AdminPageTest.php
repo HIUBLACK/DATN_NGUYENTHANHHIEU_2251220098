@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use App\Support\AdminCatalog;
-use Tests\TestCase;
+use Tests\AuthenticatedDemoTestCase;
 
-class AdminPageTest extends TestCase
+class AdminPageTest extends AuthenticatedDemoTestCase
 {
-    public function test_admin_pages_are_isolated_and_render_without_database(): void
+    protected UserRole $demoRole = UserRole::Admin;
+
+    public function test_admin_pages_are_isolated_and_render_with_authenticated_admin(): void
     {
         $pages = ['dashboard', 'users.index', 'users.show', 'users.history', 'companies.index', 'companies.show', 'jobs.index', 'jobs.queue', 'jobs.show', 'jobs.history', 'applications.index', 'applications.show', 'occupations.index', 'specialties.index', 'account'];
         foreach ($pages as $page) {
@@ -21,7 +24,7 @@ class AdminPageTest extends TestCase
         }
         $this->get('/admin/ky-nang')->assertNotFound();
         $this->get('/admin/ky-nang/ten-dong-nghia')->assertNotFound();
-        $this->get('/nha-tuyen-dung')->assertOk()->assertDontSee('admin-assets/css/admin.css');
+        $this->get('/nha-tuyen-dung')->assertForbidden();
         $this->get('/viec-lam')->assertOk()->assertDontSee('admin-assets/css/admin.css');
     }
 

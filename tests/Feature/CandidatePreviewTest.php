@@ -2,12 +2,15 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use Tests\TestCase;
+use Tests\AuthenticatedDemoTestCase;
 
-class CandidatePreviewTest extends TestCase
+class CandidatePreviewTest extends AuthenticatedDemoTestCase
 {
+    protected UserRole $demoRole = UserRole::Candidate;
+
     public function test_jobs_discovery_requires_analyzed_cv_for_suggestions(): void
     {
         Storage::fake('local');
@@ -34,9 +37,9 @@ class CandidatePreviewTest extends TestCase
         return collect(session('candidate_preview.resumes'))->last()['id'];
     }
 
-    public function test_all_pages_render_without_database(): void
+    public function test_candidate_pages_render_with_authenticated_candidate(): void
     {
-        $paths = ['/', '/viec-lam', '/viec-lam/1', '/cong-ty', '/gioi-thieu', '/nha-tuyen-dung', '/dang-nhap', '/dang-ky', '/quen-mat-khau', '/dat-lai-mat-khau'];
+        $paths = ['/', '/viec-lam', '/viec-lam/1', '/cong-ty', '/gioi-thieu'];
         foreach (['cv', 'goi-y-ai', 'da-luu', 'ung-tuyen', 'thong-bao', 'tin-nhan', 'ho-so', 'cai-dat'] as $page) {
             $paths[] = '/ung-vien/'.$page;
         }
@@ -106,6 +109,6 @@ class CandidatePreviewTest extends TestCase
         foreach (session('candidate_preview.notifications') as $notification) {
             $this->assertTrue($notification['read']);
         }
-        $this->post('/demo/tai-khoan/register', ['email' => 'invalid', 'password' => 'short'])->assertSessionHasErrors(['email', 'password']);
+        $this->post('/demo/tai-khoan/register', ['email' => 'invalid', 'password' => 'short'])->assertNotFound();
     }
 }

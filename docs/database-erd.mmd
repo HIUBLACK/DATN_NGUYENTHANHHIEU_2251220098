@@ -10,6 +10,7 @@ erDiagram
     users {
         bigint id PK
         varchar email UK
+        varchar google_subject UK "nullable, ASCII binary"
         varchar role
         varchar status
     }

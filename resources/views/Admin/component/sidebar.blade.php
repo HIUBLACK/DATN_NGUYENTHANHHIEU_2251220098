@@ -91,10 +91,13 @@
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <button type="button" class="sidebar-menu-link admin-sidebar-button" data-admin-logout>
-                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-                        <span>Đăng xuất</span>
-                    </button>
+                    <form action="{{ route('logout') }}" method="post">
+                        @csrf
+                        <button type="submit" class="sidebar-menu-link admin-sidebar-button">
+                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                            <span>Đăng xuất</span>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -102,8 +105,8 @@
     <div class="sidebar-profile">
         <i class="bi bi-person-badge fs-3 text-white" aria-hidden="true"></i>
         <div class="sidebar-profile-info">
-            <div class="sidebar-profile-name">Admin mẫu 1</div>
-            <div class="sidebar-profile-email">admin1@example.com</div>
+            <div class="sidebar-profile-name">{{ auth()->user()->name }}</div>
+            <div class="sidebar-profile-email">{{ auth()->user()->email }}</div>
         </div>
     </div>
 </aside>

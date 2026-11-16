@@ -3,12 +3,17 @@
 @section('content')
     <div class="card p-4">
         <h2 class="h5">Tài khoản nhà tuyển dụng</h2>
-        <p>Đây là không gian xem thử, chưa có phiên đăng nhập nhà tuyển dụng thật. Chức năng tài khoản và đăng xuất sẽ kết nối hệ thống xác thực ở giai đoạn Backend.</p>
-        <p>Email minh họa: recruiter@example.com</p>
-        <div class="d-flex flex-wrap gap-2">
-            <a href="{{ route('login') }}" class="btn-dark-custom">Đến trang đăng nhập hiện có</a>
-            <button type="button" class="btn btn-light" data-exit-demo>Đăng xuất — xem thông tin</button>
-            <button type="button" id="reset-recruiter-demo" class="btn btn-outline-danger">Đặt lại tin và hồ sơ ứng tuyển demo</button>
+        <p>{{ auth()->user()->name }} · {{ auth()->user()->email }}</p>
+        <p>Tài khoản đã đăng nhập. Các thao tác nghiệp vụ trên trang hiện vẫn dùng dữ liệu demo.</p>
+        @include('auth.password-errors')
+        @include('Candidate.auth-form', ['mode' => 'settings', 'buttonLabel' => 'Đổi mật khẩu'])
+        @include('auth.google-link')
+        <div class="d-flex flex-wrap gap-2 mt-3">
+            <form action="{{ route('logout') }}" method="post">
+                @csrf
+                <button type="submit" class="btn btn-outline-dark">Đăng xuất</button>
+            </form>
+            <button type="button" id="reset-recruiter-demo" class="btn btn-outline-danger">Đặt lại dữ liệu nghiệp vụ demo</button>
         </div>
     </div>
 @endsection

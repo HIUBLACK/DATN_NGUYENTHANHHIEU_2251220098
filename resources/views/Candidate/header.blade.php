@@ -41,6 +41,10 @@
                                 @include('Candidate.account-links')
                             </ul>
                         </li>
+                    @elseif (auth()->check())
+                        <li class="d-xl-none">
+                            <a href="{{ route(app(\App\Services\AuthService::class)->destination(auth()->user())) }}">{{ auth()->user()->name }}</a>
+                        </li>
                     @else
                         <li class="d-xl-none">
                             <a href="{{ route('login') }}">Đăng nhập</a>
@@ -68,6 +72,8 @@
                             </button>
                             @include('Candidate.account-panel')
                         </div>
+                    @elseif (auth()->check())
+                        <a href="{{ route(app(\App\Services\AuthService::class)->destination(auth()->user())) }}" class="text-white mr-3">{{ auth()->user()->name }}</a>
                     @else
                         <a href="{{ route('login') }}" class="text-white mr-3">Đăng nhập</a>
                         <a href="{{ route('register') }}" class="btn btn-primary border-width-2 mr-2">Đăng ký</a>

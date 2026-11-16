@@ -25,6 +25,7 @@ class User extends Authenticatable
     ];
 
     protected $hidden = [
+        'google_subject',
         'password',
         'remember_token',
     ];

@@ -11,7 +11,7 @@
         <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
         <link rel="stylesheet" href="{{ asset('admin-assets/css/admin.css') }}">
     </head>
-    <body data-admin-page="{{ $page }}">
+    <body data-preview-user="{{ auth()->id() }}" data-admin-page="{{ $page }}">
         @include('Admin.component.sidebar')
         <div class="main-wrapper">
             @include('Admin.component.header')
@@ -72,5 +72,6 @@
         <script src="{{ asset('admin-assets/js/admin-categories-domain.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin-categories.js') }}"></script>
         <script src="{{ asset('admin-assets/js/admin.js') }}"></script>
+        <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
     </body>
 </html>

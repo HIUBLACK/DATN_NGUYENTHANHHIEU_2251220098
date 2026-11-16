@@ -12,7 +12,7 @@
         <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
         <link rel="stylesheet" href="{{ asset('recruiter/css/theme.css') }}">
     </head>
-    <body data-recruiter-page="{{ $page }}">
+    <body data-preview-user="{{ auth()->id() }}" data-recruiter-page="{{ $page }}">
         @include('employer.component.sidebar')
         <div class="main-wrapper">
             @include('employer.component.header')
@@ -76,5 +76,6 @@
         <script src="{{ asset('recruiter/js/recruiter-categories.js') }}"></script>
         <script src="{{ asset('recruiter/js/company-profile-form.js') }}"></script>
         <script src="{{ asset('recruiter/js/recruiter.js') }}"></script>
+        <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
     </body>
 </html>

@@ -44,6 +44,14 @@ Chưa bật Remember-me, xác nhận kỹ năng CV hoặc AI thật. Giao diện
 
 ## Vận hành migration
 
+### Bổ sung Google OAuth ngày 16/11/2026
+
+Sau phê duyệt của người dùng, đã áp dụng riêng migration `2026_11_16_210000_add_google_subject_to_users_table.php` vào db_job. Thêm `users.google_subject VARCHAR(255) ASCII COLLATE ascii_bin NULL` và UNIQUE `users_google_subject_unique`; không thêm bảng, vẫn 32 bảng. Các trường dữ liệu User cũ được so sánh trước/sau và giữ nguyên. Không backfill Google subject theo email. User Model ẩn subject, không cho mass assignment.
+
+Diễn tập up/down/up trên MariaDB tách biệt và bộ Auth/Models đạt 73 tests / 1177 assertions trước triển khai. down() chặn khi có bất kỳ Google identity đã liên kết, nhằm tránh làm mất phương thức đăng nhập. Không dùng script baseline deploy-schema.php để triển khai bổ sung này. Báo cáo chi tiết nằm tại backend-auth-implementation.md, mục 9.
+
+### Công cụ baseline hiện có
+
 `database/deploy-schema.php --apply` dành cho một bản baseline chưa nâng cấp: kiểm tra schema, maintenance, backup, restore kiểm chứng, diễn tập và migrate. Script có đường dẫn CLI XAMPP cố định cho môi trường Windows hiện tại; phải kiểm tra lại khi triển khai máy khác. Script từ chối chạy lại khi đã có queue_jobs. Không dùng script để reset dữ liệu.
 
 `down()` của migration mới từ chối drop bảng có dữ liệu; rollback không phải phương án vận hành sau có dữ liệu thật. Ưu tiên forward migration đã duyệt. Không chạy migrate:fresh, không sửa migration đã triển khai, không rename queue về jobs khi bảng tin còn tồn tại. Lỗi DDL có thể để lại schema từng phần vì implicit commit; giữ maintenance để kiểm tra thay vì retry mù.

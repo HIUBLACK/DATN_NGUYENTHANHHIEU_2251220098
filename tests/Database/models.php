@@ -49,10 +49,23 @@ try {
     if (Artisan::call('migrate', ['--database' => 'models_test', '--force' => true]) !== 0) {
         throw new RuntimeException('Cannot prepare model test schema.');
     }
+    if (in_array('--pending-google', $argv, true)) {
+        $googleMigration = 'database/migrations/2026_11_16_210000_add_google_subject_to_users_table.php';
+        if ($original->table('migrations')->where('migration', basename($googleMigration, '.php'))->exists()) {
+            throw new RuntimeException('Google migration already applied; omit --pending-google.');
+        }
+        Artisan::call('migrate:rollback', ['--database' => 'models_test', '--path' => [$googleMigration], '--step' => 1, '--force' => true]);
+    }
     if (schemaDefinitions($testConnection) !== $before) {
         throw new RuntimeException('Live schema differs from migrations; report drift before testing models.');
     }
-    $process = new Process([PHP_BINARY, 'vendor/phpunit/phpunit/phpunit', '--configuration', 'tests/Models/phpunit.xml'], base_path(), [
+    if (in_array('--pending-google', $argv, true)) {
+        if (Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$googleMigration], '--force' => true]) !== 0) {
+            throw new RuntimeException('Cannot apply pending Google migration on isolated database.');
+        }
+    }
+    $testConfiguration = in_array('--auth', $argv, true) ? 'tests/Auth/phpunit.xml' : 'tests/Models/phpunit.xml';
+    $process = new Process([PHP_BINARY, 'vendor/phpunit/phpunit/phpunit', '--configuration', $testConfiguration], base_path(), [
         'APP_ENV' => 'testing', 'DB_URL' => false, 'DB_CONNECTION' => 'mysql',
         'DB_DATABASE' => $database, 'DB_HOST' => $configuration['host'], 'DB_PORT' => (string) $configuration['port'],
         'DB_USERNAME' => $configuration['username'], 'DB_PASSWORD' => (string) $configuration['password'],
@@ -68,7 +81,7 @@ try {
     if (schemaDefinitions($original) !== $before || $original->table('migrations')->orderBy('id')->get()->toJson() !== $migrationsBefore) {
         throw new RuntimeException('Original schema/history changed during test run.');
     }
-    echo "PASS: model tests used an isolated MariaDB database; live schema matches migrations and remains unchanged.\n";
+    echo "PASS: tests used an isolated MariaDB database; original schema and migration history remain unchanged.\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, $exception->getMessage()."\n");
     $failed = true;

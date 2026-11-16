@@ -44,10 +44,13 @@
                     </a>
                 </li>
                 <li class="sidebar-menu-item">
-                    <button type="button" class="sidebar-menu-link recruiter-sidebar-button" data-exit-demo>
-                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
-                        <span>Đăng xuất</span>
-                    </button>
+                    <form action="{{ route('logout') }}" method="post">
+                        @csrf
+                        <button type="submit" class="sidebar-menu-link recruiter-sidebar-button">
+                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                            <span>Đăng xuất</span>
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>
@@ -55,8 +58,8 @@
     <div class="sidebar-profile">
         <img src="{{ asset('recruiter/images/avatar.png') }}" alt="Ảnh đại diện minh họa" class="sidebar-profile-img">
         <div class="sidebar-profile-info">
-            <div class="sidebar-profile-name">Nhà tuyển dụng demo</div>
-            <div class="sidebar-profile-email">recruiter@example.com</div>
+            <div class="sidebar-profile-name">{{ auth()->user()->name }}</div>
+            <div class="sidebar-profile-email">{{ auth()->user()->email }}</div>
         </div>
     </div>
 </aside>

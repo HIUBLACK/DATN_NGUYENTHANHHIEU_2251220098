@@ -2,9 +2,9 @@
     <div class="account-panel-profile">
         <img src="{{ route('candidate.avatar') }}" alt="Ảnh đại diện" class="account-panel-avatar">
         <div class="account-panel-identity">
-            <a href="{{ route('candidate.profile') }}" class="account-panel-name">{{ $demo['profile']['name'] }}</a>
-            <p class="account-panel-status">Tài khoản xem thử</p>
-            <p class="account-panel-email" title="{{ $demo['profile']['email'] }}">{{ $demo['profile']['email'] }}</p>
+            <a href="{{ route('candidate.profile') }}" class="account-panel-name">{{ auth()->user()->name }}</a>
+            <p class="account-panel-status">Tài khoản ứng viên</p>
+            <p class="account-panel-email" title="{{ auth()->user()->email }}">{{ auth()->user()->email }}</p>
         </div>
     </div>
     <div class="account-panel-groups">
@@ -46,11 +46,11 @@
             </div>
         </details>
     </div>
-    <form action="{{ route('demo.leave') }}" method="post" class="account-panel-logout">
+    <form action="{{ route('logout') }}" method="post" class="account-panel-logout">
         @csrf
         <button type="submit">
             <span class="icon-sign-out mr-2" aria-hidden="true"></span>
-            Đăng xuất demo
+            Đăng xuất
         </button>
     </form>
 </div>

@@ -2,13 +2,16 @@
 
 namespace Tests\Feature;
 
+use App\Enums\UserRole;
 use App\Support\CandidateCatalog;
 use App\Support\OccupationCatalog;
 use App\Support\RecruiterCatalog;
-use Tests\TestCase;
+use Tests\AuthenticatedDemoTestCase;
 
-class JobDiscoveryTest extends TestCase
+class JobDiscoveryTest extends AuthenticatedDemoTestCase
 {
+    protected UserRole $demoRole = UserRole::Admin;
+
     public function test_filters_combine_and_reject_mismatched_categories(): void
     {
         $catalog = app(CandidateCatalog::class);

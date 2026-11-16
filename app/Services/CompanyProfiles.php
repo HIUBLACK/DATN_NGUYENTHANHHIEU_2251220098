@@ -22,6 +22,7 @@ class CompanyProfiles
             $company = $this->catalog->data()['company'];
             $company['id'] = (string) Str::uuid();
             $company['owner_token'] = (string) Str::uuid();
+            $company['preview_user_id'] = auth()->id();
             $company['status'] = 'active';
             $company['cover'] = null;
             $company['office_images'] = [];
@@ -43,6 +44,8 @@ class CompanyProfiles
         $company = session('company_profile_preview');
 
         return is_array($company)
+            && auth()->check()
+            && ($company['preview_user_id'] ?? null) === auth()->id()
             && ($id === null || $company['id'] === $id)
             && $company['status'] === 'active'
             && hash_equals($company['owner_token'], (string) session('company_profile_owner', ''));

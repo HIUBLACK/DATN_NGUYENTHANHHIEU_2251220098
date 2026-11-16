@@ -149,36 +149,6 @@ class CandidateDemoController extends Controller
         return response()->file(public_path('jobboard/images/person_1.jpg'));
     }
 
-    public function authPreview(Request $request, string $mode): RedirectResponse
-    {
-        $rules = [];
-
-        if (in_array($mode, ['login', 'register', 'forgot'], true)) {
-            $rules['email'] = ['required', 'email'];
-        }
-
-        if (in_array($mode, ['login', 'register', 'reset', 'settings'], true)) {
-            $rules['password'] = ['required', 'string', 'min:8'];
-        }
-
-        if (in_array($mode, ['register', 'reset', 'settings'], true)) {
-            $rules['password'][] = 'confirmed';
-        }
-
-        if ($mode === 'settings') {
-            $rules['current_password'] = ['required', 'string'];
-        }
-
-        $request->validate($rules, [
-            'required' => 'Vui lòng điền thông tin bắt buộc.',
-            'email' => 'Email không hợp lệ.',
-            'min' => 'Mật khẩu cần ít nhất 8 ký tự.',
-            'confirmed' => 'Xác nhận mật khẩu chưa khớp.',
-        ]);
-
-        return back()->with('notice', 'Biểu mẫu hợp lệ. Chưa kết nối xác thực: không tạo tài khoản, đổi mật khẩu hoặc gửi email.');
-    }
-
     public function sampleApplications(): RedirectResponse
     {
         $applications = $this->demo->state()['applications'];

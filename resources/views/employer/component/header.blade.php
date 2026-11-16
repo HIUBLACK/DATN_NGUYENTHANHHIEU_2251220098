@@ -18,7 +18,7 @@
         </a>
         <a href="{{ route('recruiter.account') }}" class="navbar-profile-btn text-decoration-none">
             <img src="{{ asset('recruiter/images/avatar.png') }}" alt="Ảnh minh họa" class="navbar-profile-img">
-            <span class="navbar-profile-name d-none d-md-inline">Nhà tuyển dụng</span>
+            <span class="navbar-profile-name d-none d-md-inline">{{ auth()->user()->name }}</span>
         </a>
     </div>
 </header>
