@@ -1,0 +1,130 @@
+.site-navigation .job-mega {
+    position: static;
+}
+
+.job-mega-toggle,
+.job-mega-category button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    padding: 10px;
+    cursor: pointer;
+}
+
+.site-navigation .job-mega-toggle {
+    color: #fff;
+    margin-left: -16px;
+}
+
+.job-mega-panel {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(950px, calc(100vw - 48px));
+    display: grid;
+    grid-template-columns: 270px minmax(0, 1fr);
+    background: #fff;
+    color: #24364b;
+    border: 1px solid #e0e9f3;
+    border-radius: 14px;
+    box-shadow: 0 16px 40px #102c4b26;
+    z-index: 1050;
+    overflow: hidden;
+    text-align: left;
+}
+
+.job-mega-panel[hidden] {
+    display: none;
+}
+
+.job-mega-categories {
+    background: #f4f8fc;
+    padding: 12px;
+}
+
+.job-mega-category {
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+}
+
+.job-mega .job-mega-category a {
+    flex: 1;
+    padding: 13px 8px;
+    color: #24364b;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: normal;
+}
+
+.job-mega-category.is-active {
+    background: #e1efff;
+    color: #0069d1;
+}
+
+.job-mega-results {
+    padding: 22px;
+    min-width: 0;
+}
+
+.job-mega-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 14px;
+}
+
+.job-mega-options {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-content: start;
+    gap: 8px;
+    height: 300px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: #a7c5e5 #f4f8fc;
+}
+
+.job-mega .job-mega-options a {
+    display: block;
+    padding: 10px;
+    color: #24364b;
+    font-size: 14px;
+    line-height: 1.5;
+    border-radius: 6px;
+    overflow-wrap: anywhere;
+}
+
+.job-mega .job-mega-options a:hover,
+.job-mega .job-mega-options a:focus-visible {
+    background: #eaf4ff;
+    color: #0069d1;
+}
+
+.job-filter-highlight {
+    outline: 2px solid #0069d1;
+    scroll-margin-top: 100px;
+}
+
+.site-mobile-menu .job-mega-panel {
+    position: static;
+    transform: none;
+    width: 100%;
+    grid-template-columns: 1fr;
+    box-shadow: none;
+}
+
+.site-mobile-menu .job-mega-toggle {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.site-mobile-menu .job-mega-options {
+    grid-template-columns: 1fr;
+    height: 220px;
+}
+
+.site-mobile-menu .job-mega-category a {
+    font-size: 13px;
+    padding: 10px 4px;
+}

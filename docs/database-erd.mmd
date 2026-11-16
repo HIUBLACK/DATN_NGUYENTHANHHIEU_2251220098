@@ -1,0 +1,250 @@
+erDiagram
+    %% Final design: 24 business tables + 8 Laravel infrastructure tables.
+    %% MariaDB 11.5.2: validate generated slots, composite FKs and CHECKs on staging.
+    %% Industry/level: nullable in draft, required on submission.
+    %% Referenced specialization cannot change category (Service + locking).
+    %% Active resumes require exactly one primary (unique slot + Service).
+    %% Published version belongs to same job and requires Admin approval.
+    %% AI formula v1: 60 percent semantic + 40 percent skill; preserve history.
+    %% Remember-me disabled in MVP; retention policy required before production.
+    users {
+        bigint id PK
+        varchar email UK
+        varchar google_subject UK "nullable, ASCII binary"
+        varchar role
+        varchar status
+    }
+    candidate_profiles {
+        bigint id PK
+        bigint user_id FK, UK
+        int recommendation_generation
+    }
+    companies {
+        bigint id PK
+        uuid public_id UK
+        varchar logo_path
+        varchar cover_image_path
+        json office_images
+        bigint recruiter_id FK, UK
+        bigint industry_id FK
+        varchar status
+    }
+    industries {
+        bigint id PK
+        varchar code UK
+        varchar normalized_name UK
+    }
+    job_categories {
+        bigint id PK
+        varchar code UK
+        varchar normalized_name UK
+    }
+    job_specializations {
+        bigint id PK
+        bigint job_category_id FK
+        varchar code UK
+    }
+    skills {
+        bigint id PK
+        varchar code UK
+        varchar normalized_name UK
+    }
+    job_levels {
+        bigint id PK
+        varchar code UK
+        varchar normalized_name UK
+    }
+    jobs {
+        bigint id PK
+        bigint company_id FK
+        bigint published_version_id FK
+        varchar status
+        datetime expires_at
+    }
+    job_versions {
+        bigint id PK
+        bigint job_id FK
+        int version_number
+        bigint industry_id FK
+        bigint job_specialization_id FK
+        bigint job_level_id FK
+        varchar review_status
+        int pending_slot
+    }
+    job_version_skills {
+        bigint id PK
+        bigint job_version_id FK
+        bigint skill_id FK
+    }
+    job_moderation_logs {
+        bigint id PK
+        bigint job_id FK
+        bigint job_version_id FK, UK
+        bigint admin_id FK
+    }
+    resumes {
+        bigint id PK
+        uuid public_id UK
+        bigint candidate_id FK
+        int current_revision
+        int primary_slot
+        datetime deleted_at
+    }
+    resume_revisions {
+        bigint id PK
+        bigint resume_id FK
+        int revision
+        varchar file_hash
+        varchar parsing_status
+    }
+    resume_skills {
+        bigint id PK
+        bigint resume_id FK
+        int resume_revision FK
+        bigint skill_id FK
+    }
+    applications {
+        bigint id PK
+        uuid public_id UK
+        bigint candidate_id FK
+        bigint job_id FK
+        bigint job_version_id FK
+        bigint resume_id FK
+        int resume_revision FK
+        int attempt_no
+        varchar resume_snapshot_hash
+        varchar status
+    }
+    application_status_histories {
+        bigint id PK
+        bigint application_id FK
+        bigint actor_id FK
+    }
+    application_notes {
+        bigint id PK
+        bigint application_id FK
+        bigint recruiter_id FK
+    }
+    saved_jobs {
+        bigint id PK
+        bigint candidate_id FK
+        bigint job_id FK
+    }
+    recommendation_runs {
+        bigint id PK
+        bigint candidate_id FK
+        bigint resume_id FK
+        int resume_revision FK
+        int recommendation_generation
+        varchar request_key UK
+        varchar model_version
+        datetime stale_at
+    }
+    recommendation_items {
+        bigint id PK
+        bigint recommendation_run_id FK
+        bigint job_id FK
+        bigint job_version_id FK
+        decimal score
+    }
+    application_ai_evaluations {
+        bigint id PK
+        bigint application_id FK
+        bigint job_id FK
+        bigint job_version_id FK
+        varchar model_version
+        varchar formula_version
+        decimal score
+        varchar evaluation_status
+    }
+    activity_logs {
+        bigint id PK
+        bigint actor_id FK
+        varchar subject_type
+        bigint subject_id
+        varchar action
+        json old_values
+        json new_values
+        text reason
+        datetime created_at
+    }
+    notifications {
+        uuid id PK
+        varchar notifiable_type
+        bigint notifiable_id
+        text data
+    }
+    sessions {
+        varchar id PK
+        bigint user_id FK
+    }
+    password_reset_tokens {
+        varchar email PK
+        varchar token
+    }
+    queue_jobs {
+        bigint id PK
+        varchar queue
+        longtext payload
+    }
+    failed_jobs {
+        bigint id PK
+        varchar uuid UK
+    }
+    job_batches {
+        varchar id PK
+    }
+    cache {
+        varchar key PK
+    }
+    cache_locks {
+        varchar key PK
+    }
+    migrations {
+        int id PK
+    }
+
+    users ||--o| candidate_profiles : "candidate profile"
+    users ||--o| companies : "recruiter owner"
+    industries o|--o{ companies : "optional industry"
+    companies ||--o{ jobs : "owns"
+    job_categories ||--o{ job_specializations : "contains"
+    jobs ||--o{ job_versions : "content versions"
+    jobs o|--o| job_versions : "published pointer same job"
+    industries o|--o{ job_versions : "required on submit"
+    job_levels o|--o{ job_versions : "required on submit"
+    job_specializations ||--o{ job_versions : "specialization"
+    job_versions ||--o{ job_version_skills : "requirements"
+    skills ||--o{ job_version_skills : "skill"
+    job_versions ||--o| job_moderation_logs : "final decision"
+    users ||--o{ job_moderation_logs : "reviewer"
+    users ||--o{ resumes : "candidate owner"
+    resumes ||--|{ resume_revisions : "immutable files"
+    resume_revisions ||--o{ resume_skills : "composite revision FK"
+    skills ||--o{ resume_skills : "recognized"
+    users ||--o{ applications : "candidate"
+    jobs ||--o{ applications : "attempts"
+    job_versions ||--o{ applications : "JD at submission"
+    resumes ||--o{ applications : "same candidate composite FK"
+    resume_revisions ||--o{ applications : "source copied to snapshot"
+    applications ||--|{ application_status_histories : "transitions"
+    users ||--o{ application_status_histories : "actor"
+    applications ||--o{ application_notes : "private notes"
+    users ||--o{ application_notes : "recruiter author"
+    users ||--o{ saved_jobs : "candidate"
+    jobs ||--o{ saved_jobs : "saved"
+    users ||--o{ recommendation_runs : "candidate"
+    resumes ||--o{ recommendation_runs : "same candidate composite FK"
+    resume_revisions ||--o{ recommendation_runs : "input revision"
+    recommendation_runs ||--o{ recommendation_items : "ranked results"
+    job_versions ||--o{ recommendation_items : "scored version"
+    jobs ||--o{ recommendation_items : "same job composite FK"
+    applications ||--o{ application_ai_evaluations : "snapshot evaluation"
+    job_versions ||--o{ application_ai_evaluations : "scored JD"
+    jobs ||--o{ application_ai_evaluations : "same job enforced"
+    users ||..o{ notifications : "logical morph no physical FK"
+    users o|--o{ sessions : "optional authenticated user"
+    users ||--o{ activity_logs : "actor FK"
+    users ||..o{ activity_logs : "subject user - logical only"
+    companies ||..o{ activity_logs : "subject company - logical only"
+    jobs ||..o{ activity_logs : "subject job - logical only"

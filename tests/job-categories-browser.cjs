@@ -1,0 +1,72 @@
+const { chromium } = require(process.env.TEMP + '/viejob-browser-tools/node_modules/playwright');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+(async function () {
+    const browser = await chromium.launch({ executablePath: 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe', headless: true });
+    const page = await browser.newPage();
+    const errors = [];
+    page.on('pageerror', error => errors.push(error.message));
+    const base = 'http://127.0.0.1:8012';
+    fs.mkdirSync('storage/app/private/job-categories-checks', { recursive: true });
+    for (const width of [1440, 768, 390]) {
+        await page.setViewportSize({ width, height: 1000 });
+        for (const [name, path] of [['candidate', '/viec-lam'], ['recruiter', '/nha-tuyen-dung/quan-ly/tin-tuyen-dung/tao']]) {
+            await page.goto(base + path);
+            await page.waitForTimeout(800);
+            assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 2), false);
+            await page.screenshot({ path: 'storage/app/private/job-categories-checks/' + name + '-' + width + '.png', fullPage: true });
+        }
+    }
+    await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.goto(base + '/viec-lam');
+    await page.locator('#filter-occupationId').selectOption('NN-001');
+    await page.locator('#filter-specialtyId').selectOption('CM-002');
+    await page.locator('#filter-location').selectOption('Đà Nẵng');
+    await page.locator('#filter-experience').selectOption('1–3 năm');
+    await page.locator('#filter-skill').selectOption('Laravel');
+    await page.locator('.jobs-filter-actions button').click();
+    assert((await page.locator('.jobs-results-heading').first().innerText()).includes('1 công việc'));
+    assert((await page.locator('.jobs-result-grid').first().innerText()).includes('Backend Developer tại Đà Nẵng'));
+    assert.equal(await page.locator('#filter-specialtyId').inputValue(), 'CM-002');
+    await page.goto(base + '/nha-tuyen-dung/quan-ly/tin-tuyen-dung/tao');
+    assert(await page.locator('#specialtyId').isDisabled());
+    assert.equal(await page.locator('#occupationId option[value="NN-007"]').count(), 0);
+    await page.locator('#occupationId').selectOption('NN-001');
+    await page.locator('#specialtyId').selectOption('CM-002');
+    await page.locator('#occupationId').selectOption('NN-002');
+    assert.equal(await page.locator('#specialtyId').inputValue(), '');
+    assert.equal(await page.locator('#specialtyId option[value="CM-002"]').count(), 0);
+    await page.goto(base + '/nha-tuyen-dung/quan-ly/tin-tuyen-dung/chinh-sua?id=1');
+    await page.locator('#occupationId').selectOption('NN-002');
+    await page.locator('#specialtyId').selectOption('CM-004');
+    await page.locator('#preview-job').click();
+    assert((await page.locator('#job-preview-content').innerText()).includes('Manual Tester'));
+    await page.locator('#back-to-editor').click();
+    await page.locator('button[value="submit"]').click();
+    await page.locator('#recruiter-confirm-submit').click();
+    await page.waitForTimeout(350);
+    const state = await page.evaluate(() => JSON.parse(sessionStorage.getItem('viejob-recruiter-preview-v1')));
+    assert.equal(state.jobs[0].content.specialtyId, 'CM-004');
+    assert.equal(state.jobs[0].published.specialtyId, 'CM-002');
+    assert.equal(state.jobs[0].moderation, 'pending');
+    await page.evaluate(() => {
+        const seed = JSON.parse(document.getElementById('recruiter-seed').textContent);
+        seed.occupations[0].status = 'inactive';
+        seed.specialties.filter(item => item.occupationId === 'NN-001').forEach(item => item.status = 'inactive');
+        sessionStorage.setItem('viejob-admin-preview-v1', JSON.stringify({ occupations: seed.occupations, specialties: seed.specialties }));
+        sessionStorage.removeItem('viejob-recruiter-preview-v1');
+    });
+    await page.reload();
+    assert.equal(await page.locator('#occupationId').inputValue(), 'NN-001');
+    assert.equal(await page.locator('#specialtyId').inputValue(), 'CM-002');
+    assert((await page.locator('#specialtyId option:checked').innerText()).includes('đã ẩn'));
+    await page.locator('button[value="submit"]').click();
+    await page.locator('#recruiter-confirm').waitFor({ state: 'visible', timeout: 3000 });
+    await page.goto(base + '/nha-tuyen-dung/quan-ly/tin-tuyen-dung/tao');
+    assert.equal(await page.locator('#occupationId option[value="NN-001"]').count(), 0);
+    await page.goto(base + '/viec-lam');
+    assert.equal(await page.locator('#filter-occupationId option[value="NN-001"]').count(), 0);
+    assert.deepEqual(errors, []);
+    console.log('PASS: responsive Candidate/Recruiter, combined search, dependent categories, hidden legacy values, preview and pending version isolation.');
+    await browser.close();
+})().catch(error => { console.error(error); process.exit(1); });

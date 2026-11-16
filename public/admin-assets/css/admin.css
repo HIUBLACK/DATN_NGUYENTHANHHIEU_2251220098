@@ -1,0 +1,156 @@
+/* Bổ sung giao diện Admin trên các thành phần Spark Admin. */
+[hidden] {
+    display: none !important;
+}
+
+.admin-sidebar-button {
+    width: 100%;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.main-wrapper .btn-outline-dark,
+.modal .btn-outline-dark,
+.btn-dark-custom {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 38px;
+    font-weight: 600;
+}
+
+.main-wrapper .btn-outline-dark {
+    border-color: var(--brand-forest-dark);
+    border-radius: 8px;
+}
+
+.btn:focus-visible,
+.btn-dark-custom:focus-visible,
+.admin-summary:focus-visible {
+    outline: 3px solid var(--brand-lime);
+    outline-offset: 3px;
+}
+
+.admin-table {
+    min-width: 760px;
+}
+
+.admin-table td {
+    max-width: 320px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+.admin-table .admin-actions {
+    min-width: 170px;
+}
+
+.admin-company-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    margin-right: 10px;
+    border-radius: 8px;
+    background: var(--brand-forest-dark);
+    color: var(--brand-lime);
+}
+
+.admin-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--text-muted-green);
+}
+
+.admin-description > div {
+    display: grid;
+    grid-template-columns: 180px minmax(0, 1fr);
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.admin-description dd {
+    margin: 0;
+}
+
+.admin-text {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.admin-related-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.admin-related-row > span:first-child {
+    flex: 1 1 220px;
+}
+
+.admin-comparison th:first-child {
+    width: 20%;
+}
+
+.admin-comparison td {
+    width: 40%;
+}
+
+.admin-changed > * {
+    background: #f2f9dd;
+}
+
+.admin-change-label {
+    display: block;
+    margin-top: 6px;
+    color: #376016;
+    font-size: 12px;
+}
+
+.admin-summary {
+    width: fit-content;
+    padding: 10px 14px;
+    border: 1px solid var(--brand-forest-dark);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#admin-pagination [aria-current="page"] {
+    background: var(--brand-lime);
+    color: var(--brand-forest-dark);
+}
+
+#admin-trend-chart {
+    min-height: 330px;
+    overflow: hidden;
+}
+
+@media (max-width: 575.98px) {
+    .page-header {
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .admin-description > div {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+
+    .admin-actions input[type="date"] {
+        min-width: 0;
+        max-width: 100%;
+    }
+}
