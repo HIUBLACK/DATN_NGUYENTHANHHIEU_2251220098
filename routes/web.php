@@ -5,6 +5,8 @@ use App\Http\Controllers\CandidateDemoController;
 use App\Http\Controllers\CandidatePageController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\GooglePasswordSetupController;
+use App\Http\Controllers\PasswordRecoveryController;
 use App\Http\Controllers\RecruiterPageController;
 use Illuminate\Support\Facades\Route;
 
@@ -17,8 +19,6 @@ $publicPages = [
     'gioi-thieu' => ['about', 'Giới thiệu'],
     'login' => ['login', 'Đăng nhập'],
     'register' => ['register', 'Đăng ký'],
-    'quen-mat-khau' => ['forgot', 'Quên mật khẩu'],
-    'dat-lai-mat-khau' => ['reset', 'Đặt lại mật khẩu'],
 ];
 
 foreach ($publicPages as $path => [$page, $title]) {
@@ -30,6 +30,19 @@ foreach ($publicPages as $path => [$page, $title]) {
 }
 
 Route::redirect('/dang-nhap', '/login');
+Route::redirect('/quen-mat-khau', '/forgot-password')->name('forgot');
+Route::redirect('/dat-lai-mat-khau', '/forgot-password')->name('reset');
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [PasswordRecoveryController::class, 'page'])
+        ->defaults('page', 'forgot')->defaults('title', 'Quên mật khẩu')->name('password.request');
+    Route::get('/reset-password/{token}', [PasswordRecoveryController::class, 'page'])
+        ->where('token', '[A-Za-z0-9]{1,255}')
+        ->defaults('page', 'reset')->defaults('title', 'Đặt lại mật khẩu')->name('password.reset');
+    Route::post('/forgot-password', [PasswordRecoveryController::class, 'send'])
+        ->middleware('throttle:password-email')->name('password.email');
+    Route::post('/reset-password', [PasswordRecoveryController::class, 'reset'])
+        ->middleware('throttle:10,1')->name('password.update');
+});
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
     ->middleware(['guest', 'throttle:10,1'])->block()->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
@@ -41,6 +54,10 @@ Route::post('/register/google', [GoogleAuthController::class, 'complete'])
     ->middleware(['guest', 'throttle:register'])->block()->name('google.complete');
 Route::post('/account/google/link', [GoogleAuthController::class, 'link'])
     ->middleware(['auth', 'auth.session', 'throttle:5,1'])->block()->name('google.link');
+Route::post('/account/password/setup/google', [GooglePasswordSetupController::class, 'start'])
+    ->middleware(['auth', 'auth.session', 'throttle:password-setup-start'])->block()->name('password.setup.google');
+Route::post('/account/password/setup', [GooglePasswordSetupController::class, 'complete'])
+    ->middleware(['auth', 'auth.session', 'throttle:password-setup-complete'])->block()->name('password.setup.complete');
 Route::redirect('/dang-ky', '/register');
 Route::post('/register', [AuthController::class, 'register'])->middleware(['guest', 'throttle:register'])->name('auth.register');
 Route::post('/login', [AuthController::class, 'login'])->middleware(['guest', 'throttle:login'])->name('auth.login');

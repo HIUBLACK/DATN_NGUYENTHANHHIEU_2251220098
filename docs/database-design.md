@@ -86,6 +86,8 @@ Giữ `id ID`, `name/email/password V(255)`, `email_verified_at TIMESTAMP?`, `re
 
 Bổ sung Google OAuth đã được phê duyệt ngày 16/11/2026: `google_subject VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin NULL`, UNIQUE `users_google_subject_unique`. Lưu sub ổn định do Google xác minh, không dùng email làm identity; một Google account liên kết tối đa một User. Nhiều User có NULL được phép. Không thêm bảng, vẫn 24 nghiệp vụ + 8 hạ tầng. Không backfill/liên kết tự động theo email. Model ẩn google_subject và không mass assign; Service gán explicit. Password vẫn NOT NULL: đăng ký Google mới dùng hash chuỗi ngẫu nhiên mật mã, không có mật khẩu mặc định được công bố. Không lưu OAuth token/code vào schema. Liên kết tài khoản cũ phải xác nhận mật khẩu và hoàn tất Google state trong cùng phiên.
 
+Bổ sung Giai đoạn 2.2 đã được phê duyệt: `has_local_password TINYINT(1) NULL DEFAULT NULL`, CHECK `users_has_local_password_check` giới hạn NULL/0/1. True: đã biết có mật khẩu người dùng; false: Google-only được xác định từ luồng đăng ký mới; NULL: chưa đủ nguồn gốc. Không index/FK/bảng mới; không fillable, cast boolean giữ NULL. Backfill tài khoản không Google thành true, tài khoản có Google cũ giữ NULL. Đăng ký email/Admin=true, Google mới=false; login Google/link không đổi cờ. Email login thành công, đổi/reset/setup mật khẩu cập nhật true; không suy đoán từ hash/email/Google subject. Google re-auth setup chỉ dành cho false + active + subject; true/NULL không được bỏ qua mật khẩu cũ. Rollback cột bị chặn khi tồn tại User để bảo toàn phân loại.
+
 UNIQUE(email); INDEX(role,status,id). CHECK role candidate/recruiter/admin; status active/locked. User cũ: thêm role nullable, mapping/backfill có kiểm tra rồi NOT NULL; không tự gán vai trò. Không hard delete tài khoản có nghiệp vụ. Role phù hợp với company/profile kiểm tra Service, FK không kiểm tra role.
 
 ### 4.2 candidate_profiles — mới
@@ -415,6 +417,7 @@ erDiagram
         bigint id PK
         varchar email UK
         varchar google_subject UK "nullable, ASCII binary"
+        boolean has_local_password "nullable: unknown"
         varchar role
         varchar status
     }

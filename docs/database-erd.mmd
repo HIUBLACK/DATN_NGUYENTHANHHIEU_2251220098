@@ -11,6 +11,7 @@ erDiagram
         bigint id PK
         varchar email UK
         varchar google_subject UK "nullable, ASCII binary"
+        boolean has_local_password "nullable: unknown"
         varchar role
         varchar status
     }

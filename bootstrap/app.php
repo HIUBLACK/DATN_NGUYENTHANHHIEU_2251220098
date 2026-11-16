@@ -22,5 +22,5 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->redirectUsersTo(fn ($request) => route(app(AuthService::class)->destination($request->user())));
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $exceptions->dontFlash(['token', 'current_password', 'password', 'password_confirmation']);
     })->create();

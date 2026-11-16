@@ -6,7 +6,7 @@
         <p>{{ auth()->user()->name }} · {{ auth()->user()->email }}</p>
         <p>Tài khoản đã đăng nhập. Các thao tác nghiệp vụ trên trang hiện vẫn dùng dữ liệu demo.</p>
         @include('auth.password-errors')
-        @include('Candidate.auth-form', ['mode' => 'settings', 'buttonLabel' => 'Đổi mật khẩu'])
+        @include('auth.account-password')
         @include('auth.google-link')
         <div class="d-flex flex-wrap gap-2 mt-3">
             <form action="{{ route('logout') }}" method="post">

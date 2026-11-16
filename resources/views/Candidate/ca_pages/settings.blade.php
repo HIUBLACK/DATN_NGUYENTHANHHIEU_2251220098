@@ -5,8 +5,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-lg-6 mb-5">
-                    <h2 class="h4 mb-4">Đổi mật khẩu</h2>
-                    @include('Candidate.auth-form', ['mode' => 'settings', 'buttonLabel' => 'Đổi mật khẩu'])
+                    <h2 class="h4 mb-4">Mật khẩu tài khoản</h2>
+                    @include('auth.account-password')
                     @include('auth.google-link')
                 </div>
                 <div class="col-lg-6">

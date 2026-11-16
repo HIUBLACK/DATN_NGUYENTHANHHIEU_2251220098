@@ -44,6 +44,10 @@ Chưa bật Remember-me, xác nhận kỹ năng CV hoặc AI thật. Giao diện
 
 ## Vận hành migration
 
+### Bổ sung trạng thái mật khẩu Giai đoạn 2.2
+
+Người dùng đã phê duyệt và migration `2026_11_17_000000_add_has_local_password_to_users_table.php` đã được áp dụng vào db_job sau kiểm thử riêng. Thêm has_local_password nullable + CHECK NULL/0/1, không thêm bảng (vẫn 32). Backfill 2 User không Google thành true; giữ 2 User có Google cũ ở NULL, không suy đoán false từ hash hoặc subject. Các trường User cũ được đối chiếu trước/sau và giữ nguyên. down() chặn nếu tồn tại User để bảo toàn phân loại. Thiết kế/ERD cập nhật; các luồng cập nhật cờ và Google re-auth setup được mô tả tại backend-auth-implementation.md mục 11.
+
 ### Bổ sung Google OAuth ngày 16/11/2026
 
 Sau phê duyệt của người dùng, đã áp dụng riêng migration `2026_11_16_210000_add_google_subject_to_users_table.php` vào db_job. Thêm `users.google_subject VARCHAR(255) ASCII COLLATE ascii_bin NULL` và UNIQUE `users_google_subject_unique`; không thêm bảng, vẫn 32 bảng. Các trường dữ liệu User cũ được so sánh trước/sau và giữ nguyên. Không backfill Google subject theo email. User Model ẩn subject, không cho mass assignment.

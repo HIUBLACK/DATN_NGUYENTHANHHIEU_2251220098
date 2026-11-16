@@ -1,6 +1,10 @@
 <?php
 
+use App\Models\User;
+
 return [
+
+    'password_recovery_enabled' => env('PASSWORD_RECOVERY_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------
@@ -62,7 +66,7 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\User::class),
+            'model' => env('AUTH_MODEL', User::class),
         ],
 
         // 'users' => [

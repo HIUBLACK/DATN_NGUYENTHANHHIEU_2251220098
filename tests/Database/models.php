@@ -49,6 +49,16 @@ try {
     if (Artisan::call('migrate', ['--database' => 'models_test', '--force' => true]) !== 0) {
         throw new RuntimeException('Cannot prepare model test schema.');
     }
+    $pendingPasswordSetup = in_array('--pending-password-setup', $argv, true);
+    if ($pendingPasswordSetup) {
+        $passwordMigration = 'database/migrations/2026_11_17_000000_add_has_local_password_to_users_table.php';
+        if ($original->table('migrations')->where('migration', basename($passwordMigration, '.php'))->exists()) {
+            throw new RuntimeException('Password setup migration already applied; omit --pending-password-setup.');
+        }
+        if (Artisan::call('migrate:rollback', ['--database' => 'models_test', '--path' => [$passwordMigration], '--step' => 1, '--force' => true]) !== 0) {
+            throw new RuntimeException('Cannot rehearse password classification rollback.');
+        }
+    }
     if (in_array('--pending-google', $argv, true)) {
         $googleMigration = 'database/migrations/2026_11_16_210000_add_google_subject_to_users_table.php';
         if ($original->table('migrations')->where('migration', basename($googleMigration, '.php'))->exists()) {
@@ -58,6 +68,11 @@ try {
     }
     if (schemaDefinitions($testConnection) !== $before) {
         throw new RuntimeException('Live schema differs from migrations; report drift before testing models.');
+    }
+    if ($pendingPasswordSetup) {
+        if (Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$passwordMigration], '--force' => true]) !== 0) {
+            throw new RuntimeException('Cannot apply pending password classification on isolated database.');
+        }
     }
     if (in_array('--pending-google', $argv, true)) {
         if (Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$googleMigration], '--force' => true]) !== 0) {
@@ -70,6 +85,8 @@ try {
         'DB_DATABASE' => $database, 'DB_HOST' => $configuration['host'], 'DB_PORT' => (string) $configuration['port'],
         'DB_USERNAME' => $configuration['username'], 'DB_PASSWORD' => (string) $configuration['password'],
         'CACHE_STORE' => 'array', 'SESSION_DRIVER' => 'array', 'QUEUE_CONNECTION' => 'sync',
+        'MAIL_MAILER' => 'array', 'MAIL_HOST' => 'smtp.test.invalid', 'MAIL_PORT' => '2525',
+        'MAIL_USERNAME' => '', 'MAIL_PASSWORD' => '', 'MAIL_URL' => '', 'PASSWORD_RECOVERY_ENABLED' => 'false',
     ]);
     $process->setTimeout(120);
     $process->run(function (string $type, string $output): void {

@@ -77,6 +77,7 @@ class AuthenticationTest extends TestCase
         $user = User::where('email', 'register@test.invalid')->firstOrFail();
         $this->assertAuthenticatedAs($user);
         $this->assertSame(UserRole::Candidate, $user->role);
+        $this->assertTrue($user->has_local_password);
         $this->assertSame(UserStatus::Active, $user->status);
         $this->assertNotSame(99999, $user->id);
         $this->assertNotNull($user->candidateProfile);
@@ -90,6 +91,7 @@ class AuthenticationTest extends TestCase
         $this->post(route('auth.register'), $this->registration('recruiter'))->assertRedirect(route('recruiter.dashboard'));
         $user = User::where('email', 'register@test.invalid')->firstOrFail();
         $this->assertSame(UserRole::Recruiter, $user->role);
+        $this->assertTrue($user->has_local_password);
         $this->assertNull($user->company);
         $this->assertNull($user->candidateProfile);
         $this->assertSame(0, Company::count());
@@ -116,6 +118,7 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->assertNotSame($sessionId, session()->getId());
         $this->assertNotNull($user->fresh()->last_login_at);
+        $this->assertTrue($user->fresh()->has_local_password);
         $this->assertNull($user->fresh()->remember_token);
         foreach ($response->headers->getCookies() as $cookie) {
             $this->assertStringNotContainsString('remember_', $cookie->getName());
@@ -205,6 +208,7 @@ class AuthenticationTest extends TestCase
         $this->post(route('password.change'), $input)->assertRedirect(route('login'))->assertSessionHasNoErrors();
         $this->assertGuest();
         $this->assertTrue(Hash::check('NewPassword123', $user->fresh()->password));
+        $this->assertTrue($user->fresh()->has_local_password);
         $this->assertSame(0, DB::table('sessions')->where('user_id', $user->id)->count());
         $this->assertNull($user->fresh()->remember_token);
     }
@@ -223,7 +227,8 @@ class AuthenticationTest extends TestCase
     {
         $this->post(route('demo.enter'))->assertRedirect(route('login'));
         $this->post('/demo/tai-khoan/login', ['email' => 'fake@test.invalid', 'password' => 'Password123'])->assertNotFound();
-        $this->get(route('forgot'))->assertOk()->assertSee('Chưa có email khôi phục nào được gửi');
+        $this->get(route('forgot'))->assertRedirect(route('password.request'));
+        $this->get(route('password.request'))->assertOk()->assertSee('Chưa có email khôi phục nào được gửi');
         $this->assertGuest();
         $this->get(route('register'))->assertSee('name="role"', false)->assertDontSee('value="admin"', false);
     }
@@ -284,6 +289,7 @@ class AuthenticationTest extends TestCase
             ->assertSuccessful();
         $admin = User::where('email', 'admin@test.invalid')->firstOrFail();
         $this->assertSame(UserRole::Admin, $admin->role);
+        $this->assertTrue($admin->has_local_password);
         $this->assertSame(UserStatus::Active, $admin->status);
         $this->assertTrue(Hash::check('AdminPassword123', $admin->password));
         $this->assertNull($admin->remember_token);

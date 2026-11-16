@@ -36,6 +36,7 @@ class User extends Authenticatable
             'id' => 'integer',
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'has_local_password' => 'boolean',
             'created_at' => 'datetime',
             'updated_at' => 'datetime',
             'role' => UserRole::class,

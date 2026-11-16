@@ -13,6 +13,7 @@ use GuzzleHttp\Psr7\Response;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\GoogleProvider;
 use Tests\TestCase;
@@ -108,6 +109,7 @@ class GoogleAuthenticationTest extends TestCase
         $this->assertSame(UserRole::Candidate, $user->role);
         $this->assertSame(UserStatus::Active, $user->status);
         $this->assertSame('google-123', $user->google_subject);
+        $this->assertFalse($user->has_local_password);
         $this->assertNotNull($user->candidateProfile);
         $this->assertNotNull($user->email_verified_at);
         $this->assertNotSame('unknown', Hash::info($user->password)['algoName']);
@@ -125,6 +127,7 @@ class GoogleAuthenticationTest extends TestCase
         $this->post(route('google.complete'), ['role' => 'recruiter'])->assertRedirect(route('recruiter.dashboard'));
         $user = User::firstOrFail();
         $this->assertSame(UserRole::Recruiter, $user->role);
+        $this->assertFalse($user->has_local_password);
         $this->assertNull($user->company);
         $this->assertSame(0, CandidateProfile::count());
     }
@@ -270,5 +273,20 @@ class GoogleAuthenticationTest extends TestCase
         $this->expectException(\RuntimeException::class);
         $this->expectExceptionMessage('Cannot remove Google identities');
         $migration->down();
+    }
+
+    public function test_google_login_keeps_password_set_through_email_recovery(): void
+    {
+        $user = $this->user(UserRole::Candidate, 'recovered-google');
+        $token = Password::broker('users')->createToken($user);
+        $this->post(route('password.update'), [
+            'email' => $user->email, 'token' => $token,
+            'password' => 'RecoveredPassword123', 'password_confirmation' => 'RecoveredPassword123',
+        ])->assertRedirect(route('login'));
+        $passwordHash = $user->fresh()->password;
+        $this->googleCallback($this->begin(), 'recovered-google')->assertRedirect(route('candidate.profile'));
+        $this->assertAuthenticatedAs($user);
+        $this->assertSame($passwordHash, $user->fresh()->password);
+        $this->assertTrue(Hash::check('RecoveredPassword123', $passwordHash));
     }
 }

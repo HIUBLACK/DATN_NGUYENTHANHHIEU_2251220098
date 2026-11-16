@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 class AuthService
@@ -28,6 +29,7 @@ class AuthService
                 $user->name = $input['name'];
                 $user->email = $input['email'];
                 $user->password = Hash::make($input['password']);
+                $user->has_local_password = true;
                 $user->role = $role;
                 $user->status = UserStatus::Active;
                 $user->last_login_at = now();
@@ -65,12 +67,13 @@ class AuthService
         }
 
         $user = Auth::user();
-        $stillActive = DB::transaction(function () use ($user) {
+        $stillActive = DB::transaction(function () use ($user, $input) {
             $account = User::query()->lockForUpdate()->find($user->id);
-            if (! $account || $account->status !== UserStatus::Active) {
+            if (! $account || $account->status !== UserStatus::Active || ! Hash::check($input['password'], $account->password)) {
                 return false;
             }
             $account->last_login_at = now();
+            $account->has_local_password = true;
             $account->save();
 
             return true;
@@ -80,7 +83,7 @@ class AuthService
             throw ValidationException::withMessages(['email' => 'Không thể đăng nhập bằng thông tin này.']);
         }
         // Drop previews from the previous session; never use them as an identity.
-        $request->session()->forget(['candidate_preview', 'company_profile_preview', 'company_profile_owner', 'url.intended', 'google_flow', 'google_pending', 'state']);
+        $request->session()->forget(['candidate_preview', 'company_profile_preview', 'company_profile_owner', 'url.intended', 'google_flow', 'google_pending', 'google_setup_flow', 'google_setup_grant', 'state']);
         $request->session()->regenerate();
 
         return $user;
@@ -106,8 +109,10 @@ class AuthService
                 throw ValidationException::withMessages(['current_password' => 'Không thể đổi mật khẩu bằng thông tin này.']);
             }
             $account->password = Hash::make($input['password']);
+            $account->has_local_password = true;
             $account->remember_token = null;
             $account->save();
+            Password::broker('users')->deleteToken($account);
             // This project uses the database session driver. Revoke every device.
             DB::table('sessions')->where('user_id', $account->id)->delete();
         });
