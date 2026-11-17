@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Services\CandidateDemo;
-use App\Services\CompanyProfiles;
+use App\Services\CompanyService;
 use App\Support\CandidateCatalog;
 use App\Support\CompanyDemoCatalog;
 use App\Support\JobCategoryCatalog;
@@ -98,13 +98,13 @@ class CandidatePageController extends Controller
             'title' => $profile['name'],
             'companyProfile' => $profile,
             'companyJobs' => $this->catalog->publicJobs()->where('company', $profile['name']),
+            'isDemoCompany' => true,
         ]);
     }
 
-    public function company(string $company, CompanyProfiles $profiles): View
+    public function company(string $company, CompanyService $profiles): View
     {
-        $record = $profiles->find($company);
-        abort_unless($record && $record['status'] === 'active', 404);
+        $record = $profiles->publicQuery()->where('public_id', $company)->firstOrFail();
         $profile = $profiles->publicData($record);
 
         return view('Candidate.ca_pages.company', $this->sharedData() + [
@@ -122,11 +122,9 @@ class CandidatePageController extends Controller
         $data = $this->sharedData() + ['title' => $title, 'page' => $page];
 
         if ($page === 'companies') {
-            $data['companyProfiles'] = app(CompanyDemoCatalog::class)->profiles();
-            $preview = session('company_profile_preview');
-            $data['ownCompanyPreview'] = is_array($preview) && $preview['status'] === 'active'
-                ? app(CompanyProfiles::class)->publicData($preview) + ['id' => $preview['id']]
-                : null;
+            $companies = app(CompanyService::class);
+            $data['companyProfiles'] = $companies->publicQuery()->latest('id')->paginate(12)
+                ->through(fn ($company) => $companies->publicData($company));
         }
 
         if ($page === 'saved') {

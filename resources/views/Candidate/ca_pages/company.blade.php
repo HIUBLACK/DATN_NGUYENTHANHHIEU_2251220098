@@ -3,7 +3,9 @@
 @section('content')
     <section class="site-section">
         <div class="container">
-            <p class="alert alert-info">Trang doanh nghiệp minh họa. Hồ sơ và ảnh vừa chỉnh sửa chỉ hiển thị trong phiên demo của bạn.</p>
+            @if ($isDemoCompany ?? false)
+                <p class="alert alert-info">Trang doanh nghiệp minh họa, không phải hồ sơ doanh nghiệp thật.</p>
+            @endif
             @include('shared.company-profile', ['profile' => $companyProfile])
             <section class="mt-5" aria-labelledby="company-open-jobs-title">
                 <h2 class="h4 mb-4" id="company-open-jobs-title">Tin tuyển dụng đang mở ({{ $companyJobs->count() }})</h2>

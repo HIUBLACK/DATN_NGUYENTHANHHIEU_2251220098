@@ -370,15 +370,18 @@ class AuthenticationTest extends TestCase
         $this->get(route('candidate.pdf', $resumeId))->assertNotFound();
     }
 
-    public function test_demo_company_owner_cannot_be_overridden_by_client_id(): void
+    public function test_company_owner_cannot_be_overridden_by_client_id(): void
     {
         $first = $this->account(UserRole::Recruiter);
         $second = $this->account(UserRole::Recruiter);
-        $this->actingAs($first)->get(route('recruiter.company-edit'))->assertOk();
-        $company = session('company_profile_preview');
+        $this->actingAs($first)->post(route('recruiter.company-store'), [
+            'name' => 'Company test', 'email' => 'contact@test.invalid',
+            'phone' => '0912345678', 'address' => 'Test address',
+        ])->assertSessionHasNoErrors();
+        $company = Company::where('recruiter_id', $first->id)->firstOrFail();
         $this->post(route('logout'))->assertRedirect();
         $this->post(route('auth.login'), ['email' => $second->email, 'password' => 'Password123'])->assertRedirect();
-        $this->put(route('recruiter.company-update', $company['id']), [
+        $this->put(route('recruiter.company-update', $company->public_id), [
             'recruiter_id' => $first->id, 'user_id' => $first->id, 'name' => 'Forged',
         ])->assertForbidden();
     }

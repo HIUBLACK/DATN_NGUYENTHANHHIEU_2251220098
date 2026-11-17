@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', function () {
+    if (['company', 'company-form'].includes(document.body.dataset.recruiterPage)) {
+        window.setupCompanyProfileForm();
+        return;
+    }
     const seedElement = document.getElementById('recruiter-seed');
     const routeElement = document.getElementById('recruiter-routes');
     if (!seedElement || !routeElement) {
@@ -310,10 +314,6 @@ document.addEventListener('DOMContentLoaded', function () {
     updateNotificationIndicator();
     if (page === 'dashboard') {
         renderDashboard();
-    } else if (page === 'company') {
-        renderCompany();
-    } else if (page === 'company-form') {
-        window.setupCompanyProfileForm();
     } else if (page === 'jobs') {
         connectFilters('job-filters', renderJobs);
         renderJobs();

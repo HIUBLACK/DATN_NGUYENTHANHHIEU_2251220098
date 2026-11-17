@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Route;
 
 $recruiterPages = [
     '' => ['dashboard', 'Tổng quan tuyển dụng', 'dashboard'],
-    '/doanh-nghiep' => ['company', 'Hồ sơ doanh nghiệp', 'company'],
-    '/doanh-nghiep/tao' => ['company-form', 'Tạo hồ sơ doanh nghiệp', 'company'],
-    '/doanh-nghiep/chinh-sua' => ['company-form', 'Chỉnh sửa doanh nghiệp', 'company'],
     '/tin-tuyen-dung' => ['jobs', 'Quản lý tin tuyển dụng', 'jobs'],
     '/tin-tuyen-dung/tao' => ['job-form', 'Tạo tin tuyển dụng', 'jobs'],
     '/tin-tuyen-dung/chinh-sua' => ['job-form', 'Chỉnh sửa tin tuyển dụng', 'jobs'],
@@ -22,8 +19,6 @@ $recruiterPages = [
 foreach ($recruiterPages as $path => [$page, $title, $section]) {
     $name = match ($path) {
         '' => 'dashboard',
-        '/doanh-nghiep/tao' => 'company-create',
-        '/doanh-nghiep/chinh-sua' => 'company-edit',
         '/tin-tuyen-dung/tao' => 'job-create',
         '/tin-tuyen-dung/chinh-sua' => 'job-edit',
         default => $page,
@@ -39,3 +34,9 @@ Route::post('/nha-tuyen-dung/ho-so-doanh-nghiep', [CompanyProfileController::cla
     ->middleware('throttle:20,1')->block()->name('recruiter.company-store');
 Route::put('/nha-tuyen-dung/ho-so-doanh-nghiep/{company}', [CompanyProfileController::class, 'update'])
     ->middleware('throttle:20,1')->whereUuid('company')->block()->name('recruiter.company-update');
+
+Route::get('/nha-tuyen-dung/quan-ly/doanh-nghiep', [CompanyProfileController::class, 'show'])->name('recruiter.company');
+Route::get('/nha-tuyen-dung/quan-ly/doanh-nghiep/tao', [CompanyProfileController::class, 'create'])->name('recruiter.company-create');
+Route::get('/nha-tuyen-dung/quan-ly/doanh-nghiep/chinh-sua', [CompanyProfileController::class, 'edit'])->name('recruiter.company-edit');
+Route::get('/nha-tuyen-dung/ho-so-doanh-nghiep/{company}/anh/{slot}', [CompanyProfileController::class, 'privateMedia'])
+    ->whereUuid('company')->where('slot', 'logo|cover|office-[0-5]')->name('recruiter.company-media');

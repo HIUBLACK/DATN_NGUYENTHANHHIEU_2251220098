@@ -31,10 +31,12 @@
                 </nav>
             </div>
             <main id="recruiter-content">
-                <div class="alert alert-light border recruiter-demo-notice" role="note">
-                    <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
-                    Bản demo giao diện. Thao tác trong phiên thử nghiệm, chưa lưu database, gửi Admin, gửi email hoặc xử lý AI thật.
-                </div>
+                @unless (in_array($page, ['company', 'company-form'], true))
+                    <div class="alert alert-light border recruiter-demo-notice" role="note">
+                        <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+                        Bản demo giao diện. Thao tác trong phiên thử nghiệm, chưa lưu database, gửi Admin, gửi email hoặc xử lý AI thật.
+                    </div>
+                @endunless
                 <div id="recruiter-feedback" class="alert alert-success" role="status" hidden></div>
                 <div id="recruiter-error" class="alert alert-danger" role="alert" hidden></div>
                 @if (session('company_notice'))

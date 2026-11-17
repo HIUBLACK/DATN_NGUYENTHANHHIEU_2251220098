@@ -4,7 +4,7 @@
     <div class="card p-4">
         @unless ($canSaveCompany)
             <div class="alert alert-warning">
-                Doanh nghiệp trong phiên demo đang bị khóa. Bạn có thể xem thông tin, nhưng chưa thể lưu thay đổi.
+                Doanh nghiệp đang bị khóa. Bạn có thể xem thông tin, nhưng không thể lưu thay đổi.
             </div>
         @endunless
         <form id="company-form" method="post" enctype="multipart/form-data"
@@ -12,8 +12,8 @@
             @csrf
             @if ($companyRecord)
                 @method('PUT')
+                <input type="hidden" name="updated_at" value="{{ old('updated_at', $companyForm['updated_at']) }}">
             @endif
-            <p class="alert alert-light border">Chỉ lưu hồ sơ và ảnh cho phiên demo này, không cập nhật database hoặc công khai trên hệ thống thật.</p>
             <p class="small text-muted-green">Các trường có * là bắt buộc. Email và số điện thoại chỉ hiển thị cho chủ hồ sơ, không công khai trên trang doanh nghiệp.</p>
             <fieldset class="mb-4">
                 <legend class="h5 mb-3">Thông tin cơ bản</legend>
@@ -53,8 +53,18 @@
                 <legend class="h5 mb-3">Thông tin hoạt động</legend>
                 <div class="row g-3">
                     <div class="col-12 col-lg-6 form-group-custom">
-                        <label for="industry" class="form-label-custom">Lĩnh vực hoạt động</label>
-                        <input id="industry" name="industry" type="text" value="{{ old('industry', $companyForm['industry'] ?? '') }}" class="form-control-custom" maxlength="150">
+                        <label for="industry_id" class="form-label-custom">Lĩnh vực hoạt động</label>
+                        <select id="industry_id" name="industry_id" class="form-select-custom">
+                            <option value="">Chọn lĩnh vực</option>
+                            @foreach ($industries as $industry)
+                                <option value="{{ $industry->id }}" @selected((string) old('industry_id', $companyForm['industry_id'] ?? '') === (string) $industry->id)>
+                                    {{ $industry->name }}{{ $industry->is_active ? '' : ' (đã ẩn — giá trị đã lưu)' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @if ($industries->isEmpty())
+                            <p class="small text-muted-green mt-2">Chưa có lĩnh vực hoạt động để chọn. Bạn vẫn có thể lưu hồ sơ.</p>
+                        @endif
                     </div>
                     <div class="col-12 col-lg-6 form-group-custom">
                         <label for="company_type" class="form-label-custom">Mô hình công ty</label>
@@ -119,7 +129,7 @@
                             @if ($field === 'office_images') multiple @endif>
                         <div class="company-image-previews mt-3" id="preview-{{ $field }}" aria-live="polite"></div>
                         @if ($companyRecord && $field !== 'office_images' && $companyRecord[$field])
-                            <img src="{{ route('companies.media', [$companyRecord['id'], $field]) }}" alt="{{ $label }} đã lưu" class="company-upload-preview mt-2">
+                            <img src="{{ route('recruiter.company-media', [$companyRecord['id'], $field]) }}" alt="{{ $label }} đã lưu" class="company-upload-preview mt-2">
                             <label class="d-block mt-2">
                                 <input type="checkbox" name="remove_{{ $field }}" value="1" @checked(old('remove_'.$field))>
                                 Xóa {{ mb_strtolower($label) }} hiện tại
@@ -131,7 +141,7 @@
                     <div class="company-image-previews">
                         @foreach ($companyRecord['office_images'] ?? [] as $index => $path)
                             <label>
-                                <img src="{{ route('companies.media', [$companyRecord['id'], 'office-'.$index]) }}" alt="Ảnh văn phòng {{ $index + 1 }}" class="company-upload-preview">
+                                <img src="{{ route('recruiter.company-media', [$companyRecord['id'], 'office-'.$index]) }}" alt="Ảnh văn phòng {{ $index + 1 }}" class="company-upload-preview">
                                 <span class="d-block mt-2">
                                     <input type="checkbox" name="remove_office_images[]" value="{{ $index }}" @checked(in_array((string) $index, old('remove_office_images', [])))>
                                     Xóa ảnh {{ $index + 1 }}
@@ -145,7 +155,7 @@
             <div class="d-flex flex-wrap gap-2">
                 <button class="btn-dark-custom" type="submit" @disabled(! $canSaveCompany)>
                     <i class="bi bi-check2" aria-hidden="true"></i>
-                    Lưu hồ sơ demo
+                    Lưu hồ sơ
                 </button>
                 <a href="{{ route('recruiter.company') }}" class="btn btn-light">Hủy</a>
                 @if ($companyRecord && $companyRecord['status'] === 'active')
