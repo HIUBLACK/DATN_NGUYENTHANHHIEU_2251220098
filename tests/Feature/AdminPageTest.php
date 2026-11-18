@@ -12,7 +12,7 @@ class AdminPageTest extends AuthenticatedDemoTestCase
 
     public function test_admin_pages_are_isolated_and_render_with_authenticated_admin(): void
     {
-        $pages = ['dashboard', 'users.index', 'users.show', 'users.history', 'companies.index', 'companies.show', 'jobs.index', 'jobs.queue', 'jobs.show', 'jobs.history', 'applications.index', 'applications.show', 'occupations.index', 'specialties.index', 'account'];
+        $pages = ['dashboard', 'users.index', 'users.show', 'users.history', 'companies.index', 'companies.show', 'jobs.index', 'jobs.show', 'jobs.history', 'applications.index', 'applications.show', 'account'];
         foreach ($pages as $page) {
             $this->get(route('admin.'.$page))
                 ->assertOk()

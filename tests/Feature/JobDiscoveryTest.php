@@ -46,7 +46,8 @@ class JobDiscoveryTest extends AuthenticatedDemoTestCase
         $this->assertCount(0, $catalog->search(array_replace($filters, ['industry' => 'Dữ liệu và AI'])));
         $this->get(route('jobs', $filters))->assertOk()->assertDontSee('Backend Developer tại Đà Nẵng');
         foreach (['linh-vuc', 'ky-nang', 'cap-bac'] as $path) {
-            $this->get('/admin/danh-muc/'.$path)->assertOk()->assertSee('admin-category-form');
+            $this->get('/admin/danh-muc/'.$path)->assertOk()->assertSee('Thêm danh mục')->assertDontSee('admin-assets/js/admin-categories.js');
+            $this->get('/admin/danh-muc/'.$path.'/tao')->assertOk()->assertSee('category-name');
         }
     }
 

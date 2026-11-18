@@ -99,7 +99,8 @@ try {
         throw new RuntimeException('Cannot apply pending draft migration on isolated database.');
     }
     $phpArguments = in_array('--with-gd', $argv, true) ? ['-d', 'extension=gd'] : [];
-    $process = new Process([PHP_BINARY, ...$phpArguments, 'vendor/phpunit/phpunit/phpunit', '--configuration', $testConfiguration], base_path(), [
+    $testArguments = in_array('--moderation', $argv, true) ? ['--filter', 'JobModerationTest|RecruiterJobTest|AdminPageTest|AuthenticationTest|PoliciesTest|GooglePreparationTest|GooglePasswordSetupTest|PasswordRecoveryTest'] : [];
+    $process = new Process([PHP_BINARY, ...$phpArguments, 'vendor/phpunit/phpunit/phpunit', '--configuration', $testConfiguration, '--fail-on-empty-test-suite', ...$testArguments], base_path(), [
         'APP_ENV' => 'testing', 'DB_URL' => false, 'DB_CONNECTION' => 'mysql',
         'DB_DATABASE' => $database, 'DB_HOST' => $configuration['host'], 'DB_PORT' => (string) $configuration['port'],
         'DB_USERNAME' => $configuration['username'], 'DB_PASSWORD' => (string) $configuration['password'],

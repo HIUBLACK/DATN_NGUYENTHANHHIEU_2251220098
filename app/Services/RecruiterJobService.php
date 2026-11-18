@@ -78,9 +78,7 @@ class RecruiterJobService
             if ($version->review_status !== JobReviewStatus::Draft) {
                 throw ValidationException::withMessages(['job' => 'Chỉ bản nháp mới được gửi duyệt.']);
             }
-            $input = $this->formData($version);
-            Validator::make($input, JobInput::rules($input, true))->validate();
-            $this->validateCatalogs($input, $version, true);
+            $this->validateForReview($version);
             $version->review_status = JobReviewStatus::Pending;
             $version->submitted_at = now();
             $version->save();
@@ -132,6 +130,13 @@ class RecruiterJobService
         $data['updated_at'] = $version->getRawOriginal('updated_at');
 
         return $data;
+    }
+
+    public function validateForReview(JobVersion $version): void
+    {
+        $input = $this->formData($version);
+        Validator::make($input, JobInput::rules($input, true))->validate();
+        $this->validateCatalogs($input, $version, true);
     }
 
     public function catalogOptions(?JobVersion $version = null): array

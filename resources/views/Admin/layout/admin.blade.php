@@ -30,17 +30,21 @@
                 </nav>
             </div>
             <main id="admin-content">
-                <div class="alert alert-light border admin-demo-notice" role="note">
-                    <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
-                    Bản demo giao diện. Thao tác chỉ mô phỏng trong tab trình duyệt, chưa lưu database, chưa khóa tài khoản thật hoặc gửi thông báo.
-                </div>
+                @unless (($realCategories ?? false) || ($realModeration ?? false))
+                    <div class="alert alert-light border admin-demo-notice" role="note">
+                        <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+                        Bản demo giao diện. Thao tác chỉ mô phỏng trong tab trình duyệt, chưa lưu database, chưa khóa tài khoản thật hoặc gửi thông báo.
+                    </div>
+                @endunless
                 <div id="admin-feedback" class="alert alert-success" role="status" hidden></div>
                 <div id="admin-error" class="alert alert-danger" role="alert" hidden></div>
                 @yield('content')
             </main>
             @include('Admin.component.footer')
         </div>
-        @include('Admin.component.confirm-modal')
+        @unless (($realCategories ?? false) || ($realModeration ?? false))
+            @include('Admin.component.confirm-modal')
+        @endunless
         <script type="application/json" id="admin-seed">{!! Illuminate\Support\Js::encode($seed) !!}</script>
         <div id="admin-routes" hidden
             data-dashboard="{{ route('admin.dashboard') }}"
@@ -64,14 +68,18 @@
             <script src="{{ asset('admin-assets/libs/apexcharts/apexcharts.min.js') }}"></script>
             <script src="{{ asset('admin-assets/js/admin-dashboard.js') }}"></script>
         @endif
-        <script src="{{ asset('admin-assets/js/admin-domain.js') }}"></script>
-        <script src="{{ asset('admin-assets/js/admin-ui.js') }}"></script>
-        <script src="{{ asset('admin-assets/js/admin-lists.js') }}"></script>
-        <script src="{{ asset('admin-assets/js/admin-company-profile.js') }}"></script>
-        <script src="{{ asset('admin-assets/js/admin-details.js') }}"></script>
-        <script src="{{ asset('admin-assets/js/admin-categories-domain.js') }}"></script>
-        <script src="{{ asset('admin-assets/js/admin-categories.js') }}"></script>
-        <script src="{{ asset('admin-assets/js/admin.js') }}"></script>
+        @unless (($realCategories ?? false) || ($realModeration ?? false))
+            <script src="{{ asset('admin-assets/js/admin-domain.js') }}"></script>
+            <script src="{{ asset('admin-assets/js/admin-ui.js') }}"></script>
+            <script src="{{ asset('admin-assets/js/admin-lists.js') }}"></script>
+            <script src="{{ asset('admin-assets/js/admin-company-profile.js') }}"></script>
+            <script src="{{ asset('admin-assets/js/admin-details.js') }}"></script>
+            <script src="{{ asset('admin-assets/js/admin-categories-domain.js') }}"></script>
+            <script src="{{ asset('admin-assets/js/admin-categories.js') }}"></script>
+            <script src="{{ asset('admin-assets/js/admin.js') }}"></script>
+        @else
+            <script src="{{ asset('admin-assets/js/category-management.js') }}"></script>
+        @endunless
         <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
     </body>
 </html>
