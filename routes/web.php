@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CandidatePageController::class, 'home'])->name('home');
 Route::get('/viec-lam', [CandidatePageController::class, 'jobs'])->name('jobs');
+Route::get('/viec-lam/mau/{id}', [CandidatePageController::class, 'demoJob'])->whereNumber('id')->name('jobs.demo');
 Route::get('/viec-lam/{id}', [CandidatePageController::class, 'job'])->whereNumber('id')->name('jobs.show');
 
 $publicPages = [

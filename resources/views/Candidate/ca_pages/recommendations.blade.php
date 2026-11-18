@@ -43,7 +43,7 @@
                             <progress class="candidate-progress mb-3" value="{{ $recommendation['score'] }}" max="100" aria-label="Điểm phù hợp minh họa"></progress>
                             <p>Kỹ năng đáp ứng: {{ implode(', ', $recommendation['matched']) ?: 'Chưa có' }}</p>
                             <p>Kỹ năng còn thiếu: {{ implode(', ', $recommendation['missing']) ?: 'Không có trong danh sách mẫu' }}</p>
-                            <a class="btn btn-primary text-white" href="{{ route('jobs.show', $recommendation['job']['id']) }}">Chi tiết và ứng tuyển</a>
+                            <a class="btn btn-primary text-white" href="{{ route('jobs.demo', $recommendation['job']['id']) }}">Chi tiết và ứng tuyển</a>
                         </div>
                     </div>
                 @empty

@@ -128,10 +128,6 @@
                     Việc làm đã lưu
                 </a>
             </div>
-            <p class="jobs-demo-note">
-                <span class="icon-info-circle mr-2" aria-hidden="true"></span>
-                Dữ liệu minh họa. Công ty và công việc chưa kết nối dữ liệu tuyển dụng thực tế.
-            </p>
             @if ($jobs->isEmpty())
                 @include('Candidate.empty-state', [
                     'emptyTitle' => 'Không tìm thấy kết quả',
@@ -165,6 +161,7 @@
             @endif
         </div>
     </section>
+
     @include('Candidate.jobs-discovery')
     <script type="application/json" id="candidate-occupation-data">{!! Illuminate\Support\Js::encode(['occupations' => $occupationOptions, 'specialties' => $specialtyOptions]) !!}</script>
     <script src="{{ asset('jobboard/js/job-category-filters.js') }}" defer></script>

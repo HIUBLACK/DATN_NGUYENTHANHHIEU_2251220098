@@ -1,4 +1,7 @@
 document.addEventListener('DOMContentLoaded', function () {
+    if (document.body.dataset.realJobs === '1') {
+        return;
+    }
     if (['company', 'company-form'].includes(document.body.dataset.recruiterPage)) {
         window.setupCompanyProfileForm();
         return;

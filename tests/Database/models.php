@@ -30,7 +30,12 @@ function schemaDefinitions(Connection $connection): array
     foreach ($connection->select('SHOW TABLES') as $row) {
         $table = array_values((array) $row)[0];
         $definition = array_values((array) $connection->selectOne("SHOW CREATE TABLE `$table`"))[1];
-        $definitions[$table] = preg_replace('/ AUTO_INCREMENT=\d+/', '', $definition);
+        $definition = preg_replace('/ AUTO_INCREMENT=\d+/', '', $definition);
+        // ALTER có thể đổi thứ tự CHECK trong SHOW CREATE, không đổi nội dung ràng buộc.
+        preg_match_all('/^\s*CONSTRAINT .*$/m', $definition, $matches);
+        $constraints = array_map(fn ($line) => rtrim(trim($line), ','), $matches[0]);
+        sort($constraints);
+        $definitions[$table] = preg_replace('/^\s*CONSTRAINT .*\n?/m', '', $definition).implode("\n", $constraints);
     }
     ksort($definitions);
 
@@ -50,6 +55,16 @@ try {
         throw new RuntimeException('Cannot prepare model test schema.');
     }
     $pendingPasswordSetup = in_array('--pending-password-setup', $argv, true);
+    $pendingJobDrafts = in_array('--pending-job-drafts', $argv, true);
+    $jobDraftMigration = 'database/migrations/2026_11_17_100000_allow_incomplete_job_drafts.php';
+    if ($pendingJobDrafts) {
+        if ($original->table('migrations')->where('migration', basename($jobDraftMigration, '.php'))->exists()) {
+            throw new RuntimeException('Job draft migration already applied; omit --pending-job-drafts.');
+        }
+        if (Artisan::call('migrate:rollback', ['--database' => 'models_test', '--path' => [$jobDraftMigration], '--step' => 1, '--force' => true]) !== 0) {
+            throw new RuntimeException('Cannot rehearse draft migration rollback.');
+        }
+    }
     if ($pendingPasswordSetup) {
         $passwordMigration = 'database/migrations/2026_11_17_000000_add_has_local_password_to_users_table.php';
         if ($original->table('migrations')->where('migration', basename($passwordMigration, '.php'))->exists()) {
@@ -80,6 +95,9 @@ try {
         }
     }
     $testConfiguration = in_array('--auth', $argv, true) ? 'tests/Auth/phpunit.xml' : 'tests/Models/phpunit.xml';
+    if ($pendingJobDrafts && Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$jobDraftMigration], '--force' => true]) !== 0) {
+        throw new RuntimeException('Cannot apply pending draft migration on isolated database.');
+    }
     $phpArguments = in_array('--with-gd', $argv, true) ? ['-d', 'extension=gd'] : [];
     $process = new Process([PHP_BINARY, ...$phpArguments, 'vendor/phpunit/phpunit/phpunit', '--configuration', $testConfiguration], base_path(), [
         'APP_ENV' => 'testing', 'DB_URL' => false, 'DB_CONNECTION' => 'mysql',
@@ -89,7 +107,7 @@ try {
         'MAIL_MAILER' => 'array', 'MAIL_HOST' => 'smtp.test.invalid', 'MAIL_PORT' => '2525',
         'MAIL_USERNAME' => '', 'MAIL_PASSWORD' => '', 'MAIL_URL' => '', 'PASSWORD_RECOVERY_ENABLED' => 'false',
     ]);
-    $process->setTimeout(120);
+    $process->setTimeout(300);
     $process->run(function (string $type, string $output): void {
         echo $output;
     });

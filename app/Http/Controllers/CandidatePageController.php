@@ -5,12 +5,10 @@ namespace App\Http\Controllers;
 use App\Enums\UserRole;
 use App\Services\CandidateDemo;
 use App\Services\CompanyService;
+use App\Services\PublicJobService;
 use App\Support\CandidateCatalog;
 use App\Support\CompanyDemoCatalog;
-use App\Support\JobCategoryCatalog;
-use App\Support\OccupationCatalog;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\View\View;
 
 class CandidatePageController extends Controller
@@ -18,6 +16,7 @@ class CandidatePageController extends Controller
     public function __construct(
         private CandidateCatalog $catalog,
         private CandidateDemo $demo,
+        private PublicJobService $publicJobs,
     ) {}
 
     public function home(): View
@@ -44,43 +43,32 @@ class CandidatePageController extends Controller
             'sort' => ['nullable', 'in:newest,salary'],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
-        $jobs = $this->catalog->search($filters);
-        $page = (int) ($filters['page'] ?? 1);
-        $paginator = new LengthAwarePaginator(
-            $jobs->slice(($page - 1) * 6, 6),
-            $jobs->count(),
-            6,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()],
-        );
+        $jobs = $this->publicJobs->search($filters)->paginate(6)->withQueryString()
+            ->through(fn ($job) => $this->publicJobs->card($job));
 
         return view('Candidate.ca_pages.jobs', $this->sharedData() + [
-            'advancedFiltersOpen' => count(array_filter(array_intersect_key($filters, array_flip(['specialtyId', 'industry', 'skill', 'company', 'experience', 'type'])))) > 0
-                || ($filters['sort'] ?? 'newest') !== 'newest'
-                || in_array($filters['browse'] ?? '', ['industry', 'skill', 'specialtyId', 'company'], true),
-            'title' => 'Tìm việc làm',
-            'page' => 'jobs',
-            'jobs' => $paginator,
-            'suggestedJobs' => array_slice($this->catalog->recommendations($this->demo->mainResume(), []), 0, 3),
-            'featuredCompanies' => $this->catalog->publicJobs()->groupBy('company')->map(function ($companyJobs) {
-                $company = $companyJobs->first();
-
-                return [
-                    'name' => $company['company'],
-                    'logo' => $company['logo'],
-                    'locations' => $companyJobs->pluck('location')->unique()->implode(' · '),
-                    'openings' => $companyJobs->where('status', 'open')->count(),
-                ];
-            })->values(),
+            'advancedFiltersOpen' => count(array_filter(array_intersect_key($filters, array_flip(['specialtyId', 'industry', 'skill', 'company', 'experience', 'type'])))) > 0,
+            'title' => 'Việc làm', 'page' => 'jobs', 'jobs' => $jobs,
+            'realJobs' => true, 'suggestedJobs' => [], 'featuredCompanies' => $this->publicJobs->featuredCompanies(),
         ]);
     }
 
     public function job(int $id): View
     {
+        $job = $this->publicJobs->query()->findOrFail($id);
+
+        return view('Candidate.ca_pages.job', $this->sharedData() + [
+            'page' => 'job', 'title' => $job->publishedVersion->title,
+            'job' => $this->publicJobs->card($job),
+        ]);
+    }
+
+    public function demoJob(int $id): View
+    {
         $job = $this->catalog->find($id);
         abort_unless($job, 404);
 
-        return view('Candidate.ca_pages.job', $this->sharedData() + [
+        return view('Candidate.ca_pages.job-demo', array_replace($this->sharedData(), ['catalogJobs' => $this->catalog->publicJobs()]) + [
             'page' => 'job',
             'title' => $job['title'],
             'job' => $job,
@@ -111,7 +99,7 @@ class CandidatePageController extends Controller
             'page' => 'company',
             'title' => $profile['name'],
             'companyProfile' => $profile,
-            'companyJobs' => collect(),
+            'companyJobs' => $this->publicJobs->query()->where('company_id', $record->id)->get()->map(fn ($job) => $this->publicJobs->card($job)),
         ]);
     }
 
@@ -166,13 +154,9 @@ class CandidatePageController extends Controller
         $demo = $this->demo->state();
         $demo['active'] = auth()->check() && auth()->user()->role === UserRole::Candidate;
 
-        return [
-            'jobCategories' => app(JobCategoryCatalog::class)->data(),
+        return $this->publicJobs->navigation() + [
             'jobMenuGroups' => ['industry' => 'lĩnh vực', 'skill' => 'kỹ năng', 'specialtyId' => 'chuyên môn', 'level' => 'cấp bậc', 'company' => 'công ty', 'location' => 'thành phố'],
-            'catalogJobs' => $this->catalog->publicJobs(),
-            'occupationOptions' => app(OccupationCatalog::class)->occupations(),
-            'specialtyOptions' => app(OccupationCatalog::class)->specialties(),
-            'filterOptions' => $this->catalog->filters(),
+            'catalogJobs' => $this->publicJobs->query()->latest('published_at')->limit(7)->get()->map(fn ($job) => $this->publicJobs->card($job)),
             'statusLabels' => $this->catalog->statuses(),
             'demo' => $demo,
             'unreadNotificationCount' => collect($this->demo->state()['notifications'])->where('read', false)->count(),

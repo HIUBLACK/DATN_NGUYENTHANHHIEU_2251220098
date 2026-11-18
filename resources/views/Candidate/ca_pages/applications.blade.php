@@ -35,7 +35,7 @@
                         </form>
                     @endif
                     @if ($application['can_reapply'])
-                        <a href="{{ route('jobs.show', $application['job_id']) }}" class="btn btn-primary text-white">Ứng tuyển lại</a>
+                        <a href="{{ route('jobs.demo', $application['job_id']) }}" class="btn btn-primary text-white">Ứng tuyển lại</a>
                     @endif
                 </article>
             @empty

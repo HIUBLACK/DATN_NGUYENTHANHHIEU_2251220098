@@ -10,7 +10,7 @@
                         @include('Candidate.job-row', ['job' => $savedJob])
                     </ul>
                     @if ($savedJob['status'] === 'open')
-                        <a href="{{ route('jobs.show', $savedJob['id']) }}" class="btn btn-primary text-white mb-4">Xem và ứng tuyển</a>
+                        <a href="{{ route('jobs.demo', $savedJob['id']) }}" class="btn btn-primary text-white mb-4">Xem và ứng tuyển</a>
                     @else
                         <button class="btn btn-light mb-4" disabled>Không nhận ứng tuyển</button>
                     @endif

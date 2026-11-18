@@ -44,6 +44,16 @@ Chưa bật Remember-me, xác nhận kỹ năng CV hoặc AI thật. Giao diện
 
 ## Vận hành migration
 
+### Bản nháp tin tuyển dụng — Giai đoạn 3.2, 18/11/2026
+
+Đã áp dụng `2026_11_17_100000_allow_incomplete_job_drafts.php` lên `db_job` theo phương án A được phê duyệt. Chỉ đổi 13 cột nội dung `job_versions` sang nullable và điều chỉnh CHECK tương ứng; giữ kiểu dữ liệu, PK/FK/UNIQUE, generated pending_slot, 24 bảng nghiệp vụ + 8 bảng hạ tầng. Không tạo dữ liệu thử hoặc seed danh mục trên database chính.
+
+Triển khai bằng `php database/deploy-job-drafts.php --apply`: kiểm tra dữ liệu, maintenance, backup riêng tư, restore sang database tạm, đối chiếu schema/count/hash từng bảng, diễn tập up/down/up rồi mới chạy đúng migration trên nguồn. Backup: `storage/app/private/database-backups/20261118_043458_job_drafts/before-migration.sql`; bằng chứng hash trước/sau và restore nằm trong `manifest.json` cùng thư mục. Không đưa SQL backup lên Git hoặc thư mục public.
+
+Kết quả triển khai: PASS, vẫn 32 bảng; mọi dữ liệu giữ nguyên, chỉ bảng migrations có thêm đúng bản ghi migration mới. Database restore tạm đã được xóa; ứng dụng đã thoát maintenance. Trước triển khai, bộ kiểm thử MariaDB riêng đạt 122 tests / 1732 assertions, JavaScript đạt 13 tests. Báo cáo chức năng và xác minh sau triển khai: `backend-jobs-implementation.md`.
+
+Rollback từ chối nếu còn nháp có NULL; không tự lấp dữ liệu hay xóa nháp. Chỉ rollback khi ngừng ghi: MariaDB yêu cầu tháo/dựng lại nguyên FK chuyên môn khi đổi về NOT NULL. Công cụ triển khai dùng đường dẫn MariaDB CLI XAMPP của máy hiện tại; không dùng để reset hoặc chạy lại migration đã áp dụng.
+
 ### Bổ sung trạng thái mật khẩu Giai đoạn 2.2
 
 Người dùng đã phê duyệt và migration `2026_11_17_000000_add_has_local_password_to_users_table.php` đã được áp dụng vào db_job sau kiểm thử riêng. Thêm has_local_password nullable + CHECK NULL/0/1, không thêm bảng (vẫn 32). Backfill 2 User không Google thành true; giữ 2 User có Google cũ ở NULL, không suy đoán false từ hash hoặc subject. Các trường User cũ được đối chiếu trước/sau và giữ nguyên. down() chặn nếu tồn tại User để bảo toàn phân loại. Thiết kế/ERD cập nhật; các luồng cập nhật cờ và Google re-auth setup được mô tả tại backend-auth-implementation.md mục 11.

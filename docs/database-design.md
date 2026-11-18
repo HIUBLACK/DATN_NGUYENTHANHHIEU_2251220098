@@ -139,11 +139,15 @@ FK company_id→companies.id; **composite FK(id,published_version_id)→job_vers
 
 ### 4.10 job_versions — mới
 
-`id ID`, `job_id`, `version_number U32`, `title V(150)`, `position V(100)`, `description TEXT`, `requirements TEXT`, `benefits TEXT`, `salary_min DECIMAL(15,2)`, `salary_max DECIMAL(15,2)`, `salary_currency CHAR(3) DEFAULT 'VND'`, `salary_negotiable BOOL DEFAULT 0`, `location V(150)`, `work_mode V(10)`, `employment_type V(20)`, `quantity U16`, `experience_summary V(100)`, `experience_min DECIMAL(4,1)?`, `experience_max DECIMAL(4,1)?`, `industry_id?`, `job_specialization_id`, `job_level_id?`, `application_deadline DATE`, `review_status V(20) DEFAULT 'draft'`, `submitted_at DATETIME(6)?`, `reviewed_at DATETIME(6)?`, `pending_slot U8 GENERATED STORED` = CASE WHEN review_status='pending' THEN 1 ELSE NULL END, TS.
+`id ID`, `job_id`, `version_number U32`, `title V(150)`, `position V(100)?`, `description TEXT?`, `requirements TEXT?`, `benefits TEXT?`, `salary_min DECIMAL(15,2)?`, `salary_max DECIMAL(15,2)?`, `salary_currency CHAR(3) DEFAULT 'VND'`, `salary_negotiable BOOL DEFAULT 0`, `location V(150)?`, `work_mode V(10)?`, `employment_type V(20)?`, `quantity U16?`, `experience_summary V(100)?`, `experience_min DECIMAL(4,1)?`, `experience_max DECIMAL(4,1)?`, `industry_id?`, `job_specialization_id?`, `job_level_id?`, `application_deadline DATE?`, `review_status V(20) DEFAULT 'draft'`, `submitted_at DATETIME(6)?`, `reviewed_at DATETIME(6)?`, `pending_slot U8 GENERATED STORED` = CASE WHEN review_status='pending' THEN 1 ELSE NULL END, TS.
 
 FK job_id→jobs.id; industry_id→industries.id; job_specialization_id→job_specializations.id; job_level_id→job_levels.id. UNIQUE(job_id,version_number), UNIQUE(job_id,id), UNIQUE(job_id,pending_slot). INDEX(review_status,submitted_at,id), INDEX(job_specialization_id,id), INDEX(industry_id,id), INDEX(job_level_id,id), INDEX(location,work_mode,id). FK jobs.published_version_id dùng unique composite nói trên để chặn trỏ nhầm tin.
 
-CHECK version_number≥1, quantity 1..1000, 0≤salary_min≤salary_max, currency='VND' trong MVP, experience_min/max≥0 nếu có và min≤max nếu đủ hai giá trị. work_mode onsite/remote/hybrid; employment_type full_time/part_time/internship. Review status draft/pending/approved/rejected. CHECK review_status='draft' OR (industry_id IS NOT NULL AND job_level_id IS NOT NULL). Hai FK nullable do form hiện thiếu, nhưng gửi duyệt phải đủ. Experience range NULL khi text không parse chắc chắn, không đoán. submitted_at NULL trước gửi, reviewed_at NULL trước quyết định. TEXT tối đa 10000 như form. Lưu VND/tháng: 15 triệu→15000000, chuyển bằng decimal/integer, không FLOAT. Salary_negotiable chưa có UI, default false.
+Theo phương án A được phê duyệt cho Giai đoạn 3.2, bản nháp chỉ bắt buộc title có nội dung, tối đa 150 ký tự. Đúng 13 cột đánh dấu `?` mới ở trên cho phép NULL: position, description, requirements, benefits, salary_min, salary_max, location, work_mode, employment_type, quantity, experience_summary, job_specialization_id, application_deadline. industry_id/job_level_id/experience_min/max đã nullable từ trước. Không điền dữ liệu giả để lấp chỗ trống.
+
+CHECK version_number≥1; quantity NULL hoặc 1..1000; từng đầu lương NULL hoặc không âm, min≤max nếu đủ hai đầu; currency='VND'; experience_min/max≥0 nếu có và min≤max nếu đủ hai giá trị. work_mode NULL hoặc onsite/remote/hybrid; employment_type NULL hoặc full_time/part_time/internship. Review status draft/pending/approved/rejected. CHECK title không toàn khoảng trắng; khi review_status khác draft, cả 13 cột phải NOT NULL, các trường văn bản bắt buộc có nội dung sau TRIM, industry_id/job_level_id/submitted_at phải NOT NULL. Dùng IS NOT NULL tường minh để SQL UNKNOWN không vượt ràng buộc. TEXT NULL hoặc tối đa 10000 ký tự. Service bổ sung kiểm tra danh mục đang hoạt động, chuyên môn đúng nhóm, ít nhất một kỹ năng và hạn tuyển không trước ngày gửi theo Asia/Ho_Chi_Minh. Experience range NULL khi text không parse chắc chắn, không đoán. submitted_at NULL trước gửi, reviewed_at NULL trước quyết định. Lưu VND/tháng bằng decimal, không FLOAT; form thật nhập VND. Salary_negotiable chưa có UI, default false.
+
+Migration bổ sung: `2026_11_17_100000_allow_incomplete_job_drafts`. Giữ nguyên kiểu cột, PK/FK/UNIQUE, generated pending_slot và 32 bảng. Up kiểm tra dữ liệu trước DDL; down từ chối nếu còn NULL trong 13 cột. Rollback cần ngừng ghi vì MariaDB yêu cầu tháo rồi dựng lại nguyên định nghĩa FK chuyên môn khi chuyển về NOT NULL. Không tự xóa hay lấp dữ liệu để rollback. Xem biên bản backup/restore và diễn tập trong `backend-jobs-implementation.md`.
 
 Nội dung/pivot/hạn của pending/approved bất biến. Sửa sau reject cũng tạo version mới; chỉ ModerationService đổi review_status và metadata duyệt. Draft hiện phải đủ trường form, chưa hỗ trợ autosave từng ô. Chỉ đề xuất FULLTEXT(title,description,requirements) sau benchmark tiếng Việt; MVP LIKE escaped, không hứa B-tree tăng tốc `%từ khóa%`.
 
@@ -407,7 +411,8 @@ Các cột trong hình là khóa/mốc chính; mục 4 là từ điển cột đ
 erDiagram
     %% Final design: 24 business tables + 8 Laravel infrastructure tables.
     %% MariaDB 11.5.2: validate generated slots, composite FKs and CHECKs on staging.
-    %% Industry/level: nullable in draft, required on submission.
+    %% Stage 3.2: title-only drafts; 13 content columns nullable, required outside draft.
+    %% Industry/level: nullable in draft, required on submission; 32 tables unchanged.
     %% Referenced specialization cannot change category (Service + locking).
     %% Active resumes require exactly one primary (unique slot + Service).
     %% Published version belongs to same job and requires Admin approval.
@@ -620,7 +625,7 @@ erDiagram
     jobs o|--o| job_versions : "published pointer same job"
     industries o|--o{ job_versions : "required on submit"
     job_levels o|--o{ job_versions : "required on submit"
-    job_specializations ||--o{ job_versions : "specialization"
+    job_specializations o|--o{ job_versions : "required on submit"
     job_versions ||--o{ job_version_skills : "requirements"
     skills ||--o{ job_version_skills : "skill"
     job_versions ||--o| job_moderation_logs : "final decision"

@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Job extends Model
@@ -40,6 +41,11 @@ class Job extends Model
     public function versions(): HasMany
     {
         return $this->hasMany(JobVersion::class, 'job_id');
+    }
+
+    public function latestVersion(): HasOne
+    {
+        return $this->hasOne(JobVersion::class, 'job_id')->ofMany('version_number', 'max');
     }
 
     public function publishedVersion(): BelongsTo

@@ -4,20 +4,7 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
     const data = JSON.parse(source.textContent);
-    let categories = { ...data.categories, occupations: data.occupations, specialties: data.specialties };
-    try {
-        const stored = JSON.parse(sessionStorage.getItem('viejob-admin-preview-v1') || 'null');
-        Object.keys(categories).forEach(function (key) {
-            if (Array.isArray(stored?.[key])) {
-                categories[key] = stored[key].map(function (item) {
-                    const original = categories[key].find(entry => entry.id === item.id);
-                    return { ...original, ...item };
-                });
-            }
-        });
-    } catch (error) {
-        // Nếu phiên demo không đọc được, dùng danh mục mẫu từ server.
-    }
+    const categories = { ...data.categories, occupations: data.occupations, specialties: data.specialties };
     const collections = { industry: 'industries', skill: 'skills', level: 'levels', specialtyId: 'specialties' };
 
     function items(field) {

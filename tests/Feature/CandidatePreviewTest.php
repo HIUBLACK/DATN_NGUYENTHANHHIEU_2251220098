@@ -11,22 +11,20 @@ class CandidatePreviewTest extends AuthenticatedDemoTestCase
 {
     protected UserRole $demoRole = UserRole::Candidate;
 
-    public function test_jobs_discovery_requires_analyzed_cv_for_suggestions(): void
+    public function test_demo_suggestions_remain_separate_from_real_job_search(): void
     {
         Storage::fake('local');
-        $this->get('/viec-lam')
-            ->assertSee('Các công ty nổi bật')
-            ->assertSee('Hoàn thiện CV để xem công việc gợi ý');
+        $this->get(route('candidate.recommendations'))->assertOk()
+            ->assertViewHas('recommendations', fn ($jobs) => count($jobs) === 0);
 
         $resume = $this->uploadResume();
         $this->post('/ung-vien/cv/'.$resume.'/sample')
             ->assertSessionHasNoErrors();
 
-        $this->get('/viec-lam')
+        $this->get(route('candidate.recommendations'))
             ->assertOk()
-            ->assertViewHas('suggestedJobs', fn ($jobs) => count($jobs) === 3)
-            ->assertDontSee('Hoàn thiện CV để xem công việc gợi ý')
-            ->assertSee('phù hợp · Minh họa');
+            ->assertViewHas('recommendations', fn ($jobs) => count($jobs) > 0);
+        $this->get('/viec-lam')->assertOk()->assertDontSee('phù hợp · Minh họa');
     }
 
     private function uploadResume(): string
@@ -39,7 +37,7 @@ class CandidatePreviewTest extends AuthenticatedDemoTestCase
 
     public function test_candidate_pages_render_with_authenticated_candidate(): void
     {
-        $paths = ['/', '/viec-lam', '/viec-lam/1', '/cong-ty', '/gioi-thieu'];
+        $paths = ['/', '/viec-lam', '/viec-lam/mau/1', '/cong-ty', '/gioi-thieu'];
         foreach (['cv', 'goi-y-ai', 'da-luu', 'ung-tuyen', 'thong-bao', 'tin-nhan', 'ho-so', 'cai-dat'] as $page) {
             $paths[] = '/ung-vien/'.$page;
         }

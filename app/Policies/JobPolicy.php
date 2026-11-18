@@ -67,6 +67,17 @@ class JobPolicy
         return false;
     }
 
+    public function viewManagement(User $user, Job $job): bool
+    {
+        return $this->owns($user, $job);
+    }
+
+    public function operate(User $user, Job $job): bool
+    {
+        return $this->owns($user, $job) && $job->company->status === CompanyStatus::Active
+            && $job->status !== JobStatus::Blocked;
+    }
+
     private function owns(User $user, Job $job): bool
     {
         return $user->status === UserStatus::Active && $user->role === UserRole::Recruiter

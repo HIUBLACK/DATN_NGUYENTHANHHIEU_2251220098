@@ -12,7 +12,7 @@ class RecruiterPageTest extends AuthenticatedDemoTestCase
 
     public function test_recruiter_pages_render_with_separate_template_and_demo_data(): void
     {
-        $names = ['dashboard', 'company', 'company-create', 'jobs', 'job-create', 'job-edit', 'job-detail', 'applications', 'application-detail', 'notifications', 'account'];
+        $names = ['dashboard', 'company', 'company-create', 'jobs', 'applications', 'application-detail', 'notifications', 'account'];
         foreach ($names as $name) {
             $this->get(route('recruiter.'.$name))
                 ->assertOk()
@@ -21,6 +21,7 @@ class RecruiterPageTest extends AuthenticatedDemoTestCase
                 ->assertDontSee('jobboard/css/custom-bs.css');
         }
         $this->get(route('recruiter.company-edit'))->assertRedirect(route('recruiter.company-create'));
+        $this->get(route('recruiter.job-create'))->assertForbidden();
         $this->get('/nha-tuyen-dung')->assertOk()->assertViewIs('employer.dashboard');
         $this->get('/viec-lam')->assertOk()->assertDontSee('recruiter/css/main.css');
     }
