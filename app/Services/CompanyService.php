@@ -8,6 +8,7 @@ use App\Enums\UserStatus;
 use App\Models\Company;
 use App\Models\Industry;
 use App\Models\User;
+use App\Support\CompanyOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
@@ -21,11 +22,10 @@ use Throwable;
 class CompanyService
 {
     public const FIELDS = [
-        'name' => 'name', 'short_name' => 'short_name', 'summary' => 'short_description',
-        'description' => 'description', 'founded_year' => 'founded_year', 'size' => 'company_size',
+        'name' => 'name', 'description' => 'description', 'size' => 'company_size',
         'company_type' => 'company_type', 'country' => 'country', 'website' => 'website',
         'email' => 'email', 'phone' => 'phone', 'address' => 'address', 'working_hours' => 'working_hours',
-        'ot_policy' => 'overtime_policy', 'benefits' => 'benefits', 'technologies' => 'technologies',
+        'ot_policy' => 'overtime_policy', 'work_environment' => 'work_environment',
     ];
 
     public function __construct(private CompanyImageStorage $images) {}
@@ -44,11 +44,19 @@ class CompanyService
         foreach (self::FIELDS as $input => $column) {
             $data[$input] = $company->$column;
         }
+        foreach (CompanyOptions::DAYS as $from => $fromLabel) {
+            foreach (CompanyOptions::DAYS as $to => $toLabel) {
+                if ($company->working_hours === $fromLabel.' – '.$toLabel) {
+                    $data['working_from'] = $from;
+                    $data['working_to'] = $to;
+                }
+            }
+        }
 
         return $data + [
             'id' => $company->public_id, 'industry_id' => $company->industry_id,
             'updated_at' => $company->getRawOriginal('updated_at'), 'status' => $company->status->value,
-            'logo' => $company->logo_path, 'cover' => $company->cover_image_path, 'office_images' => $company->office_images,
+            'logo' => $company->logo_path, 'office_images' => $company->office_images,
         ];
     }
 
@@ -67,7 +75,6 @@ class CompanyService
         }
         $route = $privateMedia ? 'recruiter.company-media' : 'companies.media';
         $profile['logo_url'] = $this->images->owns($company->public_id, $company->logo_path) ? route($route, [$company->public_id, 'logo']) : null;
-        $profile['cover_url'] = $this->images->owns($company->public_id, $company->cover_image_path) ? route($route, [$company->public_id, 'cover']) : null;
         $profile['gallery_urls'] = [];
         foreach ($company->office_images ?? [] as $index => $image) {
             if ($this->images->owns($company->public_id, $image['path'] ?? null)) {
@@ -84,7 +91,7 @@ class CompanyService
         $uploaded = [];
         try {
             // Upload chỉ sau Form Request/Policy; file chưa được public cho tới DB commit.
-            foreach (['logo', 'cover'] as $slot) {
+            foreach (['logo'] as $slot) {
                 if (isset($data[$slot])) {
                     $uploaded[$slot] = $this->images->store($data[$slot], $publicId, $slot);
                 }
@@ -97,7 +104,19 @@ class CompanyService
                 $company = $this->lockCompany($actor, $existing, $publicId, $data);
                 $this->assignIndustry($company, $data['industry_id'] ?? null);
                 foreach (self::FIELDS as $input => $column) {
+                    if ($input === 'working_hours' && empty($data['working_from'])) {
+                        continue;
+                    }
+                    if ($input === 'ot_policy' && empty($data['ot_policy']) && $existing) {
+                        continue;
+                    }
                     $company->$column = $data[$input] ?? null;
+                }
+                if (! empty($data['working_from'])) {
+                    $company->working_hours = CompanyOptions::DAYS[$data['working_from']].' – '.CompanyOptions::DAYS[$data['working_to']];
+                }
+                if (! empty($data['no_website'])) {
+                    $company->website = null;
                 }
                 $oldPaths = $this->paths($company);
                 $this->assignImages($company, $data, $uploaded);
@@ -119,7 +138,7 @@ class CompanyService
                 return $company;
             });
         } catch (Throwable $exception) {
-            $paths = array_merge(array_filter([$uploaded['logo'] ?? null, $uploaded['cover'] ?? null]), $uploaded['office'] ?? []);
+            $paths = array_merge(array_filter([$uploaded['logo'] ?? null]), $uploaded['office'] ?? []);
             // Không xóa file nếu lỗi phát sinh sau khi commit (ví dụ dọn ảnh cũ lỗi).
             try {
                 $persisted = Company::where('public_id', $publicId)->first();
@@ -177,7 +196,7 @@ class CompanyService
 
     private function assignImages(Company $company, array $data, array $uploaded): void
     {
-        foreach (['logo' => 'logo_path', 'cover' => 'cover_image_path'] as $slot => $column) {
+        foreach (['logo' => 'logo_path'] as $slot => $column) {
             if (isset($uploaded[$slot])) {
                 $company->$column = $uploaded[$slot];
             } elseif (! empty($data['remove_'.$slot])) {
@@ -201,6 +220,6 @@ class CompanyService
 
     private function paths(Company $company): array
     {
-        return array_values(array_filter(array_merge([$company->logo_path, $company->cover_image_path], array_column($company->office_images ?? [], 'path'))));
+        return array_values(array_filter(array_merge([$company->logo_path], array_column($company->office_images ?? [], 'path'))));
     }
 }

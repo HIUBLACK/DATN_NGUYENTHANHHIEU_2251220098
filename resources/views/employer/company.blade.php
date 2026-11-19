@@ -15,12 +15,7 @@
         @endif
     </div>
     @if ($companyRecord)
-        @if ($companyRecord['status'] === 'active')
-            <a href="{{ route('companies.show', $companyRecord['id']) }}" class="btn btn-outline-dark mb-4">
-                <i class="bi bi-eye" aria-hidden="true"></i>
-                Xem trang doanh nghiệp phía Candidate
-            </a>
-        @else
+        @if ($companyRecord['status'] !== 'active')
             <div class="alert alert-warning">Doanh nghiệp đang bị khóa. Hồ sơ không hiển thị công khai và không thể chỉnh sửa.</div>
         @endif
         @include('shared.company-profile', ['profile' => $companyProfile])

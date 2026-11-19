@@ -98,14 +98,14 @@ FK user_id→users.id; UNIQUE(user_id). Các ? là input không bắt buộc. Kh
 
 ### 4.3 companies — mới
 
-`id ID`, `public_id UUID`, `recruiter_id`, `name V(150)`, `short_name V(80)?`, `slug V(160)`, `logo_path V(255)?`, `cover_image_path V(255)?`, `office_images JSON`, `short_description V(500)?`, `description TEXT?` (≤10000), `founded_year U16?`, `company_size V(30)?`, `industry_id?`, `company_type V(80)?`, `country V(80)?`, `website V(255)?`, `email V(150)`, `phone V(30)`, `address V(255)`, `working_hours V(255)?`, `overtime_policy TEXT?` (≤2000), `benefits TEXT?` (≤3000), `technologies TEXT?` (≤2000), `status V(20) DEFAULT 'active'`, TS.
+`id ID`, `public_id UUID`, `recruiter_id`, `name V(150)`, `slug V(160)`, `logo_path V(255)?`, `office_images JSON`, `description TEXT?` (≤10000), `company_size V(30)?`, `industry_id?`, `company_type V(80)?`, `country V(80)?`, `website V(255)?`, `email V(150)`, `phone V(30)`, `address V(255)`, `working_hours V(255)?`, `overtime_policy TEXT?` (≤2000), `work_environment TEXT?` (≤3000), `status V(20) DEFAULT 'active'`, TS.
 
-UNIQUE(public_id), UNIQUE(slug), UNIQUE(recruiter_id). FK recruiter_id→users.id, industry_id→industries.id; INDEX(status,name,id). Các ? do form cho phép thiếu. CHECK status active/locked; founded_year≥1800, upper bound năm hiện tại kiểm tra Service. Size giữ 6 khoảng nhân sự của form. Technologies/benefits là nội dung mô tả, chưa tạo pivot. Mapping summary→short_description, size→company_size, ot_policy→overtime_policy. AdminCatalog/renderer đã dùng overtime_policy, trong khi Recruiter/shared Blade dùng ot_policy; adapter phải thống nhất hai tên này, không tạo hai cột OT. Public projection không xuất email/phone quản trị, owner_token, disk paths, lịch sử nội bộ (theo CompanyProfiles hiện tại); website http(s).
+UNIQUE(public_id), UNIQUE(slug), UNIQUE(recruiter_id). FK recruiter_id→users.id, industry_id→industries.id; INDEX(status,name,id). Các ? do form cho phép thiếu. CHECK status active/locked, work_environment NULL hoặc tối đa 3000 ký tự. Size giữ 6 khoảng nhân sự; mapping size→company_size, ot_policy→overtime_policy. Theo phê duyệt ngày 18/11/2026, migration `2026_11_18_120000_simplify_company_profile` bỏ short_name, short_description, founded_year, benefits, technologies, cover_image_path và CHECK liên quan, thêm work_environment. Không backfill bằng nội dung phúc lợi cũ. Địa chỉ nhập thủ công, không Google Maps. Public projection không xuất email/phone quản trị hoặc disk paths; website http(s) hoặc NULL khi không có website. Vẫn 32 bảng; sao lưu đầy đủ trước khi bỏ cột, không dùng down để khôi phục nội dung đã xóa.
 
 
 Office_images NOT NULL, Service khởi tạo `[]`, không phụ thuộc SQL default biểu thức. JSON là mảng tối đa 6 object dạng `{"path":"companies/<public_id>/office/<uuid>.webp","caption":null}`; caption tùy chọn ≤255, path ≤255. **Thứ tự phần tử là thứ tự hiển thị**, không lưu sort_order riêng. CHECK JSON_VALID, JSON_TYPE='ARRAY', JSON_LENGTH≤6; Service kiểm tra object chỉ có path/caption, path không trùng, đúng namespace doanh nghiệp và file thuộc upload hợp lệ. Không nhận đường dẫn máy Windows, URL ngoài, `..`, tên file thực thi hoặc path của doanh nghiệp khác từ client. JSON không có FK tới file; đây là giới hạn được bù bằng validation và đối soát storage.
 
-Chỉ owner Recruiter đang hoạt động được sửa. JPEG/PNG/WebP kiểm tra nội dung/MIME và giải mã ảnh, logo≤2MiB, cover≤5MiB, mỗi ảnh văn phòng≤3MiB, kích thước≤5000×5000. File UUID lưu private ngoài webroot; endpoint ảnh công khai chỉ phục vụ file đã được company tham chiếu và company/recruiter còn active; owner/Admin xem theo Policy. Không trả disk path qua API công khai. Thay/xếp ảnh khóa company row, kiểm tra updated_at mà form đã đọc để từ chối ghi đè thay đổi mới; ghi cả mảng trong một transaction. Upload staging trước transaction; chỉ dọn file cũ sau commit và kiểm tra không còn tham chiếu. DB rollback không xóa file đang sử dụng. Không tạo company_images.
+Chỉ owner Recruiter đang hoạt động được sửa. JPEG/PNG/WebP kiểm tra nội dung/MIME và giải mã ảnh, logo≤2MiB, mỗi ảnh văn phòng≤3MiB, kích thước≤5000×5000. File UUID lưu private ngoài webroot; endpoint ảnh công khai chỉ phục vụ file đã được company tham chiếu và company/recruiter còn active; owner/Admin xem theo Policy. Không trả disk path qua API công khai. Thay/xếp ảnh khóa company row, kiểm tra updated_at mà form đã đọc để từ chối ghi đè thay đổi mới; ghi cả mảng trong một transaction. Upload staging trước transaction; chỉ dọn file cũ sau commit và kiểm tra không còn tham chiếu. DB rollback không xóa file đang sử dụng. Không tạo company_images.
 
 ### 4.4 industries — mới
 
@@ -435,7 +435,7 @@ erDiagram
         bigint id PK
         uuid public_id UK
         varchar logo_path
-        varchar cover_image_path
+        text work_environment "nullable, max 3000"
         json office_images
         bigint recruiter_id FK, UK
         bigint industry_id FK

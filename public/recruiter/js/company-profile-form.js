@@ -3,11 +3,35 @@ window.setupCompanyProfileForm = function () {
     if (!form) {
         return;
     }
+    const noWebsite = document.getElementById('no-website');
+    const website = document.getElementById('website');
+    if (noWebsite && website) {
+        function updateWebsite() {
+            website.disabled = noWebsite.checked;
+        }
+        noWebsite.addEventListener('change', updateWebsite);
+        updateWebsite();
+    }
     const error = document.getElementById('company-image-error');
     const objectUrls = new Map();
     const limits = { logo: 2, cover: 5, office_images: 3 };
     let pendingImages = 0;
-
+    form.querySelectorAll('[data-saved-image]').forEach(function (item) {
+        const removal = item.querySelector('[data-image-removal]');
+        if (removal && !removal.disabled) {
+            item.hidden = true;
+        }
+    });
+    form.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-remove-saved-image]');
+        if (!button) {
+            return;
+        }
+        const item = button.closest('[data-saved-image]');
+        item.querySelector('[data-image-removal]').disabled = false;
+        item.hidden = true;
+        checkGalleryCount();
+    });
     function clearPreview(field) {
         (objectUrls.get(field) || []).forEach(url => URL.revokeObjectURL(url));
         objectUrls.set(field, []);
@@ -15,8 +39,7 @@ window.setupCompanyProfileForm = function () {
     }
 
     function checkGalleryCount() {
-        const existing = form.querySelectorAll('input[name="remove_office_images[]"]');
-        const retained = [...existing].filter(input => !input.checked).length;
+        const retained = form.querySelectorAll('[data-saved-image="office"]:not([hidden])').length;
         const input = document.getElementById('company-office_images');
         input.setCustomValidity(retained + input.files.length > 6 ? 'Tổng ảnh văn phòng sau lưu tối đa 6 ảnh.' : '');
         return input.validity.valid;
@@ -77,7 +100,25 @@ window.setupCompanyProfileForm = function () {
                     image.src = url;
                     image.alt = 'Xem trước ' + files[index].name;
                     image.className = 'company-upload-preview';
-                    preview.append(image);
+                    const item = document.createElement('div');
+                    item.className = 'company-image-item';
+                    const remove = document.createElement('button');
+                    remove.type = 'button';
+                    remove.className = 'company-image-remove';
+                    remove.textContent = '×';
+                    remove.setAttribute('aria-label', 'Bỏ ảnh ' + files[index].name);
+                    remove.addEventListener('click', function () {
+                        const remaining = new DataTransfer();
+                        files.forEach(function (file, fileIndex) {
+                            if (fileIndex !== index) {
+                                remaining.items.add(file);
+                            }
+                        });
+                        input.files = remaining.files;
+                        input.dispatchEvent(new Event('change'));
+                    });
+                    item.append(image, remove);
+                    preview.append(item);
                 });
             } catch (failure) {
                 urls.forEach(url => URL.revokeObjectURL(url));
@@ -92,7 +133,6 @@ window.setupCompanyProfileForm = function () {
             }
         });
     });
-    form.querySelectorAll('input[name="remove_office_images[]"]').forEach(input => input.addEventListener('change', checkGalleryCount));
     form.addEventListener('input', function (event) {
         if (event.target.type !== 'file' && event.target.setCustomValidity) {
             event.target.setCustomValidity('');

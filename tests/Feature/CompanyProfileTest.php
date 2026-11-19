@@ -8,9 +8,11 @@ use App\Enums\UserStatus;
 use App\Models\Company;
 use App\Models\Industry;
 use App\Models\User;
+use App\Support\CompanyOptions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -75,7 +77,7 @@ class CompanyProfileTest extends TestCase
             'description' => 'Nội dung giới thiệu', 'founded_year' => 2020,
             'size' => '51–200', 'website' => 'https://example.com',
             'email' => 'private-company-contact@example.com', 'phone' => '0912345678',
-            'address' => 'Địa chỉ công khai', 'ot_policy' => 'Không khuyến khích OT',
+            'address' => 'Địa chỉ công khai', 'ot_policy' => 'Không làm thêm giờ',
         ];
     }
 
@@ -103,10 +105,32 @@ class CompanyProfileTest extends TestCase
         $this->assertSame(CompanyStatus::Active, $company->status);
         $this->assertNull($company->logo_path);
         $this->assertNotSame(999999, $company->id);
-        $this->assertSame('Mô tả công khai', $company->short_description);
+        $this->assertNull($company->short_description);
         $this->assertNull(session('company_profile_preview'));
         $this->get(route('recruiter.company'))->assertOk()->assertSee($company->email);
         $this->get(route('recruiter.company-create'))->assertRedirect(route('recruiter.company'));
+    }
+
+    public function test_company_options_schedule_and_work_environment_use_updated_schema(): void
+    {
+        $company = $this->createCompany([
+            'country' => 'Việt Nam', 'company_type' => CompanyOptions::TYPES[0],
+            'working_from' => 1, 'working_to' => 5, 'no_website' => 1, 'website' => 'invalid',
+        ]);
+        $this->assertNull($company->website);
+        $this->assertSame('Thứ Hai – Thứ Sáu', $company->working_hours);
+        $this->put(route('recruiter.company-update', $company->public_id), $this->updateFields($company, ['work_environment' => 'Workplace introduction']))->assertSessionHasNoErrors();
+        $this->assertSame('Workplace introduction', $company->fresh()->work_environment);
+        $this->get(route('companies.show', $company->public_id))->assertOk()->assertSee('Workplace introduction');
+        foreach (['short_name', 'short_description', 'founded_year', 'benefits', 'technologies', 'cover_image_path'] as $column) {
+            $this->assertFalse(Schema::hasColumn('companies', $column));
+        }
+        $this->put(route('recruiter.company-update', $company->public_id), $this->updateFields($company, ['work_environment' => str_repeat('x', 3001)]))->assertSessionHasErrors('work_environment');
+        $this->get(route('recruiter.company-edit'))->assertOk()->assertSee('company_type')->assertSee('working_from')
+            ->assertDontSee('name="short_name"', false)->assertDontSee('name="cover"', false);
+        $this->put(route('recruiter.company-update', $company->public_id), $this->updateFields($company, ['country' => 'Invalid country', 'company_type' => 'Invalid type', 'ot_policy' => 'Invalid OT', 'working_from' => 8]))
+            ->assertSessionHasErrors(['country', 'company_type', 'ot_policy', 'working_from', 'working_to']);
+        $this->assertCount(249, CompanyOptions::countries());
     }
 
     public function test_guest_candidate_and_admin_cannot_create_or_update(): void
@@ -178,7 +202,7 @@ class CompanyProfileTest extends TestCase
         $company = $this->createCompany(['logo' => $this->image(), 'cover' => $this->image(), 'office_images' => [$this->image()]]);
         Auth::logout();
         $this->get(route('companies.show', $company->public_id))->assertOk()
-            ->assertSee($company->name)->assertSee('Không khuyến khích OT')
+            ->assertSee($company->name)->assertSee('Không làm thêm giờ')
             ->assertDontSee($company->email)->assertDontSee($company->phone)->assertDontSee($company->logo_path);
         $this->get(route('companies'))->assertOk()->assertSee(route('companies.show', $company->public_id))
             ->assertDontSee(route('companies.demo', 1));
@@ -195,7 +219,7 @@ class CompanyProfileTest extends TestCase
     {
         $this->post(route('recruiter.company-store'), array_replace($this->fields(), [
             'name' => '  ', 'email' => 'invalid', 'phone' => '........', 'website' => 'javascript:alert(1)', 'founded_year' => 9999,
-        ]))->assertSessionHasErrors(['name', 'email', 'phone', 'website', 'founded_year']);
+        ]))->assertSessionHasErrors(['name', 'email', 'phone', 'website']);
         foreach ([
             UploadedFile::fake()->createWithContent('shell.jpg', '<?php echo "unsafe";'),
             UploadedFile::fake()->createWithContent('image.svg', '<svg><script>alert(1)</script></svg>'),

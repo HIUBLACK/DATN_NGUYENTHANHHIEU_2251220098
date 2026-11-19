@@ -132,3 +132,25 @@ Không cần phê duyệt schema mới. Phần backend Giai đoạn 3.1 và ki�
 5. Recruiter B không sửa được UUID của A hoặc mở ảnh quản trị của A. Candidate/Admin không dùng được routes quản lý Recruiter.
 6. Với fixture Company locked trên DB test, chủ vẫn xem được trang quản lý nhưng không sửa; URL công khai/ảnh công khai trả 404. Khóa Recruiter cũng loại doanh nghiệp khỏi trang công khai.
 7. Kiểm tra các module demo khác, đăng nhập email/Google và recovery bằng bộ mock; không chạy script demo có ghi dữ liệu vào `db_job`.
+
+## 14. Cập nhật hồ sơ và schema theo phê duyệt ngày 18/11/2026
+
+Đã bỏ tên viết tắt, mô tả ngắn, năm thành lập, phúc lợi, công nghệ và ảnh bìa khỏi form và các trang hồ sơ Recruiter/Candidate/Admin. Không thay trường quyền lợi của tin tuyển dụng. Giới thiệu chi tiết đổi thành Giới thiệu doanh nghiệp; thêm Giới thiệu môi trường làm việc (tối đa 3000 ký tự), có validation backend và lưu database thật.
+
+CompanyOptions cung cấp 17 lựa chọn mô hình gồm Mô hình khác; không coi đây là danh mục loại hình pháp lý. Danh sách quốc gia/vùng lãnh thổ gồm 249 mã ISO alpha-2 với tên tiếng Việt được dựng bằng Intl.DisplayNames của Node/ICU, lưu tĩnh ở resources/data/countries-vi.json. Giá trị mô hình/quốc gia cũ ngoài danh sách vẫn được giữ và cho chọn chính giá trị đã lưu. Frontend select và backend allowlist thống nhất.
+
+Checkbox Không có website lưu website NULL. Thứ bắt đầu/kết thúc chỉ nhận 1..7; lưu working_hours dưới dạng “Thứ Hai – Thứ Sáu”; khoảng qua cuối tuần được phép. Để trống cả hai khi sửa giữ lịch cũ, thiếu một đầu bị chặn. OT có hai lựa chọn Có làm thêm giờ/Không làm thêm giờ; chính sách cũ không bị tự suy diễn, để trống khi sửa giữ nguyên. Preview 180×120, logo hồ sơ 100×100, gallery cao 200px với object-fit/overflow giữ ảnh trong khung.
+
+**Địa chỉ chỉ nhập thủ công theo quyết định mới nhất. Không tích hợp Google Maps, không cần API key hoặc billing.**
+
+### Migration và dữ liệu
+
+Đã áp dụng `2026_11_18_120000_simplify_company_profile` lên db_job: bỏ short_name, short_description, founded_year, benefits, technologies, cover_image_path và ba CHECK liên quan; thêm work_environment TEXT NULL với CHECK tối đa 3000. Giữ 32 bảng, PK/FK/index và mọi dữ liệu ở các cột còn lại. Không backfill nội dung phúc lợi sang môi trường làm việc, không seed.
+
+Chạy `php database/deploy-company-profile.php --apply`: maintenance, backup đầy đủ, restore kiểm chứng toàn bộ dữ liệu/schema, diễn tập up/down/up rồi mới áp dụng nguồn. Backup riêng tư: `storage/app/private/database-backups/20261118_145159_company_profile/before-migration.sql`; manifest cùng thư mục lưu hash backup và đối chiếu dữ liệu. Dữ liệu sáu cột đã bỏ còn trong bản backup, không còn ở bảng đang hoạt động. Ảnh bìa cũ trên storage không bị xóa tệp tự động, không còn hiển thị/được route cover phục vụ.
+
+Down chỉ dựng lại cấu trúc các cột cũ, không khôi phục nội dung; từ chối nếu work_environment đã có dữ liệu. Khi cần lấy lại nội dung cũ phải dùng backup đã kiểm chứng trong quy trình riêng, không rollback mù hoặc ghi đè dữ liệu mới.
+
+### Kiểm thử và giới hạn
+
+Trước áp dụng: `php tests/Database/models.php --auth --pending-company-profile` đạt **137 tests / 2090 assertions**. Sau áp dụng: `php tests/Database/models.php --auth` tiếp tục đạt **137 tests / 2090 assertions**, chỉ dùng database test riêng, schema/lịch sử migration nguồn giữ nguyên trong lúc test. Có kiểm tra nội dung môi trường làm việc lưu/hiển thị, giới hạn 3000, sáu cột không tồn tại, lựa chọn ngày/mô hình/quốc gia/OT, website NULL và hồi quy phân quyền/upload. Pint, Blade compile, cú pháp JavaScript đạt. Chưa kiểm thử trực quan trình duyệt.

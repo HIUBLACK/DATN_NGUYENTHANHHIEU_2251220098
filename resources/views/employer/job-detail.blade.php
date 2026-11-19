@@ -33,9 +33,6 @@
                     @endif
                 @endforeach
             @endcan
-            @can('viewPublic', $job)
-                <a href="{{ route('jobs.show', $job->id) }}" class="btn btn-outline-primary">Xem bản công khai</a>
-            @endcan
         </div>
     </div>
     <div class="card p-4 mb-4">

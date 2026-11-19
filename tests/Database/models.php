@@ -54,6 +54,16 @@ try {
     if (Artisan::call('migrate', ['--database' => 'models_test', '--force' => true]) !== 0) {
         throw new RuntimeException('Cannot prepare model test schema.');
     }
+    $pendingCompany = in_array('--pending-company-profile', $argv, true);
+    $companyMigration = 'database/migrations/2026_11_18_120000_simplify_company_profile.php';
+    if ($pendingCompany) {
+        if ($original->table('migrations')->where('migration', basename($companyMigration, '.php'))->exists()) {
+            throw new RuntimeException('Company migration already applied; omit pending flag.');
+        }
+        if (Artisan::call('migrate:rollback', ['--database' => 'models_test', '--path' => [$companyMigration], '--step' => 1, '--force' => true]) !== 0) {
+            throw new RuntimeException('Cannot rehearse company rollback.');
+        }
+    }
     $pendingPasswordSetup = in_array('--pending-password-setup', $argv, true);
     $pendingJobDrafts = in_array('--pending-job-drafts', $argv, true);
     $jobDraftMigration = 'database/migrations/2026_11_17_100000_allow_incomplete_job_drafts.php';
@@ -93,6 +103,9 @@ try {
         if (Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$googleMigration], '--force' => true]) !== 0) {
             throw new RuntimeException('Cannot apply pending Google migration on isolated database.');
         }
+    }
+    if ($pendingCompany && Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$companyMigration], '--force' => true]) !== 0) {
+        throw new RuntimeException('Cannot apply company migration on test database.');
     }
     $testConfiguration = in_array('--auth', $argv, true) ? 'tests/Auth/phpunit.xml' : 'tests/Models/phpunit.xml';
     if ($pendingJobDrafts && Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$jobDraftMigration], '--force' => true]) !== 0) {

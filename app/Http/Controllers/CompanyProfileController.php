@@ -8,6 +8,7 @@ use App\Models\Company;
 use App\Models\Industry;
 use App\Services\CompanyImageStorage;
 use App\Services\CompanyService;
+use App\Support\CompanyOptions;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
@@ -82,7 +83,18 @@ class CompanyProfileController extends Controller
 
     private function page(?Company $company, bool $form): View
     {
+        $types = CompanyOptions::TYPES;
+        $countries = array_values(CompanyOptions::countries());
+        if ($company?->company_type && ! in_array($company->company_type, $types, true)) {
+            $types[] = $company->company_type;
+        }
+        if ($company?->country && ! in_array($company->country, $countries, true)) {
+            $countries[] = $company->country;
+        }
+
         return view($form ? 'employer.company-form' : 'employer.company', [
+            'companyTypes' => $types,
+            'companyCountries' => $countries,
             'page' => $form ? 'company-form' : 'company',
             'title' => $form ? ($company ? 'Chỉnh sửa doanh nghiệp' : 'Tạo hồ sơ doanh nghiệp') : 'Hồ sơ doanh nghiệp',
             'section' => 'company',
@@ -101,7 +113,6 @@ class CompanyProfileController extends Controller
     {
         $path = match ($slot) {
             'logo' => $company->logo_path,
-            'cover' => $company->cover_image_path,
             default => preg_match('/^office-([0-5])$/', $slot, $match) ? ($company->office_images[(int) $match[1]]['path'] ?? null) : null,
         };
         abort_unless($this->images->owns($company->public_id, $path) && Storage::disk('local')->exists($path), 404);

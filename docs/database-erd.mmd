@@ -25,7 +25,7 @@ erDiagram
         bigint id PK
         uuid public_id UK
         varchar logo_path
-        varchar cover_image_path
+        text work_environment "nullable, max 3000"
         json office_images
         bigint recruiter_id FK, UK
         bigint industry_id FK

@@ -44,6 +44,12 @@ Chưa bật Remember-me, xác nhận kỹ năng CV hoặc AI thật. Giao diện
 
 ## Vận hành migration
 
+### Đơn giản hóa hồ sơ doanh nghiệp — 18/11/2026
+
+Theo phê duyệt mới, đã chạy `2026_11_18_120000_simplify_company_profile` trên db_job qua `database/deploy-company-profile.php --apply`. Thêm companies.work_environment TEXT NULL + CHECK ≤3000; xóa sáu cột short_name, short_description, founded_year, benefits, technologies, cover_image_path cùng CHECK cũ liên quan. Vẫn 32 bảng, không đổi PK/FK/index. Chỉ companies bị thay đổi cấu trúc; quyền lợi trong job_versions không thay đổi.
+
+Backup đầy đủ trước khi bỏ cột: `storage/app/private/database-backups/20261118_145159_company_profile/before-migration.sql`. Đã restore kiểm chứng, diễn tập up/down/up và so sánh hash toàn bộ dữ liệu trên các cột được giữ lại; không thay đổi dữ liệu ngoài phạm vi. Manifest lưu cạnh backup. Ứng dụng đã thoát maintenance; database tạm đã dọn. Down không thể tự phục hồi nội dung cột đã bỏ và bị chặn nếu work_environment có dữ liệu. Chi tiết và kiểm thử tại backend-company-implementation.md mục 14.
+
 ### Bản nháp tin tuyển dụng — Giai đoạn 3.2, 18/11/2026
 
 Đã áp dụng `2026_11_17_100000_allow_incomplete_job_drafts.php` lên `db_job` theo phương án A được phê duyệt. Chỉ đổi 13 cột nội dung `job_versions` sang nullable và điều chỉnh CHECK tương ứng; giữ kiểu dữ liệu, PK/FK/UNIQUE, generated pending_slot, 24 bảng nghiệp vụ + 8 bảng hạ tầng. Không tạo dữ liệu thử hoặc seed danh mục trên database chính.
