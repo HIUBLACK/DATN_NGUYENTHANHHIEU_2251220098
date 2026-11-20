@@ -81,5 +81,6 @@
             <script src="{{ asset('admin-assets/js/category-management.js') }}"></script>
         @endunless
         <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
+        @include('shared.form-validation')
     </body>
 </html>

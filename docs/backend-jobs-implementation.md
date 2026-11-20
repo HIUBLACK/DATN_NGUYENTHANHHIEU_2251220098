@@ -120,3 +120,7 @@ Thực hiện trên database test riêng, không tạo fixture trên db_job:
 5. Thử pause/reopen/close, expired, locked; tin không đủ điều kiện phải biến mất và chi tiết trả 404.
 6. Kết hợp bộ lọc nhóm nghề/chuyên môn/địa điểm/lương/kinh nghiệm/hình thức/kỹ năng; kiểm tra phân trang, menu desktop/mobile và dấu tiếng Việt.
 7. Kiểm tra Auth/Google/Recovery/Company theo các báo cáo trước; không gửi email hoặc OAuth thật khi chạy suite tự động.
+
+## Cập nhật danh mục vị trí ngày 19/11/2026
+
+Đã triển khai danh mục Vị trí công việc, một lĩnh vực, 34 tỉnh/thành phố; bỏ ô kinh nghiệm và chọn nhóm nghề trong form Recruiter. Database hiện có 33 bảng. Chi tiết schema, nghiệm thu và backup: [phương án đã chốt](job-catalog-update-proposal.md) và mục 8 của báo cáo **các thay đổi của tôi.md**. Kiểm thử MariaDB riêng: 138 tests, 2.144 assertions đạt. Các mô tả 32 bảng và form cũ phía trên là lịch sử trước cập nhật này.

@@ -72,6 +72,34 @@
                                     Sửa
                                 </a>
                             @endcan
+                            @can('operate', $job)
+                                @if ($job->status->value === 'open')
+                                    <form method="post" action="{{ route('recruiter.job-transition', [$job->id, 'pause']) }}" class="d-inline-block my-1">
+                                        @csrf
+                                        <button type="submit" class="btn btn-outline-warning btn-sm">
+                                            <i class="bi bi-pause-circle" aria-hidden="true"></i>
+                                            Tạm dừng
+                                        </button>
+                                    </form>
+                                @elseif ($job->status->value === 'paused')
+                                    <form method="post" action="{{ route('recruiter.job-transition', [$job->id, 'reopen']) }}" class="d-inline-block my-1">
+                                        @csrf
+                                        <button type="submit" class="btn btn-outline-success btn-sm">
+                                            <i class="bi bi-play-circle" aria-hidden="true"></i>
+                                            Mở lại
+                                        </button>
+                                    </form>
+                                @endif
+                                @if (in_array($job->status->value, ['open', 'paused'], true))
+                                    <form method="post" action="{{ route('recruiter.job-transition', [$job->id, 'close']) }}" class="d-inline-block my-1">
+                                        @csrf
+                                        <button type="submit" class="btn btn-outline-danger btn-sm">
+                                            <i class="bi bi-x-circle" aria-hidden="true"></i>
+                                            Đóng tin
+                                        </button>
+                                    </form>
+                                @endif
+                            @endcan
                         </td>
                     </tr>
                 @empty

@@ -24,6 +24,7 @@ class JobVersion extends Model
     protected $fillable = [
         'title',
         'position',
+        'province_code',
         'description',
         'requirements',
         'benefits',
@@ -54,6 +55,7 @@ class JobVersion extends Model
             'experience_min' => 'decimal:1',
             'experience_max' => 'decimal:1',
             'industry_id' => 'integer',
+            'job_position_id' => 'integer',
             'job_specialization_id' => 'integer',
             'job_level_id' => 'integer',
             'application_deadline' => 'date',
@@ -69,6 +71,11 @@ class JobVersion extends Model
     public function job(): BelongsTo
     {
         return $this->belongsTo(Job::class, 'job_id');
+    }
+
+    public function positionCatalog(): BelongsTo
+    {
+        return $this->belongsTo(JobPosition::class, 'job_position_id');
     }
 
     public function industry(): BelongsTo

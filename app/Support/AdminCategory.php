@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Industry;
 use App\Models\JobCategory;
 use App\Models\JobLevel;
+use App\Models\JobPosition;
 use App\Models\JobSpecialization;
 use App\Models\Skill;
 use Normalizer;
@@ -12,6 +13,7 @@ use Normalizer;
 class AdminCategory
 {
     public const TYPES = [
+        'positions' => [JobPosition::class, 'Vị trí công việc', 'vi-tri'],
         'industries' => [Industry::class, 'Lĩnh vực', 'linh-vuc'],
         'occupations' => [JobCategory::class, 'Nhóm nghề CNTT', 'nhom-nghe'],
         'specialties' => [JobSpecialization::class, 'Chuyên môn CNTT', 'chuyen-mon'],

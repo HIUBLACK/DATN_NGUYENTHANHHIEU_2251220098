@@ -11,6 +11,7 @@ use App\Models\JobSpecialization;
 use App\Models\JobVersion;
 use App\Models\Skill;
 use App\Support\JobInput;
+use App\Support\Provinces;
 use Illuminate\Database\Eloquent\Builder;
 
 class PublicJobService
@@ -45,7 +46,19 @@ class PublicJobService
             $query->whereHas('company', fn ($company) => $company->where('name', $filters['company']));
         }
         $query->whereHas('publishedVersion', function (Builder $version) use ($filters) {
-            foreach (['location' => 'location', 'experience' => 'experience_summary', 'specialtyId' => 'job_specialization_id'] as $input => $column) {
+            if (! empty($filters['location'])) {
+                $provinceCode = array_search($filters['location'], Provinces::ALL, true);
+                $version->where(function (Builder $location) use ($provinceCode, $filters) {
+                    if ($provinceCode !== false) {
+                        $location->where('province_code', (string) $provinceCode)->orWhere(function (Builder $legacy) use ($filters) {
+                            $legacy->whereNull('province_code')->where('location', $filters['location']);
+                        });
+                    } else {
+                        $location->where('location', $filters['location']);
+                    }
+                });
+            }
+            foreach (['experience' => 'experience_summary', 'specialtyId' => 'job_specialization_id'] as $input => $column) {
                 if (! empty($filters[$input])) {
                     $version->where($column, $filters[$input]);
                 }
@@ -87,7 +100,8 @@ class PublicJobService
             'salary_min' => rtrim(rtrim(bcdiv($version->salary_min, '1000000', 2), '0'), '.'),
             'salary_max' => rtrim(rtrim(bcdiv($version->salary_max, '1000000', 2), '0'), '.'),
             'salary_negotiable' => $version->salary_negotiable,
-            'location' => $version->location, 'level' => $version->level?->name,
+            'location' => Provinces::ALL[$version->province_code] ?? $version->location,
+            'location_detail' => $version->location, 'level' => $version->level?->name,
             'mode' => JobInput::MODES[$version->work_mode], 'type' => JobInput::TYPES[$version->employment_type],
             'skills' => $version->skills->pluck('name')->all(), 'deadline' => $version->application_deadline,
             'description' => $version->description, 'requirements' => $version->requirements, 'benefits' => $version->benefits,
@@ -113,8 +127,8 @@ class PublicJobService
         }
         $versions = JobVersion::whereIn('id', $this->query()->select('published_version_id'));
         $filters = [
-            'location' => ['Địa điểm', (clone $versions)->distinct()->pluck('location')->all()],
-            'experience' => ['Kinh nghiệm', (clone $versions)->distinct()->pluck('experience_summary')->all()],
+            'location' => ['Địa điểm', array_values(Provinces::ALL)],
+            'experience' => ['Kinh nghiệm', (clone $versions)->whereNotNull('experience_summary')->distinct()->pluck('experience_summary')->all()],
             'industry' => ['Lĩnh vực', array_column($categories['industries'], 'name')],
             'skill' => ['Kỹ năng', array_column($categories['skills'], 'name')],
             'level' => ['Cấp bậc', array_column($categories['levels'], 'name')],

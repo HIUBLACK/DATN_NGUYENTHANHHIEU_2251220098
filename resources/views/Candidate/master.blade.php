@@ -93,5 +93,6 @@
         <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
         <script type="application/json" id="job-menu-data">{!! Illuminate\Support\Js::encode(['categories' => $jobCategories, 'occupations' => $occupationOptions, 'specialties' => $specialtyOptions, 'filters' => $filterOptions, 'url' => route('jobs')]) !!}</script>
         <script src="{{ asset('jobboard/js/job-menu.js') }}"></script>
+        @include('shared.form-validation')
     </body>
 </html>

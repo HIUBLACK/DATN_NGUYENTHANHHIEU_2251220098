@@ -46,12 +46,18 @@
                 <li class="sidebar-menu-item">
                     <button type="button" class="sidebar-menu-link admin-sidebar-button" data-bs-toggle="collapse"
                         data-bs-target="#admin-category-menu" aria-controls="admin-category-menu"
-                        aria-expanded="{{ in_array($section, ['occupations', 'specialties', 'industries', 'skills', 'levels']) ? 'true' : 'false' }}">
+                        aria-expanded="{{ in_array($section, ['occupations', 'specialties', 'industries', 'skills', 'levels', 'positions']) ? 'true' : 'false' }}">
                         <i class="bi bi-diagram-3" aria-hidden="true"></i>
                         <span>Quản lý danh mục</span>
                         <i class="bi bi-chevron-down ms-auto" aria-hidden="true"></i>
                     </button>
-                    <ul id="admin-category-menu" @class(['sidebar-menu-list', 'collapse', 'ms-3', 'show' => in_array($section, ['occupations', 'specialties', 'industries', 'skills', 'levels'])])>
+                    <ul id="admin-category-menu" @class(['sidebar-menu-list', 'collapse', 'ms-3', 'show' => in_array($section, ['occupations', 'specialties', 'industries', 'skills', 'levels', 'positions'])])>
+                        <li class="sidebar-menu-item">
+                            <a href="{{ route('admin.positions.index') }}" @class(['sidebar-menu-link', 'active' => $section === 'positions'])>
+                                <i class="bi bi-person-badge" aria-hidden="true"></i>
+                                <span>Vị trí công việc</span>
+                            </a>
+                        </li>
                         <li class="sidebar-menu-item">
                             <a href="{{ route('admin.occupations.index') }}" @class(['sidebar-menu-link', 'active' => $section === 'occupations'])>
                                 <i class="bi bi-collection" aria-hidden="true"></i>

@@ -53,7 +53,7 @@ class RecruiterJobController extends Controller
 
         return view('employer.job-form', $this->layout('job-form', 'Tạo tin tuyển dụng') + [
             'job' => null, 'version' => null, 'form' => [], 'creationKey' => $key,
-            'options' => $this->jobs->catalogOptions(),
+            'options' => $this->jobs->catalogOptions(), 'baseline' => null,
         ]);
     }
 
@@ -68,9 +68,15 @@ class RecruiterJobController extends Controller
             $job = Job::findOrFail($tokens[$key]);
             Gate::authorize('viewManagement', $job);
         } else {
-            $job = $this->jobs->create($request->user(), $request->validated());
+            $job = $request->validated('intent') === 'submit'
+                ? $this->jobs->saveForReview($request->user(), $request->validated())
+                : $this->jobs->create($request->user(), $request->validated());
             $tokens[$key] = $job->id;
             $request->session()->put('job_creation_keys', $tokens);
+        }
+
+        if ($request->validated('intent') === 'submit') {
+            return redirect()->route('recruiter.job-detail', $job->id)->with('job_notice', 'Đã gửi phiên bản chờ Admin kiểm duyệt.');
         }
 
         return redirect()->route('recruiter.job-edit', $job->id)->with('job_notice', 'Đã lưu bản nháp tin tuyển dụng.');
@@ -84,12 +90,17 @@ class RecruiterJobController extends Controller
 
         return view('employer.job-form', $this->layout('job-form', 'Chỉnh sửa tin tuyển dụng') + [
             'job' => $record, 'version' => $version, 'form' => $this->jobs->formData($version),
-            'options' => $this->jobs->catalogOptions($version),
+            'options' => $this->jobs->catalogOptions($version), 'baseline' => $this->jobs->reviewBaseline($record),
         ]);
     }
 
     public function update(UpdateJobRequest $request, int $job): RedirectResponse
     {
+        if ($request->validated('intent') === 'submit') {
+            $this->jobs->saveForReview($request->user(), $request->validated(), $job);
+
+            return redirect()->route('recruiter.job-detail', $job)->with('job_notice', 'Đã gửi phiên bản chờ Admin kiểm duyệt.');
+        }
         $this->jobs->update($request->user(), $job, $request->validated());
 
         return redirect()->route('recruiter.job-edit', $job)->with('job_notice', 'Đã lưu nội dung nháp. Bản công khai không thay đổi.');

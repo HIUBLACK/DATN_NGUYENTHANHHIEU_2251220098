@@ -15,7 +15,7 @@ class UpdateJobRequest extends FormRequest
 
     public function rules(): array
     {
-        return JobInput::rules($this->all()) + [
+        return array_replace(JobInput::rules($this->all()), ['position' => ['exclude'], 'intent' => ['sometimes', 'in:draft,submit']]) + [
             'version_id' => ['required', 'integer'],
             'updated_at' => ['required', 'date_format:Y-m-d H:i:s.u'],
         ];

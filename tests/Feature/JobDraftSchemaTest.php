@@ -58,11 +58,16 @@ class JobDraftSchemaTest extends TestCase
             DB::table('job_versions')->where('id', $id)->update(Arr::except($input, ['job_category_id', 'skills']));
             $row = (array) DB::table('job_versions')->find($id);
             $beforeKeys = $this->keys();
-            $migration->down();
-            $migration->up();
+            $positionsMigration = require database_path('migrations/2026_11_19_120000_add_job_positions_and_province.php');
+            try {
+                $positionsMigration->down();
+                $this->fail('Rollback must preserve referenced position and province data.');
+            } catch (\RuntimeException $exception) {
+                $this->assertStringContainsString('non-empty job_positions', $exception->getMessage());
+            }
             $this->assertEquals($row, (array) DB::table('job_versions')->find($id));
             $this->assertEquals($beforeKeys, $this->keys());
-            $this->assertCount(32, DB::select('SHOW TABLES'));
+            $this->assertCount(33, DB::select('SHOW TABLES'));
             DB::table('job_versions')->where('id', $id)->update(['review_status' => 'pending', 'submitted_at' => now()]);
             $pending = Arr::except((array) DB::table('job_versions')->find($id), ['id', 'pending_slot']);
             $pending['version_number'] = 2;
@@ -80,6 +85,7 @@ class JobDraftSchemaTest extends TestCase
             DB::table('job_specializations')->where('id', $input['job_specialization_id'])->delete();
             DB::table('job_categories')->where('id', $input['job_category_id'])->delete();
             DB::table('industries')->where('id', $input['industry_id'])->delete();
+            DB::table('job_positions')->where('id', $input['job_position_id'])->delete();
             DB::table('job_levels')->where('id', $input['job_level_id'])->delete();
             DB::table('skills')->whereIn('id', $input['skills'])->delete();
         }

@@ -15,6 +15,6 @@ class StoreJobRequest extends FormRequest
 
     public function rules(): array
     {
-        return JobInput::rules($this->all()) + ['creation_key' => ['required', 'uuid']];
+        return array_replace(JobInput::rules($this->all()), ['position' => ['exclude'], 'intent' => ['sometimes', 'in:draft,submit']]) + ['creation_key' => ['required', 'uuid']];
     }
 }

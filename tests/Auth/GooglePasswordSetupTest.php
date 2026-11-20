@@ -216,7 +216,7 @@ class GooglePasswordSetupTest extends TestCase
             $this->assertTrue(User::where('email', 'baseline-email@test.invalid')->first()->has_local_password);
             $this->assertNull(User::where('email', 'baseline-google@test.invalid')->first()->has_local_password);
             $this->assertFalse((new User)->isFillable('has_local_password'));
-            $this->assertSame(32, count(DB::select('SHOW TABLES')));
+            $this->assertSame(33, count(DB::select('SHOW TABLES')));
         } finally {
             DB::table('users')->whereIn('email', ['baseline-email@test.invalid', 'baseline-google@test.invalid'])->delete();
             DB::beginTransaction();

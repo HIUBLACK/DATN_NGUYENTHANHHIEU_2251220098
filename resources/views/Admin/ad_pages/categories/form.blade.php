@@ -14,7 +14,9 @@
                 <p>Mã và slug (nếu có) được cấp tự động và giữ nguyên khi đổi tên.</p>
             @endif
             <div class="col-md-8">
-                <label for="category-name" class="form-label-custom">Tên danh mục *</label>
+                <label for="category-name" class="form-label-custom">
+                    Tên danh mục <span class="text-danger" aria-hidden="true">*</span>
+                </label>
                 <input id="category-name" name="name" value="{{ old('name', $record?->name) }}" class="form-control-custom" required maxlength="120">
             </div>
             <div class="col-md-4">

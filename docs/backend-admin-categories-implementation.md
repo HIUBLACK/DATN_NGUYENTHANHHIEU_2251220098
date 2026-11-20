@@ -109,3 +109,7 @@ Không triển khai audit danh mục chuyên biệt, nhập hàng loạt, alias 
 | Kỹ năng | PHP; Laravel; JavaScript; TypeScript; React; SQL; MySQL; Docker; Git; Python; C++; C# |
 
 Đây chỉ là đề xuất để người dùng xem xét, không phải Seeder hoặc dữ liệu đã được phê duyệt nhập.
+
+## Cập nhật danh mục vị trí ngày 19/11/2026
+
+Đã triển khai danh mục Vị trí công việc, một lĩnh vực, 34 tỉnh/thành phố; bỏ ô kinh nghiệm và chọn nhóm nghề trong form Recruiter. Database hiện có 33 bảng. Chi tiết schema, nghiệm thu và backup: [phương án đã chốt](job-catalog-update-proposal.md) và mục 8 của báo cáo **các thay đổi của tôi.md**. Kiểm thử MariaDB riêng: 138 tests, 2.144 assertions đạt. Các mô tả 32 bảng và form cũ phía trên là lịch sử trước cập nhật này.

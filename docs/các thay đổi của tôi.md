@@ -96,3 +96,22 @@ Kiểm thử sử dụng **MariaDB riêng**, không tạo fixture hoặc reset `
 - Các file giao diện liên quan: `resources/views/employer/company.blade.php`, `company-form.blade.php`, `job-detail.blade.php`, `public/recruiter/js/company-profile-form.js` và `public/css/company-profile.css`.
 
 Kiểm tra đợt cập nhật giao diện: biên dịch Blade thành công; không còn liên kết `companies.show` hoặc `jobs.show` trong giao diện Nhà tuyển dụng. Không thay đổi database trong đợt cập nhật này. Kết quả 137 tests ở mục 6 thuộc đợt triển khai database trước đó; chưa chạy lại toàn bộ bộ kiểm thử cho thay đổi giao diện này.
+
+## 8. Danh mục Vị trí và form tuyển dụng — 19/11/2026
+
+Theo quyết định cuối: chỉ thêm danh mục Vị trí công việc, **một lĩnh vực**, **34 tỉnh/thành phố**; không triển khai nhiều lĩnh vực.
+
+- Admin → Quản lý danh mục → Vị trí công việc: tìm kiếm, lọc, phân trang, thêm/sửa, ẩn/hiện, chống tên trùng và ghi đè form cũ. Route `/admin/danh-muc/vi-tri`, tái sử dụng các thành phần danh mục hiện có.
+- Recruiter: Vị trí công việc lấy từ danh mục; thêm tỉnh/thành phố; Địa điểm đổi thành Địa điểm chi tiết. Bỏ ba ô kinh nghiệm và ô nhóm nghề. Chuyên môn vẫn giữ; backend tự xác định nhóm cha và kiểm tra trạng thái hoạt động.
+- Danh sách mã tỉnh theo [Quyết định 19/2025/QĐ-TTg](https://chinhphu.vn/?classid=0&docid=214409&pageid=27160), lưu trong `app/Support/Provinces.php`.
+- Bản nháp chỉ cần tiêu đề; gửi duyệt mới cần vị trí, tỉnh và các nội dung bắt buộc. Vị trí ẩn vẫn xem được trên bản đã lưu nhưng không được gửi duyệt mới. Pending cũ chưa có hai trường mới vẫn có thể kiểm duyệt mà không sửa lịch sử.
+- Candidate xem tỉnh và địa chỉ chi tiết, lọc theo tỉnh; giữ tương thích địa điểm cũ. Tin đang công khai không bị thay bằng bản nháp/pending.
+- Xóa JavaScript phụ thuộc ô chọn nhóm nghề ở form thật. Giữ danh mục nhóm nghề Admin và dữ liệu kinh nghiệm lịch sử.
+
+**Database đã triển khai:** thêm `job_positions` (tổng **33 bảng**), thêm FK `job_versions.job_position_id`, cột `province_code` và index; mở rộng `position` lên 120 ký tự; điều chỉnh CHECK để kinh nghiệm không còn bắt buộc. Không thêm bảng liên kết lĩnh vực, không xóa dữ liệu cũ, không seed vị trí vào database thật.
+
+Migration: `2026_11_19_120000_add_job_positions_and_province`. Công cụ `database/deploy-job-positions.php --apply` đã kiểm chứng backup/restore, diễn tập up/down/up và xác nhận toàn bộ dữ liệu cũ được giữ nguyên. Bản sao riêng tư: `storage/app/private/database-backups/20261119_055558_job_positions/before-migration.sql`; manifest cùng thư mục.
+
+**Kiểm tra:** `php tests/Database/models.php --auth --pending-job-positions` đạt **138 tests, 2.144 assertions**, không fixture/reset database thật. Kiểm tra routes đủ 6 route danh mục Vị trí. Biên dịch Blade và Laravel Pint đạt. Chưa kiểm tra trực quan trên trình duyệt.
+
+**Cách sử dụng:** Admin thêm các vị trí cần dùng trong Quản lý danh mục → Vị trí công việc; sau đó Recruiter chọn trong form tạo/sửa tin. Không có vị trí mẫu được thêm tự động.

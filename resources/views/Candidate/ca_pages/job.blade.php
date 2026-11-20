@@ -42,7 +42,10 @@
                         </h2>
                         <p>{{ $job['position'] }} · {{ $job['specialization'] }}</p>
                         <p>{{ $job['mode'] }} · {{ $job['type'] }}</p>
-                        <p>Kinh nghiệm: {{ $job['experience'] }}</p>
+                        <p>Địa điểm chi tiết: {{ $job['location_detail'] }}</p>
+                        @if (! empty($job['experience']))
+                            <p>Kinh nghiệm: {{ $job['experience'] }}</p>
+                        @endif
                         <p>Số lượng tuyển: {{ $job['quantity'] }}</p>
                     </section>
                 </aside>

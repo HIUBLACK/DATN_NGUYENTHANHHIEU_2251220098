@@ -38,7 +38,7 @@ class AdminCategoryTest extends AuthenticatedDemoTestCase
         return ['updated_at' => $record->fresh()->getRawOriginal('updated_at')];
     }
 
-    public function test_admin_manages_all_five_catalogs_without_demo_or_deletion(): void
+    public function test_admin_manages_all_catalogs_without_demo_or_deletion(): void
     {
         $parent = $this->createCategory('occupations', 'Nhóm cha');
         foreach (AdminCategory::TYPES as $type => [$model]) {

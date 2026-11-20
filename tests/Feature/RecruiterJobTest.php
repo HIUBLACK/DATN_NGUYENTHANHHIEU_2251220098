@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Job;
 use App\Services\PublicJobService;
 use App\Services\RecruiterJobService;
+use App\Support\Provinces;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Tests\AuthenticatedDemoTestCase;
@@ -40,6 +41,80 @@ class RecruiterJobTest extends AuthenticatedDemoTestCase
         $version = $job->versions()->orderByDesc('version_number')->firstOrFail();
 
         return ['version_id' => $version->id, 'updated_at' => $version->getRawOriginal('updated_at')];
+    }
+
+    public function test_unchanged_edit_and_reversed_salary_cannot_be_submitted(): void
+    {
+        $input = $this->completeInput();
+        $job = $this->createJob($input);
+        $token = $this->versionToken($job);
+        $this->put(route('recruiter.job-update', $job->id), $input + $token + ['intent' => 'submit'])
+            ->assertSessionHasErrors('job');
+        $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['salary_max' => '1']) + $token + ['intent' => 'submit'])
+            ->assertSessionHasErrors('salary_max');
+        $this->assertSame(1, $job->versions()->count());
+        $this->assertSame('draft', $job->versions()->first()->review_status->value);
+    }
+
+    public function test_confirmed_create_is_atomic_and_repeated_confirmation_creates_no_duplicate(): void
+    {
+        $form = $this->get(route('recruiter.job-create'))->assertOk()->assertSee('job-review-modal');
+        $data = ['title' => 'Confirmed draft', 'intent' => 'submit', 'creation_key' => $form->viewData('creationKey')];
+        $this->post(route('recruiter.job-store'), $data)->assertSessionHasErrors('industry_id');
+        $this->assertSame(0, Job::where('company_id', $this->company->id)->count());
+        $data = array_replace($this->completeInput(), $data);
+        $this->post(route('recruiter.job-store'), $data)->assertSessionHasNoErrors();
+        $this->post(route('recruiter.job-store'), $data)->assertSessionHasNoErrors();
+        $job = Job::where('company_id', $this->company->id)->firstOrFail();
+        $this->assertSame(1, $job->versions()->count());
+        $this->assertSame('pending', $job->versions()->first()->review_status->value);
+        $this->assertNull($job->published_version_id);
+    }
+
+    public function test_confirmed_edit_uses_public_baseline_and_preserves_public_version(): void
+    {
+        $input = $this->completeInput();
+        $job = $this->createJob($input);
+        $published = $this->publishFixture($job);
+        $form = $this->get(route('recruiter.job-edit', $job->id))->assertOk();
+        $this->assertSame($published->title, $form->viewData('baseline')['values']['title']);
+        $token = $this->versionToken($job);
+        $invalid = array_replace($input, ['intent' => 'submit', 'description' => '']);
+        $this->put(route('recruiter.job-update', $job->id), $invalid + $token)->assertSessionHasErrors('description');
+        $this->assertSame(1, $job->versions()->count());
+        $data = array_replace($input, ['intent' => 'submit', 'title' => 'Unsaved replacement']) + $token;
+        $this->put(route('recruiter.job-update', $job->id), $data)->assertSessionHasNoErrors();
+        $this->put(route('recruiter.job-update', $job->id), $data)->assertSessionHasErrors('job');
+        $this->assertSame(2, $job->versions()->count());
+        $this->assertSame($published->id, $job->fresh()->published_version_id);
+        $this->assertSame($input['title'], $published->fresh()->title);
+        $this->assertSame('pending', app(RecruiterJobService::class)->latest($job)->review_status->value);
+    }
+
+    public function test_position_province_and_inferred_group_replace_free_text_inputs(): void
+    {
+        $input = $this->completeInput();
+        unset($input['experience_summary'], $input['job_category_id']);
+        $job = $this->createJob($input + ['position' => 'Forged position', 'job_category_id' => 999999]);
+        $version = $job->versions()->firstOrFail();
+        $this->assertSame($input['job_position_id'], $version->job_position_id);
+        $this->assertSame($version->positionCatalog->name, $version->position);
+        $this->assertSame('48', $version->province_code);
+        $this->assertNull($version->experience_summary);
+        $this->assertCount(34, Provinces::ALL);
+        $this->get(route('recruiter.job-edit', $job->id))->assertOk()
+            ->assertSee('name="job_position_id"', false)->assertSee('name="province_code"', false)
+            ->assertDontSee('name="job_category_id"', false)->assertDontSee('name="experience_summary"', false);
+        $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['province_code' => '99']) + $this->versionToken($job))
+            ->assertSessionHasErrors('province_code');
+        $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['industry_id' => [$input['industry_id']]]) + $this->versionToken($job))
+            ->assertSessionHasErrors('industry_id');
+        DB::table('job_positions')->where('id', $input['job_position_id'])->update(['is_active' => false]);
+        $this->post(route('recruiter.job-submit', $job->id), $this->versionToken($job))->assertSessionHasErrors('job_position_id');
+        $this->get(route('recruiter.job-edit', $job->id))->assertOk()->assertSee($version->position);
+        DB::table('job_positions')->where('id', $input['job_position_id'])->update(['is_active' => true]);
+        $this->post(route('recruiter.job-submit', $job->id), $this->versionToken($job))->assertSessionHasNoErrors();
+        $this->assertSame('pending', $version->fresh()->review_status->value);
     }
 
     public function test_title_only_draft_ignores_system_fields_and_duplicate_post(): void
@@ -177,7 +252,7 @@ class RecruiterJobTest extends AuthenticatedDemoTestCase
         $job = $this->createJob();
         $token = $this->versionToken($job);
         $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['skills' => [$input['skills'][0], $input['skills'][0]]]) + $token)->assertSessionHasErrors('skills.0');
-        $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['job_category_id' => null]) + $token)->assertSessionHasErrors('job_specialization_id');
+        $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['job_specialization_id' => 99999999]) + $token)->assertSessionHasErrors('job_specialization_id');
         DB::table('job_specializations')->where('id', $input['job_specialization_id'])->update(['is_active' => false]);
         $this->put(route('recruiter.job-update', $job->id), $input + $token)->assertSessionHasErrors('job_specialization_id');
     }

@@ -1,6 +1,6 @@
 # Thiết kế database VIEJOB AI
 
-**Thiết kế đã chốt: 24 bảng nghiệp vụ + 8 bảng hạ tầng. Schema đã triển khai ngày 15/11/2026 sau khi người dùng cho phép.** Xem [báo cáo triển khai, kiểm thử và giới hạn](database-implementation.md). Mục 1 ghi hiện trạng tại thời điểm khảo sát trước triển khai; các quy tắc Service/Policy dưới đây vẫn là yêu cầu cho giai đoạn backend tiếp theo. ERD tổng thể ở mục 12 và [database-erd.mmd](database-erd.mmd).
+**Cập nhật được chốt ngày 19/11/2026: 25 bảng nghiệp vụ + 8 bảng hạ tầng (33 bảng), thêm danh mục vị trí công việc; mỗi phiên bản vẫn chọn một lĩnh vực.** Baseline 24 + 8 đã triển khai ngày 15/11/2026. Các mô tả 32 bảng ở phần lịch sử phản ánh thời điểm trước cập nhật. Xem [báo cáo triển khai](database-implementation.md) và [phương án cập nhật](job-catalog-update-proposal.md). ERD tổng thể ở mục 12 và [database-erd.mmd](database-erd.mmd).
 
 ## 1. Kết quả phân tích hiện trạng
 
@@ -133,19 +133,23 @@ Cột/khóa/index giống industries. Giữ nhãn Thực tập sinh/Có kinh ngh
 
 ### 4.9 jobs — mới sau rename queue
 
+**Danh mục bổ sung `job_positions` (19/11/2026):** id BIGINT UNSIGNED PK; code VARCHAR(20) UNIQUE; name VARCHAR(120); normalized_name VARCHAR(120) COLLATE utf8mb4_bin UNIQUE; slug VARCHAR(160) UNIQUE; description TEXT NULL CHECK tối đa 1000 ký tự; is_active boolean CHECK 0/1 DEFAULT 1; sort_order SMALLINT UNSIGNED DEFAULT 0; created_at/updated_at DATETIME(6). INDEX(is_active,sort_order,id). Không xóa cứng; tái sử dụng dịch vụ danh mục Admin. Eloquent: JobPosition::jobVersions() hasMany, JobVersion::positionCatalog() belongsTo.
+
+`job_versions.job_position_id` FK nullable tới job_positions (RESTRICT); `province_code` VARCHAR(2) nullable, index riêng từng cột. Backend kiểm tra danh sách 34 mã tỉnh/thành phố trong `Provinces::ALL`. Vị trí và tỉnh được yêu cầu khi gửi bản nháp mới; pending cũ thiếu cả hai trường vẫn được kiểm duyệt mà không sửa nội dung. Cột position mở rộng 120 ký tự, lưu tên vị trí tại thời điểm chọn; đổi tên danh mục không đổi nội dung phiên bản cũ. Kinh nghiệm giữ dữ liệu lịch sử nhưng bỏ khỏi form và yêu cầu gửi duyệt. Nhóm nghề suy ra từ chuyên môn, không nhận lựa chọn nhóm từ client. Không tạo bảng liên kết lĩnh vực.
+
 `id ID`, `company_id`, `status V(20) DEFAULT 'draft'`, `status_before_block V(20)?`, `published_version_id?`, `published_at DATETIME(6)?`, `expires_at DATETIME(6)?`, TS.
 
 FK company_id→companies.id; **composite FK(id,published_version_id)→job_versions(job_id,id)** thêm sau khi có cả hai bảng. CHECK status draft/open/paused/closed/blocked; status_before_block chỉ draft/open/paused/closed hoặc NULL, chỉ có khi blocked. Published pointer/date/cache nullable vì chưa công khai; CHECK pointer NULL thì published_at/expires_at NULL. Approved của version phải kiểm tra Service, FK không thể kiểm tra. INDEX(company_id,status,created_at,id), INDEX(status,published_at,id), INDEX(status,expires_at,id). Không có nội dung nháp trong jobs.
 
 ### 4.10 job_versions — mới
 
-`id ID`, `job_id`, `version_number U32`, `title V(150)`, `position V(100)?`, `description TEXT?`, `requirements TEXT?`, `benefits TEXT?`, `salary_min DECIMAL(15,2)?`, `salary_max DECIMAL(15,2)?`, `salary_currency CHAR(3) DEFAULT 'VND'`, `salary_negotiable BOOL DEFAULT 0`, `location V(150)?`, `work_mode V(10)?`, `employment_type V(20)?`, `quantity U16?`, `experience_summary V(100)?`, `experience_min DECIMAL(4,1)?`, `experience_max DECIMAL(4,1)?`, `industry_id?`, `job_specialization_id?`, `job_level_id?`, `application_deadline DATE?`, `review_status V(20) DEFAULT 'draft'`, `submitted_at DATETIME(6)?`, `reviewed_at DATETIME(6)?`, `pending_slot U8 GENERATED STORED` = CASE WHEN review_status='pending' THEN 1 ELSE NULL END, TS.
+`id ID`, `job_id`, `version_number U32`, `title V(150)`, `position V(120)?`, `job_position_id?`, `province_code V(2)?`, `description TEXT?`, `requirements TEXT?`, `benefits TEXT?`, `salary_min DECIMAL(15,2)?`, `salary_max DECIMAL(15,2)?`, `salary_currency CHAR(3) DEFAULT 'VND'`, `salary_negotiable BOOL DEFAULT 0`, `location V(150)?`, `work_mode V(10)?`, `employment_type V(20)?`, `quantity U16?`, `experience_summary V(100)?`, `experience_min DECIMAL(4,1)?`, `experience_max DECIMAL(4,1)?`, `industry_id?`, `job_specialization_id?`, `job_level_id?`, `application_deadline DATE?`, `review_status V(20) DEFAULT 'draft'`, `submitted_at DATETIME(6)?`, `reviewed_at DATETIME(6)?`, `pending_slot U8 GENERATED STORED` = CASE WHEN review_status='pending' THEN 1 ELSE NULL END, TS.
 
-FK job_id→jobs.id; industry_id→industries.id; job_specialization_id→job_specializations.id; job_level_id→job_levels.id. UNIQUE(job_id,version_number), UNIQUE(job_id,id), UNIQUE(job_id,pending_slot). INDEX(review_status,submitted_at,id), INDEX(job_specialization_id,id), INDEX(industry_id,id), INDEX(job_level_id,id), INDEX(location,work_mode,id). FK jobs.published_version_id dùng unique composite nói trên để chặn trỏ nhầm tin.
+FK job_position_id→job_positions.id (RESTRICT), INDEX(job_position_id), INDEX(province_code); job_id→jobs.id; industry_id→industries.id; job_specialization_id→job_specializations.id; job_level_id→job_levels.id. UNIQUE(job_id,version_number), UNIQUE(job_id,id), UNIQUE(job_id,pending_slot). INDEX(review_status,submitted_at,id), INDEX(job_specialization_id,id), INDEX(industry_id,id), INDEX(job_level_id,id), INDEX(location,work_mode,id). FK jobs.published_version_id dùng unique composite nói trên để chặn trỏ nhầm tin.
 
 Theo phương án A được phê duyệt cho Giai đoạn 3.2, bản nháp chỉ bắt buộc title có nội dung, tối đa 150 ký tự. Đúng 13 cột đánh dấu `?` mới ở trên cho phép NULL: position, description, requirements, benefits, salary_min, salary_max, location, work_mode, employment_type, quantity, experience_summary, job_specialization_id, application_deadline. industry_id/job_level_id/experience_min/max đã nullable từ trước. Không điền dữ liệu giả để lấp chỗ trống.
 
-CHECK version_number≥1; quantity NULL hoặc 1..1000; từng đầu lương NULL hoặc không âm, min≤max nếu đủ hai đầu; currency='VND'; experience_min/max≥0 nếu có và min≤max nếu đủ hai giá trị. work_mode NULL hoặc onsite/remote/hybrid; employment_type NULL hoặc full_time/part_time/internship. Review status draft/pending/approved/rejected. CHECK title không toàn khoảng trắng; khi review_status khác draft, cả 13 cột phải NOT NULL, các trường văn bản bắt buộc có nội dung sau TRIM, industry_id/job_level_id/submitted_at phải NOT NULL. Dùng IS NOT NULL tường minh để SQL UNKNOWN không vượt ràng buộc. TEXT NULL hoặc tối đa 10000 ký tự. Service bổ sung kiểm tra danh mục đang hoạt động, chuyên môn đúng nhóm, ít nhất một kỹ năng và hạn tuyển không trước ngày gửi theo Asia/Ho_Chi_Minh. Experience range NULL khi text không parse chắc chắn, không đoán. submitted_at NULL trước gửi, reviewed_at NULL trước quyết định. Lưu VND/tháng bằng decimal, không FLOAT; form thật nhập VND. Salary_negotiable chưa có UI, default false.
+CHECK version_number≥1; quantity NULL hoặc 1..1000; từng đầu lương NULL hoặc không âm, min≤max nếu đủ hai đầu; currency='VND'; experience_min/max≥0 nếu có và min≤max nếu đủ hai giá trị. work_mode NULL hoặc onsite/remote/hybrid; employment_type NULL hoặc full_time/part_time/internship. Review status draft/pending/approved/rejected. CHECK title không toàn khoảng trắng; khi review_status khác draft, 12 cột nội dung (không gồm experience_summary) phải NOT NULL, các trường văn bản bắt buộc có nội dung sau TRIM, industry_id/job_level_id/submitted_at phải NOT NULL. Dùng IS NOT NULL tường minh để SQL UNKNOWN không vượt ràng buộc. TEXT NULL hoặc tối đa 10000 ký tự. Service bổ sung kiểm tra danh mục đang hoạt động, chuyên môn đúng nhóm, ít nhất một kỹ năng và hạn tuyển không trước ngày gửi theo Asia/Ho_Chi_Minh. Experience range NULL khi text không parse chắc chắn, không đoán. submitted_at NULL trước gửi, reviewed_at NULL trước quyết định. Lưu VND/tháng bằng decimal, không FLOAT; form thật nhập VND. Salary_negotiable chưa có UI, default false.
 
 Migration bổ sung: `2026_11_17_100000_allow_incomplete_job_drafts`. Giữ nguyên kiểu cột, PK/FK/UNIQUE, generated pending_slot và 32 bảng. Up kiểm tra dữ liệu trước DDL; down từ chối nếu còn NULL trong 13 cột. Rollback cần ngừng ghi vì MariaDB yêu cầu tháo rồi dựng lại nguyên định nghĩa FK chuyên môn khi chuyển về NOT NULL. Không tự xóa hay lấp dữ liệu để rollback. Xem biên bản backup/restore và diễn tập trong `backend-jobs-implementation.md`.
 
@@ -409,10 +413,10 @@ Các cột trong hình là khóa/mốc chính; mục 4 là từ điển cột đ
 
 ```mermaid
 erDiagram
-    %% Final design: 24 business tables + 8 Laravel infrastructure tables.
+    %% Final design: 25 business tables + 8 Laravel infrastructure tables (position catalog update 2026-11-19).
     %% MariaDB 11.5.2: validate generated slots, composite FKs and CHECKs on staging.
-    %% Stage 3.2: title-only drafts; 13 content columns nullable, required outside draft.
-    %% Industry/level: nullable in draft, required on submission; 32 tables unchanged.
+    %% Stage 3.2: title-only drafts; nullable drafts; experience no longer required outside draft.
+    %% Industry/level: nullable in draft, required on submission; 33 tables after position catalog approval.
     %% Referenced specialization cannot change category (Service + locking).
     %% Active resumes require exactly one primary (unique slot + Service).
     %% Published version belongs to same job and requires Admin approval.
@@ -473,7 +477,17 @@ erDiagram
         varchar status
         datetime expires_at
     }
+    job_positions {
+        bigint id PK
+        varchar code UK
+        varchar name
+        varchar normalized_name UK
+        varchar slug UK
+        boolean is_active
+    }
     job_versions {
+        bigint job_position_id FK "nullable for legacy"
+        varchar province_code "34 provinces, nullable for legacy"
         bigint id PK
         bigint job_id FK
         int version_number
@@ -624,6 +638,7 @@ erDiagram
     jobs ||--o{ job_versions : "content versions"
     jobs o|--o| job_versions : "published pointer same job"
     industries o|--o{ job_versions : "required on submit"
+    job_positions o|--o{ job_versions : "position snapshot"
     job_levels o|--o{ job_versions : "required on submit"
     job_specializations o|--o{ job_versions : "required on submit"
     job_versions ||--o{ job_version_skills : "requirements"

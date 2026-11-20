@@ -5,9 +5,8 @@ namespace App\Support;
 class JobInput
 {
     public const FIELDS = [
-        'title', 'position', 'description', 'requirements', 'benefits', 'salary_min', 'salary_max',
-        'location', 'work_mode', 'employment_type', 'quantity', 'experience_summary',
-        'experience_min', 'experience_max', 'application_deadline',
+        'title', 'position', 'province_code', 'description', 'requirements', 'benefits', 'salary_min', 'salary_max',
+        'location', 'work_mode', 'employment_type', 'quantity', 'application_deadline',
     ];
 
     public const STATUSES = ['draft' => 'Bản nháp', 'open' => 'Đang mở', 'paused' => 'Tạm dừng', 'closed' => 'Đã đóng', 'blocked' => 'Bị khóa'];
@@ -22,21 +21,18 @@ class JobInput
     {
         $required = $submit ? 'required' : 'nullable';
         $rules = ['title' => ['required', 'string', 'max:150', 'regex:/[^\s\p{Z}]/u']];
-        foreach (['position' => 100, 'description' => 10000, 'requirements' => 10000, 'benefits' => 10000, 'location' => 150, 'experience_summary' => 100] as $field => $length) {
+        foreach (['position' => 120, 'description' => 10000, 'requirements' => 10000, 'benefits' => 10000, 'location' => 150] as $field => $length) {
             $rules[$field] = [$required, 'string', 'max:'.$length];
         }
         foreach (['salary_min', 'salary_max'] as $field) {
             $rules[$field] = [$required, 'numeric', 'decimal:0,2', 'min:0', 'max:9999999999999.99'];
         }
-        foreach (['experience_min', 'experience_max'] as $field) {
-            $rules[$field] = ['nullable', 'numeric', 'decimal:0,1', 'min:0', 'max:999.9'];
+        if (isset($data['salary_min'], $data['salary_max'])) {
+            $rules['salary_max'][] = 'gte:salary_min';
         }
-        foreach (['salary', 'experience'] as $range) {
-            if (isset($data[$range.'_min'], $data[$range.'_max'])) {
-                $rules[$range.'_max'][] = 'gte:'.$range.'_min';
-            }
-        }
-        foreach (['industry_id', 'job_category_id', 'job_specialization_id', 'job_level_id'] as $field) {
+        $rules['province_code'] = [$required, 'string', 'in:'.implode(',', array_keys(Provinces::ALL))];
+        $rules['job_position_id'] = [$required, 'integer', 'min:1'];
+        foreach (['industry_id', 'job_specialization_id', 'job_level_id'] as $field) {
             $rules[$field] = [$required, 'integer', 'min:1'];
         }
         $rules['work_mode'] = [$required, 'in:'.implode(',', array_keys(self::MODES))];

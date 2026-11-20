@@ -10,6 +10,7 @@ use App\Models\Industry;
 use App\Models\Job;
 use App\Models\JobCategory;
 use App\Models\JobLevel;
+use App\Models\JobPosition;
 use App\Models\JobSpecialization;
 use App\Models\JobVersion;
 use App\Models\JobVersionSkill;
@@ -23,6 +24,70 @@ use Illuminate\Validation\ValidationException;
 
 class RecruiterJobService
 {
+    public function saveForReview(User $actor, array $data, ?int $jobId = null): Job
+    {
+        return DB::transaction(function () use ($actor, $data, $jobId) {
+            if ($jobId !== null) {
+                [, $record] = $this->lockJob($actor, $jobId, 'update');
+                $original = $this->editableVersion($record, $data);
+                $saved = $this->formData($original);
+                $fields = array_merge(array_diff(JobInput::FIELDS, ['position']), ['job_position_id', 'industry_id', 'job_specialization_id', 'job_level_id', 'skills']);
+                $changed = false;
+                foreach ($fields as $field) {
+                    $old = $saved[$field] ?? null;
+                    $new = $data[$field] ?? null;
+                    if ($field === 'skills') {
+                        $old = array_map('intval', $old ?? []);
+                        $new = array_map('intval', $new ?? []);
+                        sort($old);
+                        sort($new);
+                    } elseif (in_array($field, ['salary_min', 'salary_max'], true) && $old !== null && $new !== null) {
+                        $old = bcadd((string) $old, '0', 2);
+                        $new = bcadd((string) $new, '0', 2);
+                    } else {
+                        $old = trim(str_replace("\r\n", "\n", (string) $old));
+                        $new = trim(str_replace("\r\n", "\n", (string) $new));
+                    }
+                    if ($old !== $new) {
+                        $changed = true;
+                        break;
+                    }
+                }
+                if (! $changed) {
+                    throw ValidationException::withMessages(['job' => 'Bạn chưa thay đổi nội dung tin tuyển dụng.']);
+                }
+            }
+            $job = $jobId === null ? $this->create($actor, $data) : $this->update($actor, $jobId, $data);
+            $version = $this->latest($job);
+            $this->submit($actor, $job->id, [
+                'version_id' => $version->id,
+                'updated_at' => $version->getRawOriginal('updated_at'),
+            ]);
+
+            return $job;
+        });
+    }
+
+    public function reviewBaseline(Job $job): array
+    {
+        $version = $job->publishedVersion ?? $this->latest($job);
+        $data = $this->formData($version);
+        $labels = [
+            'job_position_id' => $version->position,
+            'industry_id' => $version->industry?->name,
+            'job_specialization_id' => $version->specialization?->name,
+            'job_level_id' => $version->level?->name,
+            'skills' => $version->skills->pluck('name')->all(),
+        ];
+
+        return [
+            'label' => ($job->published_version_id ? 'Bản công khai' : 'Bản đã lưu').' V'.$version->version_number,
+            'values' => $data,
+            'savedValues' => $this->formData($this->latest($job)),
+            'labels' => $labels,
+        ];
+    }
+
     public function latest(Job $job): JobVersion
     {
         return $job->versions()->with(['skills', 'specialization.category', 'industry', 'level', 'moderationLog'])
@@ -121,6 +186,7 @@ class RecruiterJobService
     {
         $data = $version->only(JobInput::FIELDS);
         $data['application_deadline'] = $version->application_deadline?->format('Y-m-d');
+        $data['job_position_id'] = $version->job_position_id;
         $data['industry_id'] = $version->industry_id;
         $data['job_level_id'] = $version->job_level_id;
         $data['job_specialization_id'] = $version->job_specialization_id;
@@ -135,7 +201,13 @@ class RecruiterJobService
     public function validateForReview(JobVersion $version): void
     {
         $input = $this->formData($version);
-        Validator::make($input, JobInput::rules($input, true))->validate();
+        $rules = JobInput::rules($input, true);
+        // Pending versions created before the catalog rollout remain reviewable without rewriting history.
+        if ($version->review_status === JobReviewStatus::Pending && ! $version->job_position_id && ! $version->province_code) {
+            $rules['job_position_id'][0] = 'nullable';
+            $rules['province_code'][0] = 'nullable';
+        }
+        Validator::make($input, $rules)->validate();
         $this->validateCatalogs($input, $version, true);
     }
 
@@ -143,7 +215,7 @@ class RecruiterJobService
     {
         $selected = $version ? $this->formData($version) : [];
         $options = [];
-        foreach (['industries' => [Industry::class, 'industry_id'], 'levels' => [JobLevel::class, 'job_level_id'], 'categories' => [JobCategory::class, 'job_category_id']] as $key => [$model, $field]) {
+        foreach (['positions' => [JobPosition::class, 'job_position_id'], 'industries' => [Industry::class, 'industry_id'], 'levels' => [JobLevel::class, 'job_level_id'], 'categories' => [JobCategory::class, 'job_category_id']] as $key => [$model, $field]) {
             $options[$key] = $model::where('is_active', true)->orWhere('id', $selected[$field] ?? 0)->orderBy('name')->get();
         }
         $options['specializations'] = JobSpecialization::with('category')->where(function ($query) {
@@ -182,10 +254,14 @@ class RecruiterJobService
     private function saveContent(JobVersion $version, array $data, ?JobVersion $previous = null): void
     {
         $this->validateCatalogs($data, $previous);
+        $position = isset($data['job_position_id']) ? JobPosition::findOrFail($data['job_position_id']) : null;
+        // Preserve the version's snapshot when keeping the same position after a catalog rename.
+        $data['position'] = $position && $previous?->job_position_id === $position->id
+            ? $previous->position : $position?->name;
         foreach (JobInput::FIELDS as $field) {
             $version->$field = $data[$field] ?? null;
         }
-        foreach (['industry_id', 'job_level_id', 'job_specialization_id'] as $field) {
+        foreach (['job_position_id', 'industry_id', 'job_level_id', 'job_specialization_id'] as $field) {
             $version->$field = $data[$field] ?? null;
         }
         $version->updated_at = now();
@@ -204,7 +280,10 @@ class RecruiterJobService
     private function validateCatalogs(array $data, ?JobVersion $previous, bool $submit = false): void
     {
         $old = $previous ? $this->formData($previous) : [];
-        foreach (['job_category_id' => JobCategory::class, 'industry_id' => Industry::class, 'job_level_id' => JobLevel::class, 'job_specialization_id' => JobSpecialization::class] as $field => $model) {
+        // Infer the group server-side; the recruiter no longer chooses a group.
+        $data['job_category_id'] = isset($data['job_specialization_id'])
+            ? JobSpecialization::find($data['job_specialization_id'])?->job_category_id : null;
+        foreach (['job_category_id' => JobCategory::class, 'job_position_id' => JobPosition::class, 'industry_id' => Industry::class, 'job_level_id' => JobLevel::class, 'job_specialization_id' => JobSpecialization::class] as $field => $model) {
             if (! isset($data[$field])) {
                 continue;
             }

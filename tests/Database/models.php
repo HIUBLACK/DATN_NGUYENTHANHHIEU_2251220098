@@ -54,6 +54,16 @@ try {
     if (Artisan::call('migrate', ['--database' => 'models_test', '--force' => true]) !== 0) {
         throw new RuntimeException('Cannot prepare model test schema.');
     }
+    $pendingPositions = in_array('--pending-job-positions', $argv, true);
+    $positionsMigration = 'database/migrations/2026_11_19_120000_add_job_positions_and_province.php';
+    if ($pendingPositions) {
+        if ($original->table('migrations')->where('migration', basename($positionsMigration, '.php'))->exists()) {
+            throw new RuntimeException('Position migration already applied; omit pending flag.');
+        }
+        if (Artisan::call('migrate:rollback', ['--database' => 'models_test', '--path' => [$positionsMigration], '--step' => 1, '--force' => true]) !== 0) {
+            throw new RuntimeException('Cannot rehearse position rollback.');
+        }
+    }
     $pendingCompany = in_array('--pending-company-profile', $argv, true);
     $companyMigration = 'database/migrations/2026_11_18_120000_simplify_company_profile.php';
     if ($pendingCompany) {
@@ -107,12 +117,18 @@ try {
     if ($pendingCompany && Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$companyMigration], '--force' => true]) !== 0) {
         throw new RuntimeException('Cannot apply company migration on test database.');
     }
+    if ($pendingPositions && Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$positionsMigration], '--force' => true]) !== 0) {
+        throw new RuntimeException('Cannot apply positions migration on test database.');
+    }
     $testConfiguration = in_array('--auth', $argv, true) ? 'tests/Auth/phpunit.xml' : 'tests/Models/phpunit.xml';
     if ($pendingJobDrafts && Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$jobDraftMigration], '--force' => true]) !== 0) {
         throw new RuntimeException('Cannot apply pending draft migration on isolated database.');
     }
     $phpArguments = in_array('--with-gd', $argv, true) ? ['-d', 'extension=gd'] : [];
     $testArguments = in_array('--moderation', $argv, true) ? ['--filter', 'JobModerationTest|RecruiterJobTest|AdminPageTest|AuthenticationTest|PoliciesTest|GooglePreparationTest|GooglePasswordSetupTest|PasswordRecoveryTest'] : [];
+    if (in_array('--job-review', $argv, true)) {
+        $testArguments = ['--filter', 'RecruiterJobTest|JobModerationTest'];
+    }
     $process = new Process([PHP_BINARY, ...$phpArguments, 'vendor/phpunit/phpunit/phpunit', '--configuration', $testConfiguration, '--fail-on-empty-test-suite', ...$testArguments], base_path(), [
         'APP_ENV' => 'testing', 'DB_URL' => false, 'DB_CONNECTION' => 'mysql',
         'DB_DATABASE' => $database, 'DB_HOST' => $configuration['host'], 'DB_PORT' => (string) $configuration['port'],

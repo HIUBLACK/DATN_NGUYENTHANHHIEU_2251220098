@@ -11,6 +11,9 @@
         <link rel="stylesheet" href="{{ asset('recruiter/css/recruiter.css') }}">
         <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
         <link rel="stylesheet" href="{{ asset('recruiter/css/theme.css') }}">
+        @if ($page === 'job-form')
+            <link rel="stylesheet" href="{{ asset('recruiter/css/job-review.css') }}">
+        @endif
     </head>
     <body data-preview-user="{{ auth()->id() }}" data-recruiter-page="{{ $page }}" data-real-jobs="{{ ($realJobs ?? false) ? '1' : '0' }}">
         @include('employer.component.sidebar')
@@ -45,15 +48,6 @@
                 @if (session('job_notice'))
                     <div class="alert alert-success" role="status">{{ session('job_notice') }}</div>
                 @endif
-                @if ($errors->any())
-                    <div class="alert alert-danger" role="alert">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
-                    </div>
-                @endif
                 @yield('content')
             </main>
             @include('employer.component.footer')
@@ -81,9 +75,10 @@
         <script src="{{ asset('recruiter/js/recruiter-categories.js') }}"></script>
         <script src="{{ asset('recruiter/js/company-profile-form.js') }}"></script>
         <script src="{{ asset('recruiter/js/recruiter.js') }}"></script>
-        @if ($realJobs ?? false)
-            <script src="{{ asset('recruiter/js/job-form.js') }}"></script>
+        @if ($page === 'job-form')
+            <script src="{{ asset('recruiter/js/job-review.js') }}"></script>
         @endif
         <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
+        @include('shared.form-validation')
     </body>
 </html>

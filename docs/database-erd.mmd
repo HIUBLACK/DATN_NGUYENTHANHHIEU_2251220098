@@ -1,8 +1,8 @@
 erDiagram
-    %% Final design: 24 business tables + 8 Laravel infrastructure tables.
+    %% Final design: 25 business tables + 8 Laravel infrastructure tables (position catalog update 2026-11-19).
     %% MariaDB 11.5.2: validate generated slots, composite FKs and CHECKs on staging.
-    %% Stage 3.2: title-only drafts; 13 content columns nullable, required outside draft.
-    %% Industry/level: nullable in draft, required on submission; 32 tables unchanged.
+    %% Stage 3.2: title-only drafts; nullable drafts; experience no longer required outside draft.
+    %% Industry/level: nullable in draft, required on submission; 33 tables after position catalog approval.
     %% Referenced specialization cannot change category (Service + locking).
     %% Active resumes require exactly one primary (unique slot + Service).
     %% Published version belongs to same job and requires Admin approval.
@@ -63,7 +63,17 @@ erDiagram
         varchar status
         datetime expires_at
     }
+    job_positions {
+        bigint id PK
+        varchar code UK
+        varchar name
+        varchar normalized_name UK
+        varchar slug UK
+        boolean is_active
+    }
     job_versions {
+        bigint job_position_id FK "nullable for legacy"
+        varchar province_code "34 provinces, nullable for legacy"
         bigint id PK
         bigint job_id FK
         int version_number
@@ -214,6 +224,7 @@ erDiagram
     jobs ||--o{ job_versions : "content versions"
     jobs o|--o| job_versions : "published pointer same job"
     industries o|--o{ job_versions : "required on submit"
+    job_positions o|--o{ job_versions : "position snapshot"
     job_levels o|--o{ job_versions : "required on submit"
     job_specializations o|--o{ job_versions : "required on submit"
     job_versions ||--o{ job_version_skills : "requirements"

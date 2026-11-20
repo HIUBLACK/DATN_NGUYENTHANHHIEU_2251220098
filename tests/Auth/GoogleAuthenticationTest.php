@@ -237,7 +237,7 @@ class GoogleAuthenticationTest extends TestCase
         $other = $this->user();
         $this->assertFalse($other->isFillable('google_subject'));
         $this->assertSame('ascii_bin', DB::selectOne("SHOW FULL COLUMNS FROM users WHERE Field = 'google_subject'")->Collation);
-        $this->assertSame(32, count(DB::select('SHOW TABLES')));
+        $this->assertSame(33, count(DB::select('SHOW TABLES')));
         $this->expectException(UniqueConstraintViolationException::class);
         $other->google_subject = $owner->google_subject;
         $other->save();

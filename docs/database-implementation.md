@@ -75,3 +75,7 @@ Diễn tập up/down/up trên MariaDB tách biệt và bộ Auth/Models đạt 7
 `database/deploy-schema.php --apply` dành cho một bản baseline chưa nâng cấp: kiểm tra schema, maintenance, backup, restore kiểm chứng, diễn tập và migrate. Script có đường dẫn CLI XAMPP cố định cho môi trường Windows hiện tại; phải kiểm tra lại khi triển khai máy khác. Script từ chối chạy lại khi đã có queue_jobs. Không dùng script để reset dữ liệu.
 
 `down()` của migration mới từ chối drop bảng có dữ liệu; rollback không phải phương án vận hành sau có dữ liệu thật. Ưu tiên forward migration đã duyệt. Không chạy migrate:fresh, không sửa migration đã triển khai, không rename queue về jobs khi bảng tin còn tồn tại. Lỗi DDL có thể để lại schema từng phần vì implicit commit; giữ maintenance để kiểm tra thay vì retry mù.
+
+## Cập nhật danh mục vị trí ngày 19/11/2026
+
+Đã triển khai danh mục Vị trí công việc, một lĩnh vực, 34 tỉnh/thành phố; bỏ ô kinh nghiệm và chọn nhóm nghề trong form Recruiter. Database hiện có 33 bảng. Chi tiết schema, nghiệm thu và backup: [phương án đã chốt](job-catalog-update-proposal.md) và mục 8 của báo cáo **các thay đổi của tôi.md**. Kiểm thử MariaDB riêng: 138 tests, 2.144 assertions đạt. Các mô tả 32 bảng và form cũ phía trên là lịch sử trước cập nhật này.
