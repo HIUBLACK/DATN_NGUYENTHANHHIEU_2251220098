@@ -63,7 +63,7 @@
                     </div>
                 @endif
 
-                @if (request()->routeIs('candidate.profile', 'candidate.settings', 'candidate.saved', 'candidate.recommendations', 'candidate.messages'))
+                @if (request()->routeIs('candidate.profile', 'candidate.settings', 'candidate.recommendations', 'candidate.messages'))
                     <div class="container pt-3">
                         <div class="alert alert-info" role="note">
                             Bạn đã đăng nhập. Nội dung của trang này vẫn là demo trong phiên. CV và hồ sơ ứng tuyển đã dùng dữ liệu thật.

@@ -29,6 +29,7 @@
                                 @endif
                             @endcan
                         @endguest
+                        @include('Candidate.save-job-button', ['saveButtonClass' => 'btn btn-outline-primary mt-2', 'saveButtonLabel' => true])
                     </section>
                     <section class="job-detail-card">
                         @foreach (['description' => 'Mô tả công việc', 'requirements' => 'Yêu cầu ứng viên', 'benefits' => 'Quyền lợi'] as $field => $label)

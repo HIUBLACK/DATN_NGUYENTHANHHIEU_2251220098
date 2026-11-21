@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\Resume;
+use App\Models\SavedJob;
 use App\Services\CandidateApplicationService;
 use App\Services\CandidateDemo;
 use App\Services\CompanyService;
 use App\Services\PublicJobService;
+use App\Services\SavedJobService;
 use App\Support\CandidateCatalog;
 use App\Support\CompanyDemoCatalog;
 use Illuminate\Http\Request;
@@ -125,7 +127,7 @@ class CandidatePageController extends Controller
         }
 
         if ($page === 'saved') {
-            $data['savedJobs'] = array_map($this->catalog->find(...), $data['demo']['saved']);
+            $data['savedJobs'] = app(SavedJobService::class)->listing($request->user());
         }
 
         if ($page === 'recommendations') {
@@ -187,7 +189,9 @@ class CandidatePageController extends Controller
         return $this->publicJobs->navigation() + [
             'jobMenuGroups' => ['industry' => 'lĩnh vực', 'skill' => 'kỹ năng', 'specialtyId' => 'chuyên môn', 'level' => 'cấp bậc', 'company' => 'công ty', 'location' => 'thành phố'],
             'catalogJobs' => $this->publicJobs->query()->latest('published_at')->limit(7)->get()->map(fn ($job) => $this->publicJobs->card($job)),
-            'statusLabels' => $this->catalog->statuses(),
+            'statusLabels' => $this->catalog->statuses() + ['paused' => 'Tạm dừng'],
+            'savedJobIds' => auth()->user()?->can('viewAny', SavedJob::class)
+                ? SavedJob::where('candidate_id', auth()->id())->pluck('job_id')->map(fn ($id) => (int) $id)->all() : [],
             'demo' => $demo,
             'unreadNotificationCount' => ($demo['active'] ? auth()->user()->unreadNotifications()->count() : 0),
             'mainResume' => $this->demo->mainResume(),

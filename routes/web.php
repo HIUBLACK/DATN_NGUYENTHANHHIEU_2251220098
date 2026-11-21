@@ -9,6 +9,7 @@ use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\GooglePasswordSetupController;
 use App\Http\Controllers\PasswordRecoveryController;
 use App\Http\Controllers\RecruiterPageController;
+use App\Http\Controllers\SavedJobController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CandidatePageController::class, 'home'])->name('home');
@@ -96,7 +97,8 @@ Route::middleware(['auth', 'auth.session', 'role:candidate'])->group(function ()
     Route::post('/ung-vien/cv/{id}/{action}', [CandidateDocumentController::class, 'resumeAction'])
         ->whereIn('action', ['main', 'rename', 'delete'])
         ->whereUuid('id')->block()->name('candidate.resume-action');
-    Route::post('/ung-vien/luu/{id}', [CandidateDemoController::class, 'save'])->whereNumber('id')->name('candidate.save');
+    Route::post('/ung-vien/luu/{id}', [SavedJobController::class, 'update'])->whereNumber('id')->block()->name('candidate.save');
+    Route::delete('/ung-vien/luu/{id}', [SavedJobController::class, 'update'])->whereNumber('id')->block()->name('candidate.unsave');
     Route::post('/ung-vien/ung-tuyen/{id}', [CandidateDocumentController::class, 'apply'])->whereNumber('id')->block()->name('candidate.apply');
     Route::get('/ung-vien/ho-so-ung-tuyen/{id}', [CandidatePageController::class, 'applicationDetail'])->whereUuid('id')->name('candidate.application-detail');
     Route::get('/ung-vien/ho-so-ung-tuyen/{id}/pdf', [CandidateDocumentController::class, 'snapshot'])->whereUuid('id')->name('candidate.snapshot');

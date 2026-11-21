@@ -49,13 +49,10 @@
                                 <span class="icon-paper-plane mr-2" aria-hidden="true"></span>
                                 Ứng tuyển ngay
                             </button>
-                            <form action="{{ route('candidate.save', $job['id']) }}" method="post">
-                                @csrf
-                                <button type="submit" class="btn btn-outline-primary">
-                                    <span class="icon-heart-o mr-2" aria-hidden="true"></span>
-                                    {{ in_array($job['id'], $demo['saved']) ? 'Bỏ lưu' : 'Lưu việc' }}
-                                </button>
-                            </form>
+                            <button type="button" class="btn btn-outline-primary" disabled title="Tin minh họa không được lưu vào dữ liệu thật">
+                                <span class="icon-heart-o mr-2" aria-hidden="true"></span>
+                                Lưu việc
+                            </button>
                         </div>
                         @if ($applicationError)
                             <div class="alert alert-warning mt-3 mb-0" role="status">{{ $applicationError }}</div>

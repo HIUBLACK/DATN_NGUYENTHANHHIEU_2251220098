@@ -148,3 +148,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
 });
+
+window.addEventListener('pageshow', function (event) {
+    // Back/forward cache must not restore an outdated saved-job button state.
+    if (event.persisted && document.querySelector('[data-saved-job]')) {
+        window.location.reload();
+    }
+});
