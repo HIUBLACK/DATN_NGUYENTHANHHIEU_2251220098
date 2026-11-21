@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CandidateDemoController;
+use App\Http\Controllers\CandidateDocumentController;
 use App\Http\Controllers\CandidatePageController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\GoogleAuthController;
@@ -89,16 +90,18 @@ Route::middleware(['auth', 'auth.session', 'role:candidate'])->group(function ()
     Route::post('/demo/thoat', [CandidateDemoController::class, 'leave'])->name('demo.leave');
     Route::post('/demo/xoa-du-lieu', [CandidateDemoController::class, 'reset'])->name('demo.reset');
     Route::post('/demo/ho-so-mau', [CandidateDemoController::class, 'sampleApplications'])->name('demo.applications');
-    Route::post('/ung-vien/cv', [CandidateDemoController::class, 'upload'])->name('candidate.upload');
-    Route::post('/ung-vien/cv/{id}/pdf', [CandidateDemoController::class, 'upload'])->name('candidate.replace');
-    Route::get('/ung-vien/cv/{id}/pdf', [CandidateDemoController::class, 'pdf'])->name('candidate.pdf');
-    Route::post('/ung-vien/cv/{id}/{action}', [CandidateDemoController::class, 'resumeAction'])
-        ->whereIn('action', ['main', 'rename', 'delete', 'state', 'sample'])
-        ->name('candidate.resume-action');
+    Route::post('/ung-vien/cv', [CandidateDocumentController::class, 'upload'])->middleware('throttle:20,1')->block()->name('candidate.upload');
+    Route::post('/ung-vien/cv/{id}/pdf', [CandidateDocumentController::class, 'upload'])->whereUuid('id')->middleware('throttle:20,1')->block()->name('candidate.replace');
+    Route::get('/ung-vien/cv/{id}/pdf', [CandidateDocumentController::class, 'pdf'])->whereUuid('id')->name('candidate.pdf');
+    Route::post('/ung-vien/cv/{id}/{action}', [CandidateDocumentController::class, 'resumeAction'])
+        ->whereIn('action', ['main', 'rename', 'delete'])
+        ->whereUuid('id')->block()->name('candidate.resume-action');
     Route::post('/ung-vien/luu/{id}', [CandidateDemoController::class, 'save'])->whereNumber('id')->name('candidate.save');
-    Route::post('/ung-vien/ung-tuyen/{id}', [CandidateDemoController::class, 'apply'])->whereNumber('id')->block()->name('candidate.apply');
-    Route::post('/ung-vien/rut-ho-so/{id}', [CandidateDemoController::class, 'withdraw'])->block()->name('candidate.withdraw');
-    Route::post('/ung-vien/thong-bao/{id}', [CandidateDemoController::class, 'readNotification'])->name('candidate.read');
+    Route::post('/ung-vien/ung-tuyen/{id}', [CandidateDocumentController::class, 'apply'])->whereNumber('id')->block()->name('candidate.apply');
+    Route::get('/ung-vien/ho-so-ung-tuyen/{id}', [CandidatePageController::class, 'applicationDetail'])->whereUuid('id')->name('candidate.application-detail');
+    Route::get('/ung-vien/ho-so-ung-tuyen/{id}/pdf', [CandidateDocumentController::class, 'snapshot'])->whereUuid('id')->name('candidate.snapshot');
+    Route::post('/ung-vien/rut-ho-so/{id}', [CandidateDocumentController::class, 'withdraw'])->block()->name('candidate.withdraw');
+    Route::post('/ung-vien/thong-bao/{id}', [CandidateDocumentController::class, 'readNotification'])->name('candidate.read');
     Route::post('/ung-vien/ho-so', [CandidateDemoController::class, 'profile'])->name('candidate.profile-save');
     Route::get('/ung-vien/anh-dai-dien', [CandidateDemoController::class, 'avatar'])->name('candidate.avatar');
 });

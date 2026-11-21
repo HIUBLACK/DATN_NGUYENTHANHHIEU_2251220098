@@ -1,17 +1,24 @@
 <?php
 
 use App\Http\Controllers\CompanyProfileController;
+use App\Http\Controllers\RecruiterApplicationController;
 use App\Http\Controllers\RecruiterJobController;
 use App\Http\Controllers\RecruiterPageController;
 use Illuminate\Support\Facades\Route;
 
 $recruiterPages = [
     '' => ['dashboard', 'Tổng quan tuyển dụng', 'dashboard'],
-    '/ho-so' => ['applications', 'Hồ sơ ứng tuyển', 'applications'],
-    '/ho-so/chi-tiet' => ['application-detail', 'Chi tiết hồ sơ ứng tuyển', 'applications'],
     '/thong-bao' => ['notifications', 'Thông báo tuyển dụng', 'notifications'],
     '/tai-khoan' => ['account', 'Tài khoản nhà tuyển dụng', 'account'],
 ];
+
+Route::get('/nha-tuyen-dung/quan-ly/ho-so', [RecruiterApplicationController::class, 'index'])->name('recruiter.applications');
+Route::get('/nha-tuyen-dung/quan-ly/ho-so/chi-tiet', [RecruiterApplicationController::class, 'show'])->name('recruiter.application-detail');
+Route::get('/nha-tuyen-dung/quan-ly/ho-so/{id}/pdf', [RecruiterApplicationController::class, 'snapshot'])->whereUuid('id')->name('recruiter.application-pdf');
+Route::post('/nha-tuyen-dung/quan-ly/ho-so/{id}/trang-thai', [RecruiterApplicationController::class, 'transition'])
+    ->whereUuid('id')->middleware('throttle:30,1')->block()->name('recruiter.application-status');
+Route::post('/nha-tuyen-dung/quan-ly/ho-so/{id}/ghi-chu', [RecruiterApplicationController::class, 'note'])
+    ->whereUuid('id')->middleware('throttle:30,1')->block()->name('recruiter.application-note');
 
 foreach ($recruiterPages as $path => [$page, $title, $section]) {
     $name = match ($path) {

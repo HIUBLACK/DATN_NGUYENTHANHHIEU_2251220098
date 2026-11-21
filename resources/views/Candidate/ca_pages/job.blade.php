@@ -15,7 +15,20 @@
                         <h1 class="job-detail-title mt-3">{{ $job['title'] }}</h1>
                         <p class="job-detail-salary">{{ $job['salary_negotiable'] ? 'Lương thỏa thuận' : $job['salary_min'].'–'.$job['salary_max'].' triệu/tháng' }}</p>
                         <p>{{ $job['location'] }} · {{ $job['level'] }} · Hạn {{ $job['deadline']->format('d/m/Y') }}</p>
-                        <p class="alert alert-info mb-0">Chức năng ứng tuyển và lưu tin thật chưa được mở trong giai đoạn này.</p>
+                        @guest
+                            <a href="{{ route('login') }}" class="btn btn-primary text-white">Đăng nhập để ứng tuyển</a>
+                        @else
+                            @can('viewAny', App\Models\Resume::class)
+                                @if (! $applicationEligibility['allowed'])
+                                    <p class="alert alert-info">Bạn đã nộp hồ sơ hoặc đã sử dụng đủ lượt ứng tuyển.</p>
+                                    <a href="{{ route('candidate.applications') }}">Xem hồ sơ đã nộp</a>
+                                @elseif ($applicationResumes->isEmpty())
+                                    <a href="{{ route('candidate.resumes') }}" class="btn btn-primary text-white">Tải CV để ứng tuyển</a>
+                                @else
+                                    <button type="button" class="btn btn-primary text-white" data-toggle="modal" data-target="#apply-real-modal">Ứng tuyển</button>
+                                @endif
+                            @endcan
+                        @endguest
                     </section>
                     <section class="job-detail-card">
                         @foreach (['description' => 'Mô tả công việc', 'requirements' => 'Yêu cầu ứng viên', 'benefits' => 'Quyền lợi'] as $field => $label)
@@ -52,4 +65,7 @@
             </div>
         </div>
     </section>
+    @if ($applicationEligibility['allowed'] && $applicationResumes->isNotEmpty())
+        @include('Candidate.real-apply-modal')
+    @endif
 @endsection

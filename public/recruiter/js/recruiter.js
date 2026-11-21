@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    if (document.body.dataset.realJobs === '1') {
+    if (document.body.dataset.realJobs === '1' || document.body.dataset.realApplications === '1') {
         return;
     }
     if (['company', 'company-form'].includes(document.body.dataset.recruiterPage)) {

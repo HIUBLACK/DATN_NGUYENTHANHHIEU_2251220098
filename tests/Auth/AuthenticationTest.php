@@ -6,17 +6,20 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\CandidateProfile;
 use App\Models\Company;
+use App\Models\Resume;
 use App\Models\User;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Process;
+use Tests\Support\PdfFixtures;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
+    use PdfFixtures;
+
     public function test_real_console_reads_input_without_autoload_failure_on_windows(): void
     {
         if (PHP_OS_FAMILY !== 'Windows') {
@@ -355,15 +358,15 @@ class AuthenticationTest extends TestCase
         $this->withCookie(config('session.cookie'), $authenticatedSession)->get(route('candidate.profile'))->assertRedirect(route('login'));
     }
 
-    public function test_account_switch_cannot_read_previous_demo_pdf(): void
+    public function test_account_switch_cannot_read_previous_candidate_pdf(): void
     {
         Storage::fake('local');
         $first = $this->account();
         $second = $this->account();
         $this->actingAs($first)->post(route('candidate.upload'), [
-            'pdf' => UploadedFile::fake()->createWithContent('private.pdf', "%PDF-1.4\n%%EOF"),
+            'pdf' => $this->pdf(),
         ])->assertSessionHasNoErrors();
-        $resumeId = session('candidate_preview.resumes.0.id');
+        $resumeId = Resume::where('candidate_id', $first->id)->firstOrFail()->public_id;
         $this->get(route('candidate.pdf', $resumeId))->assertOk();
         $this->post(route('logout'))->assertRedirect();
         $this->post(route('auth.login'), ['email' => $second->email, 'password' => 'Password123'])->assertRedirect();

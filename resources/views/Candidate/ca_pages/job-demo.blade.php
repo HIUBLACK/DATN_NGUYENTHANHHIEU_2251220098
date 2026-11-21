@@ -45,7 +45,7 @@
                             </div>
                         </div>
                         <div class="job-detail-actions">
-                            <button type="button" class="btn btn-primary text-white" data-toggle="modal" data-target="#apply-modal" @disabled($applicationError)>
+                            <button type="button" class="btn btn-primary text-white" data-toggle="modal" data-target="#apply-modal" disabled>
                                 <span class="icon-paper-plane mr-2" aria-hidden="true"></span>
                                 Ứng tuyển ngay
                             </button>
@@ -187,5 +187,5 @@
             </section>
         </div>
     </section>
-    @include('Candidate.apply-modal')
+
 @endsection

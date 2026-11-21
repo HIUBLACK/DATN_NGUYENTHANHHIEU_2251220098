@@ -3,12 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\Application;
+use App\Models\Resume;
+use App\Services\CandidateApplicationService;
 use App\Services\CandidateDemo;
 use App\Services\CompanyService;
 use App\Services\PublicJobService;
 use App\Support\CandidateCatalog;
 use App\Support\CompanyDemoCatalog;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class CandidatePageController extends Controller
@@ -60,6 +64,11 @@ class CandidatePageController extends Controller
         return view('Candidate.ca_pages.job', $this->sharedData() + [
             'page' => 'job', 'title' => $job->publishedVersion->title,
             'job' => $this->publicJobs->card($job),
+            'applicationResumes' => auth()->check() && auth()->user()->can('viewAny', Resume::class)
+                ? Resume::forCandidate(auth()->id())->orderByDesc('is_primary')->get() : collect(),
+            'applicationEligibility' => auth()->check() && auth()->user()->can('viewAny', Resume::class)
+                ? app(CandidateApplicationService::class)->availability(auth()->id(), $job->id) : ['allowed' => false, 'attempt' => 1],
+            'applicationVersion' => $job->published_version_id,
         ]);
     }
 
@@ -127,12 +136,11 @@ class CandidatePageController extends Controller
             $data['recommendations'] = $this->catalog->recommendations($data['mainResume'], $filters);
         }
 
+        if ($page === 'resumes') {
+            $data['resumes'] = Resume::forCandidate(auth()->id())->orderByDesc('is_primary')->latest('id')->get();
+        }
         if ($page === 'applications') {
-            foreach ($data['demo']['applications'] as &$application) {
-                $job = $this->catalog->find($application['job_id']);
-                $application['can_reapply'] = $application['status'] === 'withdrawn'
-                    && $this->demo->applicationError($job) === null;
-            }
+            $data['applications'] = Application::with(['jobVersion', 'job.company'])->where('candidate_id', auth()->id())->latest('id')->paginate(10);
         }
 
         if ($page === 'profile') {
@@ -149,17 +157,39 @@ class CandidatePageController extends Controller
         return view('Candidate.ca_pages.'.$page, $data);
     }
 
+    public function applicationDetail(string $id): View
+    {
+        $application = Application::with(['jobVersion', 'job.company', 'statusHistories'])->where('candidate_id', auth()->id())->where('public_id', $id)->firstOrFail();
+        Gate::authorize('view', $application);
+
+        return view('Candidate.ca_pages.application-detail', $this->sharedData() + [
+            'page' => 'application-detail', 'title' => 'Chi tiết hồ sơ ứng tuyển', 'application' => $application,
+        ]);
+    }
+
     private function sharedData(): array
     {
         $demo = $this->demo->state();
         $demo['active'] = auth()->check() && auth()->user()->role === UserRole::Candidate;
+        $demo['notifications'] = [];
+        if ($demo['active']) {
+            $demo['notifications'] = auth()->user()->notifications()->latest()->limit(100)->get()->map(function ($notification) {
+                return [
+                    'id' => $notification->id, 'read' => $notification->read_at !== null,
+                    'application_id' => $notification->data['application_id'] ?? '',
+                    'status' => $notification->data['status'] ?? 'applied',
+                    'title' => $notification->data['title'] ?? 'Thông báo',
+                    'date' => $notification->created_at->format('d/m/Y H:i'),
+                ];
+            })->all();
+        }
 
         return $this->publicJobs->navigation() + [
             'jobMenuGroups' => ['industry' => 'lĩnh vực', 'skill' => 'kỹ năng', 'specialtyId' => 'chuyên môn', 'level' => 'cấp bậc', 'company' => 'công ty', 'location' => 'thành phố'],
             'catalogJobs' => $this->publicJobs->query()->latest('published_at')->limit(7)->get()->map(fn ($job) => $this->publicJobs->card($job)),
             'statusLabels' => $this->catalog->statuses(),
             'demo' => $demo,
-            'unreadNotificationCount' => collect($this->demo->state()['notifications'])->where('read', false)->count(),
+            'unreadNotificationCount' => ($demo['active'] ? auth()->user()->unreadNotifications()->count() : 0),
             'mainResume' => $this->demo->mainResume(),
         ];
     }

@@ -25,14 +25,10 @@
                 <article class="notification-panel-item" data-notification-state="{{ $notification['read'] ? 'read' : 'unread' }}">
                     <span class="notification-item-icon icon-briefcase" aria-hidden="true"></span>
                     <div class="notification-item-content">
-                        <a href="{{ route('candidate.applications') }}#application-{{ $notification['application_id'] }}" class="notification-item-title">
+                        <a href="{{ route('candidate.application-detail', $notification['application_id']) }}" class="notification-item-title">
                             {{ $statusLabels[$notification['status']] }} — {{ $notification['title'] }}
                         </a>
-                        @if ($notification['status'] === 'reviewing')
-                            <p>Thông báo nội bộ, không gửi email.</p>
-                        @else
-                            <p>Cập nhật hồ sơ demo, chưa gửi email thật.</p>
-                        @endif
+                        <p class="small">Cập nhật hồ sơ ứng tuyển của bạn.</p>
                         <p class="notification-item-date">{{ $notification['date'] }}</p>
                         @unless ($notification['read'])
                             <form action="{{ route('candidate.read', $notification['id']) }}" method="post">
