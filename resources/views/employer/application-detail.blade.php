@@ -18,7 +18,7 @@
                 <div class="card p-4 mb-4">
                     <h2 class="h4">{{ $application->candidate->name }}</h2>
                     <p>{{ $application->candidate->email }} · {{ $application->candidate->candidateProfile?->phone ?: 'Chưa cung cấp số điện thoại' }}</p>
-                    <p>Ứng tuyển: {{ $application->jobVersion->title }} · {{ $application->applied_at->format('d/m/Y H:i') }}</p>
+                    <p>Ứng tuyển: {{ $application->jobVersion->title }} · {{ \App\Support\DisplayDate::format($application->applied_at) }}</p>
                     <p>Lượt {{ $application->attempt_no }}/2 · Phiên bản tin V{{ $application->jobVersion->version_number }}</p>
                     <div class="mb-3">
                         <span class="badge-table {{ $statusTones[$application->status->value] }}">{{ $statusLabels[$application->status->value] }}</span>
@@ -63,7 +63,7 @@
                         @foreach ($application->statusHistories->sortBy('id') as $event)
                             <li>
                                 <strong>{{ $statusLabels[$event->new_status->value] }}</strong>
-                                <p class="small mb-0">{{ $event->created_at->format('d/m/Y H:i') }} · {{ $event->actor->name }}</p>
+                                <p class="small mb-0">{{ \App\Support\DisplayDate::format($event->created_at) }} · {{ $event->actor->name }}</p>
                             </li>
                         @endforeach
                     </ol>
@@ -83,7 +83,7 @@
             @forelse ($application->notes->sortByDesc('id') as $note)
                 <article class="recruiter-note">
                     <p class="recruiter-content-text">{{ $note->content }}</p>
-                    <p class="small mb-0">{{ $note->created_at->format('d/m/Y H:i') }} · {{ $note->recruiter->name }}</p>
+                    <p class="small mb-0">{{ \App\Support\DisplayDate::format($note->created_at) }} · {{ $note->recruiter->name }}</p>
                     <details class="mt-2">
                         <summary>Chỉnh sửa ghi chú</summary>
                         <form method="post" action="{{ route('recruiter.application-note', $application->public_id) }}" class="mt-2">

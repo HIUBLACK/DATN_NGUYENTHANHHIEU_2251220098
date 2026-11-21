@@ -1,4 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
+    if (document.body.dataset.realOverview === '1') {
+        const counts = document.getElementById('recruiter-dashboard-counts');
+        if (counts) {
+            window.renderRecruiterCharts({ counts: JSON.parse(counts.textContent) }, window.RecruiterDomain, document.getElementById('recruiter-routes').dataset);
+        }
+        return;
+    }
     if (document.body.dataset.realJobs === '1' || document.body.dataset.realApplications === '1') {
         return;
     }
@@ -245,7 +252,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function updateNotificationIndicator() {
-        document.querySelector('[data-unread-indicator]').hidden = !state.notifications.some(notification => !notification.read);
     }
 
     function connectFilters(formId, render) {

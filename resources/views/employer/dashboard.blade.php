@@ -3,7 +3,9 @@
 @section('content')
     <section aria-labelledby="job-statistics">
         <h2 class="h5 mb-3" id="job-statistics">Tin tuyển dụng</h2>
-        <div class="row g-4 mb-4" id="job-stat-cards"></div>
+        <div class="row g-4 mb-4" id="job-stat-cards">
+            @include('employer.component.stat-cards', ['metrics' => $jobMetrics])
+        </div>
     </section>
     <div class="row g-4 mb-4">
         <section class="col-lg-5" aria-labelledby="job-chart-title">
@@ -12,7 +14,7 @@
                     <i class="bi bi-pie-chart me-2" aria-hidden="true"></i>
                     Phân bố tin tuyển dụng
                 </h2>
-                <p class="small text-muted-green">Trạng thái hiện tại của toàn bộ tin trong phiên demo.</p>
+                <p class="small text-muted-green">Trạng thái hiện tại của các tin thuộc doanh nghiệp của bạn.</p>
                 <div id="recruiter-job-chart"></div>
             </div>
         </section>
@@ -36,8 +38,24 @@
     </section>
     <section aria-labelledby="application-statistics">
         <h2 class="h5 mb-3" id="application-statistics">Hồ sơ ứng tuyển</h2>
-        <div class="row g-4 mb-4" id="application-stat-cards"></div>
+        <div class="row g-4 mb-4" id="application-stat-cards">
+            @include('employer.component.stat-cards', ['metrics' => $applicationMetrics])
+        </div>
     </section>
+    <section class="card p-4 mb-4">
+        <h2 class="h5">Ứng tuyển gần đây</h2>
+        @forelse ($recentApplications as $application)
+            <article class="recruiter-notification">
+                <div>
+                    <a href="{{ route('recruiter.application-detail', ['id' => $application->public_id]) }}">{{ $application->candidate->name }} — {{ $application->jobVersion->title }}</a>
+                    <p class="small mb-0">{{ \App\Support\DisplayDate::format($application->applied_at) }} · Lượt {{ $application->attempt_no }} · {{ $applicationLabels[$application->status->value] }}</p>
+                </div>
+            </article>
+        @empty
+            <p class="text-muted-green">Chưa có hồ sơ ứng tuyển.</p>
+        @endforelse
+    </section>
+    <script type="application/json" id="recruiter-dashboard-counts">{!! Illuminate\Support\Js::encode($dashboardCounts) !!}</script>
     <div class="card p-4">
         <h2 class="card-title">Bắt đầu công việc tuyển dụng</h2>
         <p class="text-muted-green">Tạo tin, theo dõi kiểm duyệt và xử lý hồ sơ ứng viên trong cùng không gian.</p>

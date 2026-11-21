@@ -10,6 +10,7 @@ use App\Models\Job;
 use App\Models\Resume;
 use App\Models\User;
 use App\Notifications\ApplicationReceipt;
+use App\Notifications\RecruiterApplicationNotice;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -112,6 +113,10 @@ class CandidateApplicationService
             'old_status' => $old, 'new_status' => $application->status->value,
         ])->save();
         $user->notifyNow($this->receipt($application), ['database']);
+        $application->job->company->recruiter->notifyNow(new RecruiterApplicationNotice(
+            $application->public_id, $application->jobVersion->title, $user->name,
+            $application->attempt_no, $application->status->value,
+        ), ['database']);
     }
 
     private function receipt(Application $application): ApplicationReceipt

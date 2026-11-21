@@ -46,7 +46,7 @@
                             <small class="d-block">{{ $version->job->company->name }}</small>
                         </td>
                         <td>V{{ $version->version_number }}</td>
-                        <td>{{ $version->submitted_at?->format('d/m/Y H:i') }}</td>
+                        <td>{{ \App\Support\DisplayDate::format($version->submitted_at) }}</td>
                         <td>
                             <span class="badge bg-warning text-dark">Chờ duyệt</span>
                             <small class="d-block">{{ App\Support\JobInput::STATUSES[$version->job->status->value] }}</small>

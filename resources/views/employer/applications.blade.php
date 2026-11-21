@@ -72,7 +72,7 @@
                                 <p class="small mb-0">{{ $application->jobVersion->title }}</p>
                             </td>
                             <td>
-                                {{ $application->applied_at->format('d/m/Y H:i') }}
+                                {{ \App\Support\DisplayDate::format($application->applied_at) }}
                                 <p class="small mb-0">Lượt {{ $application->attempt_no }}/2</p>
                             </td>
                             <td>

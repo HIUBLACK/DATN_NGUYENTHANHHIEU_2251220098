@@ -19,7 +19,7 @@
         <p>Nhà tuyển dụng: {{ $version->job->company->recruiter->name }}</p>
         <p>Doanh nghiệp: {{ $version->job->company->status->value === 'active' ? 'Hoạt động' : 'Bị khóa' }} · Tài khoản: {{ $version->job->company->recruiter->status->value === 'active' ? 'Hoạt động' : 'Bị khóa' }}</p>
         <p>Tin: {{ App\Support\JobInput::STATUSES[$version->job->status->value] }} · Phiên bản: {{ App\Support\JobInput::REVIEWS[$version->review_status->value] }}</p>
-        <p>Ngày gửi: {{ $version->submitted_at?->format('d/m/Y H:i') }}</p>
+        <p>Ngày gửi: {{ \App\Support\DisplayDate::format($version->submitted_at) }}</p>
     </div>
     <div class="row g-4">
         <div class="{{ $published && $published->id !== $version->id ? 'col-lg-6' : 'col-12' }}">
@@ -61,7 +61,7 @@
                 </button>
             </form>
         @elseif ($version->moderationLog)
-            <p>Đã xử lý bởi {{ $version->moderationLog->admin->name }} lúc {{ $version->reviewed_at?->format('d/m/Y H:i') }}.</p>
+            <p>Đã xử lý bởi {{ $version->moderationLog->admin->name }} lúc {{ \App\Support\DisplayDate::format($version->reviewed_at) }}.</p>
             <p class="company-profile-text">{{ $version->moderationLog->reason }}</p>
         @endif
         <a href="{{ route('admin.jobs.queue') }}" class="mt-3">Quay lại danh sách chờ duyệt</a>

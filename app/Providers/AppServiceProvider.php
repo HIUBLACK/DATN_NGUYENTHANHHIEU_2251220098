@@ -7,11 +7,13 @@ use App\Enums\UserStatus;
 use App\Models\Company;
 use App\Models\Job;
 use App\Models\User;
+use App\Notifications\RecruiterApplicationNotice;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -29,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::composer('employer.component.header', function ($view) {
+            $view->with('recruiterUnreadCount', auth()->user()?->unreadNotifications()
+                ->where('type', RecruiterApplicationNotice::class)->count() ?? 0);
+        });
         Gate::define('manage-categories', function (User $user) {
             return $user->role === UserRole::Admin
                 && $user->status === UserStatus::Active;

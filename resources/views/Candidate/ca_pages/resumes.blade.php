@@ -21,7 +21,7 @@
                             <span class="badge badge-primary">CV chính</span>
                         @endif
                     </h3>
-                    <p>Phiên bản {{ $resume->current_revision }} · Cập nhật {{ $resume->updated_at->format('d/m/Y H:i') }}</p>
+                    <p>Phiên bản {{ $resume->current_revision }} · Cập nhật {{ \App\Support\DisplayDate::format($resume->updated_at) }}</p>
                     <div class="d-flex flex-wrap mb-3">
                         <a href="{{ route('candidate.pdf', $resume->public_id) }}" target="_blank" rel="noopener" class="btn btn-outline-primary mr-2 mb-2">Xem PDF</a>
                         <a href="{{ route('candidate.pdf', [$resume->public_id, 'download' => 1]) }}" class="btn btn-outline-primary mr-2 mb-2">Tải xuống</a>

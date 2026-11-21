@@ -15,7 +15,7 @@
             <link rel="stylesheet" href="{{ asset('recruiter/css/job-review.css') }}">
         @endif
     </head>
-    <body data-preview-user="{{ auth()->id() }}" data-recruiter-page="{{ $page }}" data-real-jobs="{{ ($realJobs ?? false) ? '1' : '0' }}" data-real-applications="{{ ($realApplications ?? false) ? '1' : '0' }}">
+    <body data-preview-user="{{ auth()->id() }}" data-recruiter-page="{{ $page }}" data-real-jobs="{{ ($realJobs ?? false) ? '1' : '0' }}" data-real-applications="{{ ($realApplications ?? false) ? '1' : '0' }}" data-real-overview="{{ ($realOverview ?? false) ? '1' : '0' }}">
         @include('employer.component.sidebar')
         <div class="main-wrapper">
             @include('employer.component.header')
@@ -34,7 +34,7 @@
                 </nav>
             </div>
             <main id="recruiter-content">
-                @unless (($realJobs ?? false) || ($realApplications ?? false) || in_array($page, ['company', 'company-form'], true))
+                @unless (($realJobs ?? false) || ($realApplications ?? false) || ($realOverview ?? false) || in_array($page, ['company', 'company-form'], true))
                     <div class="alert alert-light border recruiter-demo-notice" role="note">
                         <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
                         Bản demo giao diện. Thao tác trong phiên thử nghiệm, chưa lưu database, gửi Admin, gửi email hoặc xử lý AI thật.

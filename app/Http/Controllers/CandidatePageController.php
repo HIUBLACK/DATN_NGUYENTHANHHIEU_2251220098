@@ -196,7 +196,7 @@ class CandidatePageController extends Controller
                     'application_id' => $notification->data['application_id'] ?? '',
                     'status' => $notification->data['status'] ?? 'applied',
                     'title' => $notification->data['title'] ?? 'Thông báo',
-                    'date' => $notification->created_at->format('d/m/Y H:i'),
+                    'date' => \App\Support\DisplayDate::format($notification->created_at),
                 ];
             })->all();
         }

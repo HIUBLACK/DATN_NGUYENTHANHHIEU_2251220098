@@ -6,7 +6,7 @@
             <article class="p-4 border rounded">
                 <h2 class="h4">{{ $application->jobVersion->title }}</h2>
                 <p>{{ $application->job->company->name }} · Phiên bản tin V{{ $application->jobVersion->version_number }} · Lượt {{ $application->attempt_no }}/2</p>
-                <p>{{ $statusLabels[$application->status->value] }} · Nộp ngày {{ $application->applied_at->format('d/m/Y H:i') }}</p>
+                <p>{{ $statusLabels[$application->status->value] }} · Nộp ngày {{ \App\Support\DisplayDate::format($application->applied_at) }}</p>
                 <p>CV đã nộp: {{ $application->resume_snapshot_filename }} · Phiên bản CV {{ $application->resume_revision }}</p>
                 <a href="{{ route('candidate.snapshot', $application->public_id) }}" target="_blank" rel="noopener" class="btn btn-outline-primary">Xem CV đã nộp</a>
                 <a href="{{ route('candidate.snapshot', [$application->public_id, 'download' => 1]) }}" class="btn btn-outline-primary">Tải CV đã nộp</a>
@@ -17,7 +17,7 @@
                 <h3 class="h5 mt-4">Lịch sử trạng thái</h3>
                 <ol class="candidate-timeline">
                     @foreach ($application->statusHistories->sortBy('id') as $event)
-                        <li>{{ $statusLabels[$event->new_status->value] }} — {{ $event->created_at->format('d/m/Y H:i') }}</li>
+                        <li>{{ $statusLabels[$event->new_status->value] }} — {{ \App\Support\DisplayDate::format($event->created_at) }}</li>
                     @endforeach
                 </ol>
                 @can('withdraw', $application)

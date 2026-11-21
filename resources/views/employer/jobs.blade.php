@@ -54,7 +54,7 @@
                         <td>{{ $jobs->firstItem() + $loop->index }}</td>
                         <td>
                             <strong>{{ $job->latestVersion?->title }}</strong>
-                            <small class="d-block">{{ $job->created_at->format('d/m/Y') }}</small>
+                            <small class="d-block">{{ \App\Support\DisplayDate::format($job->created_at, 'd/m/Y') }}</small>
                         </td>
                         <td>{{ $job->publishedVersion?->application_deadline?->format('d/m/Y') ?? $job->latestVersion?->application_deadline?->format('d/m/Y') ?? 'Chưa nhập' }}</td>
                         <td>

@@ -96,7 +96,7 @@
                         <td>
                             <span class="badge {{ $record->is_active ? 'bg-success' : 'bg-secondary' }}">{{ $record->is_active ? 'Đang hiện' : 'Đang ẩn' }}</span>
                         </td>
-                        <td>{{ $record->created_at->format('d/m/Y') }}</td>
+                        <td>{{ \App\Support\DisplayDate::format($record->created_at, 'd/m/Y') }}</td>
                         <td>
                             <div class="d-flex flex-wrap gap-2">
                                 <a href="{{ route('admin.'.$categoryType.'.edit', $record->id) }}" class="btn btn-outline-primary btn-sm">

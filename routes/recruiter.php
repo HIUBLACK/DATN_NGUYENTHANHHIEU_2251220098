@@ -12,6 +12,9 @@ $recruiterPages = [
     '/tai-khoan' => ['account', 'Tài khoản nhà tuyển dụng', 'account'],
 ];
 
+Route::post('/nha-tuyen-dung/quan-ly/thong-bao/{id}/da-doc', [RecruiterPageController::class, 'readNotification'])
+    ->where('id', 'all|[a-fA-F0-9-]{36}')->name('recruiter.notification-read');
+
 Route::get('/nha-tuyen-dung/quan-ly/ho-so', [RecruiterApplicationController::class, 'index'])->name('recruiter.applications');
 Route::get('/nha-tuyen-dung/quan-ly/ho-so/chi-tiet', [RecruiterApplicationController::class, 'show'])->name('recruiter.application-detail');
 Route::get('/nha-tuyen-dung/quan-ly/ho-so/{id}/pdf', [RecruiterApplicationController::class, 'snapshot'])->whereUuid('id')->name('recruiter.application-pdf');

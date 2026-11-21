@@ -141,6 +141,9 @@ try {
     if (in_array('--candidate-profile', $argv, true)) {
         $testArguments = ['--filter', 'CandidateProfileTest|CandidatePreviewTest|CandidateSavedJobsTest|AuthenticationTest|GoogleAuthenticationTest|GooglePasswordSetupTest|PasswordRecoveryTest'];
     }
+    if (in_array('--recruiter-dashboard', $argv, true)) {
+        $testArguments = ['--filter', 'RecruiterDashboardTest|RecruiterPageTest|AuthenticationTest|PoliciesTest'];
+    }
     $process = new Process([PHP_BINARY, ...$phpArguments, 'vendor/phpunit/phpunit/phpunit', '--configuration', $testConfiguration, '--fail-on-empty-test-suite', ...$testArguments], base_path(), [
         'APP_ENV' => 'testing', 'DB_URL' => false, 'DB_CONNECTION' => 'mysql',
         'DB_DATABASE' => $database, 'DB_HOST' => $configuration['host'], 'DB_PORT' => (string) $configuration['port'],

@@ -14,17 +14,19 @@ window.renderRecruiterCharts = function (state, domain, routes) {
         ['blocked', 'Bị khóa', '#b25949'],
         ['expired', 'Hết hạn đang mở', '#d69b39']
     ];
+    const totalJobs = state.counts ? state.counts.jobTotal : state.jobs.length;
+    const totalApplications = state.counts ? state.counts.applicationTotal : state.applications.length;
     let angle = 0;
     const segments = [];
     const legend = document.createElement('ul');
     legend.className = 'recruiter-chart-legend';
     jobGroups.forEach(function ([status, label, color]) {
-        const count = state.jobs.filter(function (job) {
+        const count = state.counts ? (state.counts.jobs[status] || 0) : state.jobs.filter(function (job) {
             // Tách tin đang mở nhưng hết hạn để khớp thẻ "Tin đang mở".
             const category = job.activity === 'open' && domain.isExpired(job) ? 'expired' : job.activity;
             return category === status;
         }).length;
-        const nextAngle = angle + (state.jobs.length ? count / state.jobs.length * 360 : 0);
+        const nextAngle = angle + (totalJobs ? count / totalJobs * 360 : 0);
         segments.push(color + ' ' + angle + 'deg ' + nextAngle + 'deg');
         angle = nextAngle;
         const item = document.createElement('li');
@@ -42,10 +44,10 @@ window.renderRecruiterCharts = function (state, domain, routes) {
     const ring = document.createElement('div');
     ring.className = 'recruiter-chart-ring';
     ring.setAttribute('aria-hidden', 'true');
-    ring.style.background = state.jobs.length ? 'conic-gradient(' + segments.join(',') + ')' : '#e5ebe7';
+    ring.style.background = totalJobs ? 'conic-gradient(' + segments.join(',') + ')' : '#e5ebe7';
     const center = document.createElement('div');
     const total = document.createElement('strong');
-    total.textContent = state.jobs.length;
+    total.textContent = totalJobs;
     const caption = document.createElement('span');
     caption.textContent = 'Tổng số tin';
     center.append(total, caption);
@@ -53,7 +55,8 @@ window.renderRecruiterCharts = function (state, domain, routes) {
     jobChart.replaceChildren(ring, legend);
 
     const counts = Object.entries(domain.applicationLabels).map(function ([status, label]) {
-        return { status, label, count: state.applications.filter(application => application.status === status).length };
+        const count = state.counts ? (state.counts.applications[status] || 0) : state.applications.filter(application => application.status === status).length;
+        return { status, label, count };
     });
     const maximum = Math.max(1, ...counts.map(group => group.count));
     const bars = document.createElement('ul');
@@ -75,14 +78,18 @@ window.renderRecruiterCharts = function (state, domain, routes) {
         bars.append(row);
     });
     applicationChart.replaceChildren(bars);
-    if (!state.applications.length) {
+    if (!totalApplications) {
         const empty = document.createElement('p');
         empty.className = 'text-muted-green small';
         empty.textContent = 'Chưa có hồ sơ ứng tuyển để thống kê.';
         applicationChart.append(empty);
     }
 
-    const tasks = [
+    const tasks = state.counts ? [
+        ['Hồ sơ mới cần xem', state.counts.applications.applied || 0, routes.applications, 'person-plus'],
+        ['Tin đang chờ duyệt', state.counts.pending, routes.jobs, 'hourglass-split'],
+        ['Tin bị từ chối', state.counts.rejected, routes.jobs, 'exclamation-circle']
+    ] : [
         ['Hồ sơ mới cần xem', state.applications.filter(application => application.status === 'applied').length, routes.applications, 'person-plus'],
         ['Tin đang chờ duyệt', state.jobs.filter(job => job.moderation === 'pending').length, routes.jobs, 'hourglass-split'],
         ['Tin bị từ chối', state.jobs.filter(job => job.moderation === 'rejected').length, routes.jobs, 'exclamation-circle']

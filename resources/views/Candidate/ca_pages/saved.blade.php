@@ -4,7 +4,7 @@
     <section class="site-section">
         <div class="container">
             @forelse ($savedJobs as $savedJob)
-                <p class="small text-muted">Đã lưu: {{ $savedJob['saved_at']->format('d/m/Y H:i') }}</p>
+                <p class="small text-muted">Đã lưu: {{ \App\Support\DisplayDate::format($savedJob['saved_at']) }}</p>
                 @if ($savedJob['card'])
                     <ul class="job-listings mb-3">
                         @include('Candidate.job-row', ['job' => $savedJob['card']])
