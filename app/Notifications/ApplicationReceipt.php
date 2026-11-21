@@ -7,7 +7,12 @@ use Illuminate\Notifications\Notification;
 
 class ApplicationReceipt extends Notification
 {
-    public function __construct(public string $applicationId, public string $title, public string $status) {}
+    public string $company = '';
+
+    public function __construct(public string $applicationId, public string $title, public string $status, string $company = '')
+    {
+        $this->company = $company;
+    }
 
     public function via(object $notifiable): array
     {
@@ -31,7 +36,14 @@ class ApplicationReceipt extends Notification
         };
         $url = rtrim(config('app.url'), '/').route('candidate.application-detail', $this->applicationId, false);
 
-        return (new MailMessage)->subject($message.' — VIEJOB AI')->greeting('Xin chào!')
-            ->line($message.' cho tin: '.$this->title)->action('Xem hồ sơ', $url)->salutation('VIEJOB AI');
+        return (new MailMessage)
+            ->subject($message.' — VIEJOB')
+            ->view('emails.application-receipt', [
+                'recipientName' => $notifiable->name,
+                'messageTitle' => $message,
+                'jobTitle' => $this->title,
+                'companyName' => $this->company,
+                'applicationUrl' => $url,
+            ]);
     }
 }

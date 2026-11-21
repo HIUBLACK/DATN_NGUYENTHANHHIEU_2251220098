@@ -3,7 +3,6 @@
 namespace App\Services;
 
 use App\Enums\ApplicationStatus;
-use App\Jobs\SendApplicationReceipt;
 use App\Models\Application;
 use App\Models\ApplicationStatusHistory;
 use App\Models\Company;
@@ -83,7 +82,7 @@ class CandidateApplicationService
             Storage::disk('local')->delete($path);
             throw $exception;
         }
-        $this->queueMail($application);
+        $this->sendMailAfterCommit($application);
 
         return $application;
     }
@@ -102,7 +101,7 @@ class CandidateApplicationService
 
             return $application;
         });
-        $this->queueMail($application);
+        $this->sendMailAfterCommit($application);
     }
 
     private function recordEvent(User $user, Application $application, ?string $old): void
@@ -117,16 +116,18 @@ class CandidateApplicationService
 
     private function receipt(Application $application): ApplicationReceipt
     {
-        return new ApplicationReceipt($application->public_id, $application->jobVersion->title, $application->status->value);
+        return new ApplicationReceipt($application->public_id, $application->jobVersion->title, $application->status->value, $application->job->company->name);
     }
 
-    private function queueMail(Application $application): void
+    private function sendMailAfterCommit(Application $application): void
     {
-        // Mail transport or queue failure must never roll back a committed application.
-        try {
-            SendApplicationReceipt::dispatch($application->candidate_id, $this->receipt($application))->afterCommit();
-        } catch (Throwable) {
-            Log::warning('Application email enqueue failed.', ['application_id' => $application->id, 'status' => $application->status->value]);
-        }
+        DB::afterCommit(function () use ($application) {
+            // Gửi ngay sau commit; lỗi SMTP không hoàn tác hồ sơ đã lưu.
+            try {
+                $application->candidate->notifyNow($this->receipt($application), ['mail']);
+            } catch (Throwable) {
+                Log::warning('Application email delivery failed.', ['application_id' => $application->id, 'status' => $application->status->value]);
+            }
+        });
     }
 }

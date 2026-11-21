@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Jobs\SendApplicationReceipt;
 use App\Models\Application;
 use App\Models\ApplicationNote;
 use App\Models\ApplicationStatusHistory;
@@ -56,7 +55,7 @@ class RecruiterApplicationService
                 'new_status' => $input['status'],
             ])->save();
 
-            $receipt = new ApplicationReceipt($application->public_id, $application->jobVersion->title, $input['status']);
+            $receipt = new ApplicationReceipt($application->public_id, $application->jobVersion->title, $input['status'], $application->job->company->name);
             DB::afterCommit(function () use ($application, $receipt) {
                 $this->notifyCandidate($application, $receipt);
             });
@@ -108,9 +107,9 @@ class RecruiterApplicationService
             return;
         }
         try {
-            SendApplicationReceipt::dispatch($application->candidate_id, $receipt)->afterCommit();
+            $application->candidate->notifyNow($receipt, ['mail']);
         } catch (Throwable) {
-            Log::warning('Application status email enqueue failed.', ['application_id' => $application->id]);
+            Log::warning('Application status email delivery failed.', ['application_id' => $application->id]);
         }
     }
 }
