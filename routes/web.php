@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CandidateDemoController;
 use App\Http\Controllers\CandidateDocumentController;
 use App\Http\Controllers\CandidatePageController;
+use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\GoogleAuthController;
 use App\Http\Controllers\GooglePasswordSetupController;
@@ -104,8 +105,8 @@ Route::middleware(['auth', 'auth.session', 'role:candidate'])->group(function ()
     Route::get('/ung-vien/ho-so-ung-tuyen/{id}/pdf', [CandidateDocumentController::class, 'snapshot'])->whereUuid('id')->name('candidate.snapshot');
     Route::post('/ung-vien/rut-ho-so/{id}', [CandidateDocumentController::class, 'withdraw'])->block()->name('candidate.withdraw');
     Route::post('/ung-vien/thong-bao/{id}', [CandidateDocumentController::class, 'readNotification'])->name('candidate.read');
-    Route::post('/ung-vien/ho-so', [CandidateDemoController::class, 'profile'])->name('candidate.profile-save');
-    Route::get('/ung-vien/anh-dai-dien', [CandidateDemoController::class, 'avatar'])->name('candidate.avatar');
+    Route::post('/ung-vien/ho-so', [CandidateProfileController::class, 'update'])->middleware('throttle:20,1')->block()->name('candidate.profile-save');
+    Route::get('/ung-vien/anh-dai-dien', [CandidateProfileController::class, 'avatar'])->name('candidate.avatar');
 });
 
 Route::middleware(['auth', 'auth.session', 'role:recruiter'])->group(function () {

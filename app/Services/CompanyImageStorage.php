@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 
 class CompanyImageStorage
 {
-    public function store(UploadedFile $file, string $publicId, string $slot): string
+    public function store(UploadedFile $file, string $publicId, string $slot, string $directory = 'companies'): string
     {
         $info = @getimagesize($file->getRealPath());
         $mime = $info['mime'] ?? '';
@@ -42,7 +42,7 @@ class CompanyImageStorage
         if (! $encoded) {
             throw ValidationException::withMessages([$slot => 'Không xử lý được ảnh. Vui lòng chọn ảnh khác.']);
         }
-        $path = 'companies/'.$publicId.'/'.$slot.'/'.Str::uuid().'.'.$extensions[$mime];
+        $path = $directory.'/'.$publicId.'/'.$slot.'/'.Str::uuid().'.'.$extensions[$mime];
         if (! Storage::disk('local')->put($path, $contents)) {
             Storage::disk('local')->delete($path);
             throw ValidationException::withMessages([$slot => 'Không lưu được ảnh. Hồ sơ chưa được cập nhật.']);

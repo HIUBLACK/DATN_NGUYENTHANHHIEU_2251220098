@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
 use App\Models\Application;
+use App\Models\CandidateProfile;
 use App\Models\Resume;
 use App\Models\SavedJob;
 use App\Services\CandidateApplicationService;
 use App\Services\CandidateDemo;
+use App\Services\CandidateProfileService;
 use App\Services\CompanyService;
 use App\Services\PublicJobService;
 use App\Services\SavedJobService;
@@ -146,13 +148,26 @@ class CandidatePageController extends Controller
         }
 
         if ($page === 'profile') {
+            Gate::authorize('viewAny', CandidateProfile::class);
+            $user = $request->user();
+            $profile = $user->candidateProfile;
+            $data['profileData'] = [
+                'name' => $user->name, 'email' => $user->email,
+                'phone' => $profile?->phone, 'location' => $profile?->location,
+                'profession' => $profile?->professional_title, 'experience' => $profile?->experience_summary,
+                'bio' => $profile?->summary,
+            ];
+            $data['hasAvatar'] = app(CandidateProfileService::class)->ownsAvatar($user->id, $profile?->avatar_path);
+            $data['loginMethods'] = $user->google_subject
+                ? ($user->has_local_password ? 'Google và mật khẩu' : 'Google')
+                : 'Email và mật khẩu';
             $data['profileFields'] = [
-                'name' => ['label' => 'Họ và tên', 'type' => 'text', 'required' => true],
-                'email' => ['label' => 'Email', 'type' => 'email', 'required' => true],
-                'phone' => ['label' => 'Số điện thoại', 'type' => 'tel', 'required' => false],
-                'location' => ['label' => 'Địa điểm', 'type' => 'text', 'required' => false],
-                'profession' => ['label' => 'Vị trí chuyên môn', 'type' => 'text', 'required' => false],
-                'experience' => ['label' => 'Kinh nghiệm', 'type' => 'text', 'required' => false],
+                'name' => ['label' => 'Họ và tên', 'type' => 'text', 'required' => true, 'max' => 255],
+                'email' => ['label' => 'Email', 'type' => 'email', 'required' => true, 'max' => 255],
+                'phone' => ['label' => 'Số điện thoại', 'type' => 'tel', 'required' => false, 'max' => 20],
+                'location' => ['label' => 'Địa chỉ / Nơi ở', 'type' => 'text', 'required' => false, 'max' => 100],
+                'profession' => ['label' => 'Vị trí chuyên môn', 'type' => 'text', 'required' => false, 'max' => 100],
+                'experience' => ['label' => 'Kinh nghiệm', 'type' => 'text', 'required' => false, 'max' => 100],
             ];
         }
 

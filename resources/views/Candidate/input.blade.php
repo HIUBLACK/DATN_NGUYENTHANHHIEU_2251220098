@@ -1,5 +1,10 @@
 <div class="form-group">
-    <label class="text-black" for="{{ $fieldName }}">{{ $fieldLabel }}</label>
+    <label class="text-black" for="{{ $fieldName }}">
+        {{ $fieldLabel }}
+        @if (($showRequiredMark ?? false) && ($required ?? false))
+            <span class="text-danger">*</span>
+        @endif
+    </label>
     <input
         type="{{ $fieldType ?? 'text' }}"
         id="{{ $fieldName }}"
