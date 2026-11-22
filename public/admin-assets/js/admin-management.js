@@ -9,11 +9,12 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             const locked = button.dataset.currentStatus === 'locked';
             form.action = button.dataset.statusUrl;
-            form.elements.status.value = locked ? 'active' : 'locked';
+            form.elements.status.value = button.dataset.nextStatus || (locked ? 'active' : 'locked');
             form.elements.expected_status.value = button.dataset.currentStatus;
             form.elements.expected_log_id.value = button.dataset.logId;
             form.elements.updated_at.value = button.dataset.updatedAt;
-            document.getElementById('admin-status-message').textContent = (locked ? 'Mở khóa ' : 'Khóa ') + button.dataset.recordName + '?';
+            const actionLabel = button.dataset.actionLabel || (locked ? 'Mở khóa' : 'Khóa');
+            document.getElementById('admin-status-message').textContent = actionLabel + ' ' + button.dataset.recordName + '?';
             form.querySelector('[type="submit"]').disabled = false;
         });
         form.addEventListener('submit', function (event) {

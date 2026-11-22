@@ -147,6 +147,9 @@ try {
     if (in_array('--admin-management', $argv, true)) {
         $testArguments = ['--filter', 'AdminManagementTest|AdminPageTest|RecruiterDashboardTest|RecruiterJobTest|JobModerationTest|AuthenticationTest|PoliciesTest'];
     }
+    if (in_array('--admin-jobs', $argv, true)) {
+        $testArguments = ['--filter', 'AdminJobsTest|AdminPageTest|AdminManagementTest|RecruiterJobTest|JobModerationTest'];
+    }
     $process = new Process([PHP_BINARY, ...$phpArguments, 'vendor/phpunit/phpunit/phpunit', '--configuration', $testConfiguration, '--fail-on-empty-test-suite', ...$testArguments], base_path(), [
         'APP_ENV' => 'testing', 'DB_URL' => false, 'DB_CONNECTION' => 'mysql',
         'DB_DATABASE' => $database, 'DB_HOST' => $configuration['host'], 'DB_PORT' => (string) $configuration['port'],
