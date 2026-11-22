@@ -12,7 +12,6 @@ window.setupCompanyProfileForm = function () {
         noWebsite.addEventListener('change', updateWebsite);
         updateWebsite();
     }
-    const error = document.getElementById('company-image-error');
     const objectUrls = new Map();
     const limits = { logo: 2, cover: 5, office_images: 3 };
     let pendingImages = 0;
@@ -73,7 +72,7 @@ window.setupCompanyProfileForm = function () {
             const files = [...input.files];
             clearPreview(field);
             input.setCustomValidity('');
-            error.hidden = true;
+
             pendingImages++;
             const urls = [];
             try {
@@ -125,8 +124,7 @@ window.setupCompanyProfileForm = function () {
                 if (version === selection) {
                     input.value = '';
                     input.setCustomValidity(failure.message);
-                    error.textContent = failure.message;
-                    error.hidden = false;
+                    window.ViejobToast.notify(failure.message, 'error');
                 }
             } finally {
                 pendingImages--;
@@ -141,8 +139,7 @@ window.setupCompanyProfileForm = function () {
     form.addEventListener('submit', function (event) {
         if (pendingImages) {
             event.preventDefault();
-            error.textContent = 'Đang kiểm tra ảnh, vui lòng chờ rồi lưu lại.';
-            error.hidden = false;
+            window.ViejobToast.notify('Đang kiểm tra ảnh, vui lòng chờ rồi lưu lại.', 'error');
             return;
         }
         form.querySelectorAll('[required]').forEach(function (input) {

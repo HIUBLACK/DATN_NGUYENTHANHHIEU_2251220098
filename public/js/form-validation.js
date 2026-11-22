@@ -1,14 +1,42 @@
 (function () {
-    let timer;
     const toast = document.getElementById('validation-toast');
 
-    function notify(message) {
-        if (!toast) return;
-        clearTimeout(timer);
-        toast.textContent = message;
-        toast.hidden = false;
-        timer = setTimeout(function () { toast.hidden = true; }, 5000);
+    function notify(message, type = 'error') {
+        if (!toast || !message) {
+            return;
+        }
+        const variant = ['success', 'error', 'warning', 'info'].includes(type) ? type : 'info';
+        const duplicate = Array.from(toast.children).some(function (item) {
+            return item.dataset.message === message && item.dataset.type === variant;
+        });
+        if (duplicate) {
+            return;
+        }
+        const item = document.createElement('div');
+        item.className = 'app-toast app-toast-' + variant;
+        item.dataset.message = message;
+        item.dataset.type = variant;
+        item.setAttribute('role', variant === 'error' ? 'alert' : 'status');
+        const text = document.createElement('span');
+        text.textContent = message;
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.textContent = '\u00d7';
+        close.setAttribute('aria-label', '\u0110óng thông báo');
+        close.addEventListener('click', function () {
+            item.remove();
+        });
+        item.append(text, close);
+        toast.append(item);
+        setTimeout(function () {
+            item.remove();
+        }, 5000);
     }
+
+    window.ViejobToast = { notify };
+    document.querySelectorAll('[data-flash-type]').forEach(function (message) {
+        notify(message.textContent.trim(), message.dataset.flashType);
+    });
 
     function mark(input, invalid) {
         input.classList.toggle('field-validation-error', invalid);

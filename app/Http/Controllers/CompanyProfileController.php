@@ -81,6 +81,14 @@ class CompanyProfileController extends Controller
         return $this->imageResponse($record, $slot);
     }
 
+    public function adminMedia(string $company, string $slot): BinaryFileResponse
+    {
+        $record = Company::where('public_id', $company)->firstOrFail();
+        Gate::authorize('moderate', $record);
+
+        return $this->imageResponse($record, $slot);
+    }
+
     private function page(?Company $company, bool $form): View
     {
         $types = CompanyOptions::TYPES;

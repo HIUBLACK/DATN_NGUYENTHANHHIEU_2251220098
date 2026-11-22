@@ -40,14 +40,6 @@
                         Bản demo giao diện. Thao tác trong phiên thử nghiệm, chưa lưu database, gửi Admin, gửi email hoặc xử lý AI thật.
                     </div>
                 @endunless
-                <div id="recruiter-feedback" class="alert alert-success" role="status" hidden></div>
-                <div id="recruiter-error" class="alert alert-danger" role="alert" hidden></div>
-                @if (session('company_notice'))
-                    <div class="alert alert-success" role="status">{{ session('company_notice') }}</div>
-                @endif
-                @if (session('job_notice'))
-                    <div class="alert alert-success" role="status">{{ session('job_notice') }}</div>
-                @endif
                 @yield('content')
             </main>
             @include('employer.component.footer')

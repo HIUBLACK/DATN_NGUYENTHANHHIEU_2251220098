@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const storageKey = 'viejob-admin-preview-v1-user-' + document.body.dataset.previewUser;
     const page = document.body.dataset.adminPage;
     const routes = routeElement.dataset;
-    const feedback = document.getElementById('admin-feedback');
-    const error = document.getElementById('admin-error');
     const modal = new bootstrap.Modal(document.getElementById('admin-confirm'));
     const reason = document.getElementById('admin-reason');
     let state = structuredClone(seed);
@@ -17,9 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let list = null;
 
     function showError(message) {
-        error.textContent = message;
-        error.hidden = false;
-        feedback.hidden = true;
+        window.ViejobToast.notify(message, 'error');
     }
 
     try {
@@ -61,9 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             sessionStorage.setItem(storageKey, JSON.stringify(next));
             state = next;
-            feedback.textContent = 'Đã lưu thay đổi mô phỏng trong tab này. Chưa cập nhật database hoặc hệ thống thật.';
-            feedback.hidden = false;
-            error.hidden = true;
+            window.ViejobToast.notify('Đã lưu thay đổi mô phỏng trong tab này. Chưa cập nhật database hoặc hệ thống thật.', 'success');
             return true;
         } catch (failure) {
             showError('Không thể lưu phiên demo. Thay đổi chưa được áp dụng; hãy cho phép bộ nhớ phiên của trình duyệt.');

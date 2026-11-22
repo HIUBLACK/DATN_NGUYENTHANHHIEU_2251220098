@@ -43,26 +43,6 @@
                     @endif
                 @endisset
 
-                @if (session('notice') || $errors->any())
-                    <div class="container pt-4">
-                        @if (session('notice'))
-                            <div class="alert alert-success" role="status">
-                                {{ session('notice') }}
-                            </div>
-                        @endif
-
-                        @if ($errors->any())
-                            <div class="alert alert-danger" role="alert">
-                                <ul class="mb-0">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-
                 @if (request()->routeIs('candidate.settings', 'candidate.recommendations', 'candidate.messages'))
                     <div class="container pt-3">
                         <div class="alert alert-info" role="note">

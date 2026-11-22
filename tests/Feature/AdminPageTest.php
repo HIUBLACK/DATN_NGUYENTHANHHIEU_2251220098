@@ -12,7 +12,7 @@ class AdminPageTest extends AuthenticatedDemoTestCase
 
     public function test_admin_pages_are_isolated_and_render_with_authenticated_admin(): void
     {
-        $pages = ['dashboard', 'users.index', 'users.show', 'users.history', 'companies.index', 'companies.show', 'jobs.index', 'jobs.show', 'jobs.history', 'applications.index', 'applications.show', 'account'];
+        $pages = ['dashboard', 'users.index', 'companies.index', 'jobs.index', 'jobs.show', 'jobs.history', 'applications.index', 'account'];
         foreach ($pages as $page) {
             $this->get(route('admin.'.$page))
                 ->assertOk()
@@ -21,6 +21,9 @@ class AdminPageTest extends AuthenticatedDemoTestCase
                 ->assertSee('admin-seed')
                 ->assertDontSee('recruiter/css/recruiter.css')
                 ->assertDontSee('jobboard/css/custom-bs.css');
+        }
+        foreach (['users.show', 'users.history', 'companies.show', 'applications.show'] as $page) {
+            $this->get(route('admin.'.$page))->assertNotFound();
         }
         $this->get('/admin/ky-nang')->assertNotFound();
         $this->get('/admin/ky-nang/ten-dong-nghia')->assertNotFound();

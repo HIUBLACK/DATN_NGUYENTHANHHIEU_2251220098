@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminJobModerationController;
+use App\Http\Controllers\AdminManagementController;
 use App\Http\Controllers\AdminPageController;
+use App\Http\Controllers\CompanyProfileController;
 use App\Support\AdminCategory;
 use Illuminate\Support\Facades\Route;
 
@@ -22,12 +24,18 @@ $adminPages = [
 ];
 
 foreach ($adminPages as $path => [$page, $title, $section]) {
-    Route::get('/admin'.($path ? '/'.$path : ''), [AdminPageController::class, 'show'])
+    $controller = in_array($section, ['dashboard', 'users', 'companies', 'applications'], true) ? AdminManagementController::class : AdminPageController::class;
+    Route::get('/admin'.($path ? '/'.$path : ''), [$controller, 'show'])
         ->defaults('page', $page)
         ->defaults('title', $title)
         ->defaults('section', $section)
         ->name('admin.'.$page);
 }
+
+Route::patch('/admin/quan-ly/{type}/{id}/trang-thai', [AdminManagementController::class, 'status'])
+    ->whereIn('type', ['users', 'companies'])->whereNumber('id')->middleware('throttle:30,1')->name('admin.management.status');
+Route::get('/admin/doanh-nghiep/{company}/anh/{slot}', [CompanyProfileController::class, 'adminMedia'])
+    ->whereUuid('company')->where('slot', 'logo|office-[0-5]')->name('admin.company-media');
 
 foreach (AdminCategory::TYPES as $type => [$model, $title, $path]) {
     Route::prefix('admin/danh-muc/'.$path)->name('admin.'.$type.'.')->group(function () use ($type) {

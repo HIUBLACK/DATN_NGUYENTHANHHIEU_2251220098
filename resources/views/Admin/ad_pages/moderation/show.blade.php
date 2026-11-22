@@ -1,18 +1,6 @@
 @extends('Admin.layout.admin')
 
 @section('content')
-    @if (session('moderation_notice'))
-        <div class="alert alert-success" role="status">{{ session('moderation_notice') }}</div>
-    @endif
-    @if ($errors->any())
-        <div class="alert alert-danger" role="alert">
-            <ul class="mb-0">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
     <div class="card p-4 mb-4">
         <h2 class="h4">{{ $version->job->company->name }}</h2>
         <p>{{ $version->job->company->address }}</p>

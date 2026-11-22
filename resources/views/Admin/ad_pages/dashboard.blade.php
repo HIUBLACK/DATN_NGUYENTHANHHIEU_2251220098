@@ -1,10 +1,14 @@
 @extends('Admin.layout.admin')
 
 @section('content')
-    <div class="row g-4 mb-4" id="admin-user-stats"></div>
+    <div class="row g-4 mb-4" id="admin-user-stats">
+        @include('Admin.component.stat-cards', ['metrics' => $userMetrics])
+    </div>
     <section class="mb-4" aria-labelledby="system-stat-title">
         <h2 class="h5 mb-3" id="system-stat-title">Doanh nghiệp và tin tuyển dụng</h2>
-        <div class="row g-3" id="admin-system-stats"></div>
+        <div class="row g-3" id="admin-system-stats">
+            @include('Admin.component.stat-cards', ['metrics' => $systemMetrics])
+        </div>
     </section>
     <section class="card p-4 mb-4" aria-labelledby="trend-title">
         <div class="d-flex flex-wrap justify-content-between gap-3 mb-3">
@@ -15,16 +19,16 @@
             <form id="admin-date-filter" class="admin-actions align-items-end">
                 <div>
                     <label for="admin-date-start" class="form-label-custom">Từ ngày</label>
-                    <input type="date" id="admin-date-start" class="form-control-custom" required>
+                    <input type="date" id="admin-date-start" name="start" value="{{ $start }}" class="form-control-custom" required>
                 </div>
                 <div>
                     <label for="admin-date-end" class="form-label-custom">Đến ngày</label>
-                    <input type="date" id="admin-date-end" class="form-control-custom" required>
+                    <input type="date" id="admin-date-end" name="end" value="{{ $end }}" class="form-control-custom" required>
                 </div>
                 <button class="btn-dark-custom" type="submit">Áp dụng</button>
             </form>
         </div>
-        <p id="admin-range-summary" role="status"></p>
+        <p id="admin-range-summary" role="status">Trong khoảng đã chọn: {{ array_sum(array_column($trend, 'jobs')) }} tin mới · {{ array_sum(array_column($trend, 'applications')) }} lượt ứng tuyển.</p>
         <div id="admin-trend-chart" aria-label="Biểu đồ số tin mới và lượt ứng tuyển"></div>
         <details>
             <summary class="admin-summary">Xem số liệu biểu đồ dạng bảng</summary>
@@ -37,13 +41,24 @@
                             <th scope="col">Lượt ứng tuyển</th>
                         </tr>
                     </thead>
-                    <tbody id="admin-trend-table"></tbody>
+                    <tbody id="admin-trend-table">
+                        @foreach ($trend as $day)
+                            <tr>
+                                <td>{{ $day['date'] }}</td>
+                                <td>{{ $day['jobs'] }}</td>
+                                <td>{{ $day['applications'] }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
                 </table>
             </div>
         </details>
     </section>
     <section aria-labelledby="application-stat-title">
         <h2 class="h5 mb-3" id="application-stat-title">Hồ sơ ứng tuyển toàn hệ thống</h2>
-        <div class="row g-3" id="admin-application-stats"></div>
+        <div class="row g-3" id="admin-application-stats">
+            @include('Admin.component.stat-cards', ['metrics' => $applicationMetrics])
+        </div>
     </section>
+    <script type="application/json" id="admin-real-trend">{!! Illuminate\Support\Js::encode($trend) !!}</script>
 @endsection

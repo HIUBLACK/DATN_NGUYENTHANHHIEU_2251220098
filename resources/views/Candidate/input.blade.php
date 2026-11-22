@@ -14,7 +14,4 @@
         @if ($required ?? false) required @endif
         @if (isset($maxLength)) maxlength="{{ $maxLength }}" @endif
     >
-    @error($fieldName)
-        <div class="invalid-feedback">{{ $message }}</div>
-    @enderror
 </div>

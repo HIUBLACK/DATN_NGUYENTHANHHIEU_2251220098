@@ -183,7 +183,6 @@
                         @endforeach
                     </div>
                 @endif
-                <p id="company-image-error" class="text-danger" role="alert" hidden></p>
                 <p class="small">Nhấn × để bỏ ảnh. Ảnh đã lưu chỉ bị xóa khi bạn bấm Lưu hồ sơ.</p>
             </fieldset>
             <div class="d-flex flex-wrap gap-2">

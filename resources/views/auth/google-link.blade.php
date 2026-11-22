@@ -1,8 +1,5 @@
 <div class="border rounded p-4 mt-4">
     <h3 class="h5">Liên kết tài khoản Google</h3>
-    @if (session('status'))
-        <p class="alert alert-success">{{ session('status') }}</p>
-    @endif
     @if (auth()->user()->google_subject)
         <p class="mb-0">Tài khoản đã liên kết với Google. Bạn có thể đăng nhập bằng Google tại trang đăng nhập chung.</p>
     @elseif (\App\Services\GoogleAuthService::configured())

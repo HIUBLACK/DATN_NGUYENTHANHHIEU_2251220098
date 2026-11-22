@@ -26,8 +26,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const page = document.body.dataset.recruiterPage;
     const parameters = new URLSearchParams(window.location.search);
     const selectedId = parameters.get('id');
-    const feedback = document.getElementById('recruiter-feedback');
-    const errorBox = document.getElementById('recruiter-error');
     const modal = new bootstrap.Modal(document.getElementById('recruiter-confirm'));
     let confirmationAction = null;
     let jobPage = 1;
@@ -78,17 +76,13 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     function showError(message) {
-        errorBox.textContent = message;
-        errorBox.hidden = false;
-        feedback.hidden = true;
+        window.ViejobToast.notify(message, 'error');
     }
 
     function persist(message = 'Đã cập nhật mô phỏng trong tab này. Chưa lưu hoặc gửi dữ liệu thật.') {
         try {
             sessionStorage.setItem(storageKey, JSON.stringify(state));
-            feedback.textContent = message;
-            feedback.hidden = false;
-            errorBox.hidden = true;
+            window.ViejobToast.notify(message, 'success');
             return true;
         } catch (error) {
             showError('Trình duyệt không lưu được phiên demo. Hãy giảm kích thước logo hoặc cho phép bộ nhớ phiên.');
@@ -240,7 +234,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 job.reason = '';
                 if (persist(intent === 'submit' ? 'Đã mô phỏng trạng thái chờ duyệt. Chưa gửi Admin; nội dung chưa được công khai.' : 'Đã lưu bản nháp demo trong tab. Chưa lưu lên máy chủ.')) {
                     history.replaceState(null, '', url('jobEdit', job.id));
-                    feedback.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }
             if (intent === 'submit') {
