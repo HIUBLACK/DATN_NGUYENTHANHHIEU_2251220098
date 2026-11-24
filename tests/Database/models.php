@@ -126,6 +126,9 @@ try {
     }
     $phpArguments = in_array('--with-gd', $argv, true) ? ['-d', 'extension=gd'] : [];
     $testArguments = in_array('--moderation', $argv, true) ? ['--filter', 'JobModerationTest|RecruiterJobTest|AdminPageTest|AuthenticationTest|PoliciesTest|GooglePreparationTest|GooglePasswordSetupTest|PasswordRecoveryTest'] : [];
+    if (in_array('--cv-analysis', $argv, true)) {
+        $testArguments = ['--filter', 'ResumeAnalysisTest|AuthenticationTest|PoliciesTest'];
+    }
     if (in_array('--job-review', $argv, true)) {
         $testArguments = ['--filter', 'RecruiterJobTest|JobModerationTest'];
     }

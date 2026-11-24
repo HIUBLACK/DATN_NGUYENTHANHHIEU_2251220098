@@ -171,6 +171,8 @@ FK candidate_id→users.id; UNIQUE(public_id), UNIQUE(id,candidate_id), UNIQUE(c
 
 ### 4.14 resume_revisions — mới bổ sung có lý do
 
+Bổ sung được duyệt và triển khai ngày 24/11/2026: `analysis_result JSON NULL`, lưu kết quả Ollama theo revision, cast Eloquent `array`. Không thêm bảng hoặc thay đổi khóa. JSON có schema_version và bảy nhóm thông tin kèm bằng chứng; xem `backend-ai-cv-analysis-implementation.md`. Token được cấp lúc enqueue, kiểm tra lại trước khi worker ghi kết quả.
+
 `id ID`, `resume_id`, `revision U32`, `file_path V(255)`, `original_filename V(255)`, `file_size U32`, `mime_type V(100)`, `file_hash CHAR(64)`, `parsing_status V(20) DEFAULT 'pending'`, `extracted_text_path V(255)?`, `parser_version V(100)?`, `parsed_at DATETIME(6)?`, `error_code V(60)?`, `error_message V(1000)?`, `processing_token UUID?`, `attempt_count U16 DEFAULT 0`, `started_at DATETIME(6)?`, `lease_expires_at DATETIME(6)?`, `next_retry_at DATETIME(6)?`, TS.
 
 FK resume_id→resumes.id; UNIQUE(resume_id,revision); INDEX(parsing_status,next_retry_at,id). CHECK revision≥1, file_size 1..5242880, mime_type='application/pdf', status pending/processing/completed/failed. Không UNIQUE hash vì nhiều người có thể cùng PDF. ? là metadata chưa có trước bước xử lý/lỗi; token/lease chỉ có khi claim tác vụ. Completed cần parsed_at và extracted_text_path. Scan không text→failed/no_extractable_text; không OCR. File/path/hash bất biến theo revision; retry sửa lifecycle metadata, không thay file. Giữ revision cũ để audit, current pointer chỉ đổi bởi upload/replacement Service.
@@ -522,6 +524,7 @@ erDiagram
         int revision
         varchar file_hash
         varchar parsing_status
+        json analysis_result
     }
     resume_skills {
         bigint id PK

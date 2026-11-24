@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AIResumeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CandidateDemoController;
 use App\Http\Controllers\CandidateDocumentController;
@@ -95,6 +96,9 @@ Route::middleware(['auth', 'auth.session', 'role:candidate'])->group(function ()
     Route::post('/ung-vien/cv', [CandidateDocumentController::class, 'upload'])->middleware('throttle:20,1')->block()->name('candidate.upload');
     Route::post('/ung-vien/cv/{id}/pdf', [CandidateDocumentController::class, 'upload'])->whereUuid('id')->middleware('throttle:20,1')->block()->name('candidate.replace');
     Route::get('/ung-vien/cv/{id}/pdf', [CandidateDocumentController::class, 'pdf'])->whereUuid('id')->name('candidate.pdf');
+    // Giới hạn lượt thử lại AI và khóa session để giảm thao tác gửi lặp.
+    Route::post('/ung-vien/cv/{id}/phan-tich-lai', [AIResumeController::class, 'retryAnalysis'])
+        ->whereUuid('id')->middleware('throttle:5,1')->block()->name('candidate.analysis-retry');
     Route::post('/ung-vien/cv/{id}/{action}', [CandidateDocumentController::class, 'resumeAction'])
         ->whereIn('action', ['main', 'rename', 'delete'])
         ->whereUuid('id')->block()->name('candidate.resume-action');

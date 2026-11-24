@@ -25,6 +25,7 @@ class ResumeRevision extends Model
     protected function casts(): array
     {
         return [
+            'analysis_result' => 'array',
             'id' => 'integer',
             'resume_id' => 'integer',
             'revision' => 'integer',

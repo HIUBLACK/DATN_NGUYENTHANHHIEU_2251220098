@@ -27,7 +27,7 @@ class CandidateResumeService
                 || ! str_starts_with($contents, '%PDF-') || ! str_contains(substr($contents, -2048), '%%EOF')) {
                 throw new \RuntimeException('Invalid PDF');
             }
-            // Validate the PDF structure and pages only; no text extraction, OCR or AI.
+            // Upload chỉ kiểm tra cấu trúc PDF; trích xuất văn bản và gọi AI được xử lý nền.
             $config = new Config;
             $config->setRetainImageContent(false);
             $config->setDecodeMemoryLimit(16 * 1024 * 1024);
@@ -71,6 +71,8 @@ class CandidateResumeService
                     'mime_type' => 'application/pdf', 'parsing_status' => 'pending',
                 ])->save();
                 $this->invalidateRecommendations($user->id);
+
+                app(AIResumeAnalysisService::class)->enqueue($revision);
 
                 return $resume;
             });

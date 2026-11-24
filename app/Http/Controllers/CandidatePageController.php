@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\CandidateProfile;
 use App\Models\Resume;
+use App\Models\ResumeRevision;
 use App\Models\SavedJob;
 use App\Services\CandidateApplicationService;
 use App\Services\CandidateDemo;
@@ -15,6 +16,7 @@ use App\Services\PublicJobService;
 use App\Services\SavedJobService;
 use App\Support\CandidateCatalog;
 use App\Support\CompanyDemoCatalog;
+use App\Support\DisplayDate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -142,6 +144,10 @@ class CandidatePageController extends Controller
 
         if ($page === 'resumes') {
             $data['resumes'] = Resume::forCandidate(auth()->id())->orderByDesc('is_primary')->latest('id')->get();
+            // Lấy chung kết quả revision hiện tại của CV thuộc người đăng nhập, tránh truy vấn từng CV.
+            $data['analyses'] = ResumeRevision::whereIn('resume_id', $data['resumes']->modelKeys())
+                ->whereHas('resume', fn ($query) => $query->whereColumn('resumes.current_revision', 'resume_revisions.revision'))
+                ->get()->keyBy('resume_id');
         }
         if ($page === 'applications') {
             $data['applications'] = Application::with(['jobVersion', 'job.company'])->where('candidate_id', auth()->id())->latest('id')->paginate(10);
@@ -196,7 +202,7 @@ class CandidatePageController extends Controller
                     'application_id' => $notification->data['application_id'] ?? '',
                     'status' => $notification->data['status'] ?? 'applied',
                     'title' => $notification->data['title'] ?? 'Thông báo',
-                    'date' => \App\Support\DisplayDate::format($notification->created_at),
+                    'date' => DisplayDate::format($notification->created_at),
                 ];
             })->all();
         }
