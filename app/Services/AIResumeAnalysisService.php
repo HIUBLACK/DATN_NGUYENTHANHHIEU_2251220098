@@ -9,6 +9,7 @@ use App\Models\ResumeRevision;
 use App\Models\ResumeSkill;
 use App\Models\Skill;
 use App\Models\User;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
@@ -76,14 +77,21 @@ class AIResumeAnalysisService
     /**
      * Đọc PDF và phân tích ngoài transaction; kiểm tra lại revision trước khi lưu.
      */
-    public function process(int $id, string $token): void
+    public function process(int $id, string $token): string
     {
         // Nhận quyền xử lý trong transaction ngắn, không giữ khóa database khi chờ AI.
         $revision = $this->locked($id, function ($resume, $revision) use ($token) {
-            if (! $this->eligible($resume, $revision, $token) || $revision->attempt_count >= 3
-                || in_array($revision->parsing_status, [ResumeParsingStatus::Completed, ResumeParsingStatus::Failed], true)
-                || ($revision->parsing_status === ResumeParsingStatus::Processing && $revision->lease_expires_at?->isFuture())) {
-                return null;
+            if (! $this->eligible($resume, $revision, $token)) {
+                return 'obsolete';
+            }
+            if ($revision->parsing_status === ResumeParsingStatus::Completed) {
+                return 'completed';
+            }
+            if ($revision->parsing_status === ResumeParsingStatus::Failed || $revision->attempt_count >= 3) {
+                return 'failed';
+            }
+            if ($revision->parsing_status === ResumeParsingStatus::Processing && $revision->lease_expires_at?->isFuture()) {
+                return 'busy';
             }
             $revision->forceFill([
                 'parsing_status' => 'processing',
@@ -95,14 +103,20 @@ class AIResumeAnalysisService
 
             return $revision;
         });
-        if (! $revision) {
-            return;
+        if (! $revision instanceof ResumeRevision) {
+            $outcome = $revision ?? 'missing';
+            Log::info('CV analysis not executed.', ['revision_id' => $id, 'outcome' => $outcome]);
+
+            return $outcome;
         }
         $textPath = 'resume-analysis/'.$revision->resume_id.'/'.$revision->revision.'/'.$token.'.txt';
+        $stage = 'pdf';
         try {
             $disk = Storage::disk('local');
             $text = $this->extractPdfText($revision);
+            $stage = 'ollama';
             $result = $this->ollama->analyze($text);
+            $stage = 'storage';
             // Trong lúc chờ Ollama, Candidate có thể thay hoặc xóa CV nên phải kiểm tra lại.
             $saved = $this->locked($id, function ($resume, $current) use ($token, $result, $textPath, $text, $disk) {
                 if (! $this->eligible($resume, $current, $token) || $current->parsing_status !== ResumeParsingStatus::Processing) {
@@ -140,27 +154,67 @@ class AIResumeAnalysisService
             if (! $saved) {
                 $disk->delete($textPath);
             }
+
+            return $saved ? 'completed' : 'obsolete';
         } catch (Throwable $exception) {
             Storage::disk('local')->delete($textPath);
-            $code = $exception->getMessage() === 'no_extractable_text' ? 'no_extractable_text' : 'analysis_failed';
-            $this->locked($id, function ($resume, $current) use ($token, $code) {
+            $code = $this->errorCode($exception, $stage);
+            // Chỉ ghi mã lỗi trong danh sách cho phép; không log CV, response hay exception gốc.
+            Log::warning('CV analysis attempt failed.', [
+                'revision_id' => $id, 'stage' => $stage, 'error_code' => $code,
+                'attempt' => $revision->attempt_count,
+            ]);
+            $terminal = $this->locked($id, function ($resume, $current) use ($token, $code) {
                 if ($this->eligible($resume, $current, $token) && $current->parsing_status !== ResumeParsingStatus::Completed) {
-                    // PDF không có văn bản không thể khắc phục bằng retry vì giai đoạn này chưa có OCR.
-                    $terminal = $code === 'no_extractable_text' || $current->attempt_count >= 3;
+                    // PDF sai/hỏng không thể sửa bằng retry; lỗi mạng/model được thử lại hữu hạn.
+                    $terminal = in_array($code, [
+                        'no_extractable_text', 'invalid_private_pdf', 'pdf_hash_mismatch',
+                        'pdf_parse_failed', 'invalid_local_endpoint',
+                    ], true) || $current->attempt_count >= 3;
                     $current->forceFill([
                         'parsing_status' => $terminal ? 'failed' : 'pending',
                         'error_code' => $code,
                         'error_message' => 'Không phân tích được CV. Hãy kiểm tra PDF hoặc thử lại sau.',
                         'lease_expires_at' => null,
-                        'next_retry_at' => $terminal ? null : now()->addSeconds(90),
+                        'next_retry_at' => $terminal ? null : now()->addSeconds($current->attempt_count === 1 ? 30 : 90),
                     ])->save();
+
+                    return $terminal;
                 }
+
+                return true;
             });
-            if ($code !== 'no_extractable_text') {
-                // Không giữ exception gốc vì HTTP exception có thể chứa nội dung CV/response.
-                throw new RuntimeException('CV analysis failed; retry is limited.');
+            if ($terminal) {
+                return 'failed';
             }
+            // Worker nhận exception mới, không chứa dữ liệu nhạy cảm, để thực hiện backoff.
+            throw new RuntimeException('CV analysis failed; retry is limited.');
         }
+    }
+
+    /** Phân loại lỗi bằng mã an toàn, giữ nguyên JSON/evidence validation. */
+    private function errorCode(Throwable $exception, string $stage): string
+    {
+        $allowed = [
+            'no_extractable_text', 'invalid_private_pdf', 'pdf_hash_mismatch',
+            'invalid_local_endpoint', 'invalid_ai_output', 'unsupported_ai_claim',
+            'ollama_response_failed', 'private_text_write_failed',
+        ];
+        if (in_array($exception->getMessage(), $allowed, true)) {
+            return $exception->getMessage();
+        }
+        if ($exception instanceof ConnectionException) {
+            return 'ollama_connection_failed';
+        }
+        if ($exception instanceof \JsonException) {
+            return 'invalid_ai_json';
+        }
+
+        return match ($stage) {
+            'pdf' => 'pdf_parse_failed',
+            'storage' => 'analysis_storage_failed',
+            default => 'analysis_failed',
+        };
     }
 
     /**
@@ -204,10 +258,11 @@ class AIResumeAnalysisService
     public function queueFailed(int $id, string $token): void
     {
         $this->locked($id, function ($resume, $revision) use ($token) {
-            if ($this->eligible($resume, $revision, $token) && $revision->parsing_status !== ResumeParsingStatus::Completed) {
+            if ($this->eligible($resume, $revision, $token)
+                && ! in_array($revision->parsing_status, [ResumeParsingStatus::Completed, ResumeParsingStatus::Failed], true)) {
                 $revision->forceFill([
                     'parsing_status' => 'failed',
-                    'error_code' => 'queue_failed',
+                    'error_code' => $revision->error_code ?? 'queue_failed',
                     'error_message' => 'Chưa hoàn tất phân tích. Bạn có thể thử lại.',
                     'lease_expires_at' => null,
                     'next_retry_at' => null,

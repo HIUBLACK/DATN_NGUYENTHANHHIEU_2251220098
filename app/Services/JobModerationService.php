@@ -68,6 +68,8 @@ class JobModerationService
                     $job->status = JobStatus::Open;
                 }
                 $job->save();
+                // AI chạy sau commit; lỗi phân tích không đảo kết quả kiểm duyệt.
+                app(AIJobAnalysisService::class)->afterApproval($version->id);
             }
         }, 3);
     }

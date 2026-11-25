@@ -129,6 +129,12 @@ try {
     if (in_array('--cv-analysis', $argv, true)) {
         $testArguments = ['--filter', 'ResumeAnalysisTest|AuthenticationTest|PoliciesTest'];
     }
+    if (in_array('--job-analysis', $argv, true)) {
+        $testArguments = ['--filter', 'AIJobAnalysisTest|ResumeAnalysisTest|JobModerationTest|RecruiterJobTest'];
+    }
+    if (in_array('--job-stability-live', $argv, true)) {
+        $testArguments = ['--filter', 'test_synthetic_job_corpus_with_real_ollama'];
+    }
     if (in_array('--job-review', $argv, true)) {
         $testArguments = ['--filter', 'RecruiterJobTest|JobModerationTest'];
     }
@@ -158,6 +164,7 @@ try {
         'DB_DATABASE' => $database, 'DB_HOST' => $configuration['host'], 'DB_PORT' => (string) $configuration['port'],
         'DB_USERNAME' => $configuration['username'], 'DB_PASSWORD' => (string) $configuration['password'],
         'CACHE_STORE' => 'array', 'SESSION_DRIVER' => 'array', 'QUEUE_CONNECTION' => 'sync',
+        'AI_JOB_LIVE_PROBE' => in_array('--job-stability-live', $argv, true) ? '1' : '0',
         'MAIL_MAILER' => 'array', 'MAIL_HOST' => 'smtp.test.invalid', 'MAIL_PORT' => '2525',
         'MAIL_USERNAME' => '', 'MAIL_PASSWORD' => '', 'MAIL_URL' => '', 'PASSWORD_RECOVERY_ENABLED' => 'false',
     ]);

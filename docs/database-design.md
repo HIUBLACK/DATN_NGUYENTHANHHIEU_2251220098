@@ -169,6 +169,19 @@ Nội dung/pivot/hạn của pending/approved bất biến. Sửa sau reject cũ
 
 FK candidate_id→users.id; UNIQUE(public_id), UNIQUE(id,candidate_id), UNIQUE(candidate_id,primary_slot); INDEX(candidate_id,deleted_at,id). CHECK current_revision≥1; deleted_at IS NULL OR is_primary=0. Deleted_at NULL là CV hoạt động. **Service tạo resume+revision 1 cùng transaction và bảo đảm current_revision có row tương ứng**; không thêm FK vòng resumes↔resume_revisions. File/parse nằm ở revision, không lặp trong resumes. Tối đa 10 và luôn có CV chính nếu còn CV do lock parent + Service thực thi; unique chỉ bảo đảm tối đa một.
 
+### Bổ sung AI JobVersion được duyệt ngày 24/11/2026
+
+Giai đoạn 3.6B giữ 33 bảng, bổ sung metadata tại job_versions: ai_analysis_result JSON nullable,
+ai_analysis_status VARCHAR(20) nullable, ai_processing_token CHAR(36) nullable,
+ai_attempt_count SMALLINT UNSIGNED DEFAULT 0; ai_started_at, ai_lease_expires_at,
+ai_next_retry_at, ai_analyzed_at DATETIME(6) nullable; ai_model_version VARCHAR(100),
+ai_error_code VARCHAR(60) nullable. CHECK trạng thái pending/processing/completed/failed hoặc NULL,
+attempt_count <=3; completed phải có result/analyzed_at/model_version.
+INDEX(ai_analysis_status, ai_next_retry_at, id). PK JobVersion xác định duy nhất kết quả;
+không thêm FK/UNIQUE. Eloquent cast result=array, attempt_count=integer, các thời gian=datetime;
+không thêm fillable. Worker chỉ cập nhật cột AI, giữ updated_at nghiệp vụ. Replicate V2 loại bỏ
+metadata AI V1. Chi tiết: backend-ai-job-analysis-implementation.md.
+
 ### 4.14 resume_revisions — mới bổ sung có lý do
 
 Bổ sung được duyệt và triển khai ngày 24/11/2026: `analysis_result JSON NULL`, lưu kết quả Ollama theo revision, cast Eloquent `array`. Không thêm bảng hoặc thay đổi khóa. JSON có schema_version và bảy nhóm thông tin kèm bằng chứng; xem `backend-ai-cv-analysis-implementation.md`. Token được cấp lúc enqueue, kiểm tra lại trước khi worker ghi kết quả.
@@ -488,6 +501,11 @@ erDiagram
         boolean is_active
     }
     job_versions {
+        json ai_analysis_result
+        varchar ai_analysis_status
+        char ai_processing_token
+        smallint ai_attempt_count
+        datetime ai_analyzed_at
         bigint job_position_id FK "nullable for legacy"
         varchar province_code "34 provinces, nullable for legacy"
         bigint id PK

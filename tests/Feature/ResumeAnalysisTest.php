@@ -138,7 +138,7 @@ class ResumeAnalysisTest extends AuthenticatedDemoTestCase
     {
         $revision = $this->revision();
         Http::fake(['*' => Http::response([], 503)]);
-        for ($attempt = 1; $attempt <= 3; $attempt++) {
+        for ($attempt = 1; $attempt <= 2; $attempt++) {
             try {
                 $this->process($revision);
                 $this->fail('Failed Ollama response must trigger retry.');
@@ -146,13 +146,68 @@ class ResumeAnalysisTest extends AuthenticatedDemoTestCase
                 $this->assertSame('CV analysis failed; retry is limited.', $exception->getMessage());
             }
         }
+        $job = (new AIAnalyzeResumeJob($revision->id, $revision->processing_token))->withFakeQueueInteractions();
+        $job->handle(app(AIResumeAnalysisService::class));
+        $job->assertFailed();
         $this->assertSame(ResumeParsingStatus::Failed, $revision->refresh()->parsing_status);
+        $this->assertSame('ollama_response_failed', $revision->error_code);
+        $job->failed(null);
+        $this->assertSame('ollama_response_failed', $revision->refresh()->error_code);
+        $duplicate = (new AIAnalyzeResumeJob($revision->id, $revision->processing_token))->withFakeQueueInteractions();
+        $duplicate->handle(app(AIResumeAnalysisService::class));
+        $duplicate->assertFailed();
         Storage::disk('local')->assertExists($revision->file_path);
         $token = $revision->processing_token;
         app(AIResumeAnalysisService::class)->retry(auth()->user(), $revision->resume->public_id);
         $this->assertNotSame($token, $revision->refresh()->processing_token);
         app(AIResumeAnalysisService::class)->queueFailed($revision->id, $token);
         $this->assertSame(ResumeParsingStatus::Pending, $revision->refresh()->parsing_status);
+    }
+
+    public function test_temporary_failure_recovers_and_saves_the_same_revision(): void
+    {
+        $revision = $this->revision();
+        Http::fake(['*' => Http::sequence()->push([], 503)->push($this->response())]);
+        try {
+            $this->process($revision);
+            $this->fail('First call should fail.');
+        } catch (RuntimeException) {
+            $this->assertSame(ResumeParsingStatus::Pending, $revision->refresh()->parsing_status);
+        }
+        $this->process($revision);
+        $this->assertSame(ResumeParsingStatus::Completed, $revision->refresh()->parsing_status);
+        $this->assertSame(2, $revision->attempt_count);
+        $this->assertSame('PHP', $revision->analysis_result['technical_skills'][0]['text']);
+        $this->assertNull($revision->error_code);
+    }
+
+    public function test_only_evidence_verified_claims_are_saved(): void
+    {
+        $revision = $this->revision();
+        $response = $this->response();
+        $result = json_decode($response['message']['content'], true);
+        $result['technical_skills'][] = ['text' => 'Docker', 'evidence' => 'Invented Docker skill'];
+        $response['message']['content'] = json_encode($result);
+        Http::fake(['*' => Http::response($response)]);
+        $this->process($revision);
+        $stored = $revision->fresh()->analysis_result;
+        $this->assertSame(1, $stored['rejected_claim_count']);
+        $this->assertCount(1, $stored['technical_skills']);
+        $this->assertSame('PHP', $stored['technical_skills'][0]['text']);
+    }
+
+    public function test_unreadable_pdf_fails_queue_without_calling_ollama(): void
+    {
+        $resume = app(CandidateResumeService::class)->upload(auth()->user(), $this->pdf('CV'));
+        $revision = $resume->currentRevision()->firstOrFail();
+        $job = (new AIAnalyzeResumeJob($revision->id, $revision->processing_token))->withFakeQueueInteractions();
+        $job->handle(app(AIResumeAnalysisService::class));
+        $job->assertFailed();
+        $this->assertSame('no_extractable_text', $revision->refresh()->error_code);
+        $this->assertSame(1, $revision->attempt_count);
+        $job->failed(null);
+        $this->assertSame('no_extractable_text', $revision->refresh()->error_code);
+        Http::assertNothingSent();
     }
 
     private function revision(): ResumeRevision

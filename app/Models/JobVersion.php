@@ -45,6 +45,12 @@ class JobVersion extends Model
     protected function casts(): array
     {
         return [
+            'ai_analysis_result' => 'array',
+            'ai_attempt_count' => 'integer',
+            'ai_started_at' => 'datetime',
+            'ai_lease_expires_at' => 'datetime',
+            'ai_next_retry_at' => 'datetime',
+            'ai_analyzed_at' => 'datetime',
             'id' => 'integer',
             'job_id' => 'integer',
             'version_number' => 'integer',

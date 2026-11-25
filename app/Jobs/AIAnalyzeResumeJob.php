@@ -45,7 +45,13 @@ class AIAnalyzeResumeJob implements ShouldQueue
             return;
         }
         try {
-            $analysis->process($this->revisionId, $this->token);
+            $outcome = $analysis->process($this->revisionId, $this->token);
+            if ($outcome === 'failed') {
+                // Không để queue báo thành công khi revision hiện hành đã thất bại.
+                $this->fail(new \RuntimeException('CV analysis failed; inspect revision error_code.'));
+            } elseif ($outcome === 'busy') {
+                $this->release(30);
+            }
         } finally {
             $lock->release();
         }

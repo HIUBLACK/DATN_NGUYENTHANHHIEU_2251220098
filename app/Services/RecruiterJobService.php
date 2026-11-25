@@ -122,7 +122,13 @@ class RecruiterJobService
             $version = $this->editableVersion($job, $data);
             if ($version->review_status !== JobReviewStatus::Draft) {
                 // Approved/rejected là lịch sử bất biến; POST/PUT mới tạo bản sao để chỉnh sửa.
-                $copy = $version->replicate(['pending_slot', 'submitted_at', 'reviewed_at']);
+                // Bản mới không được kế thừa kết quả/token AI của nội dung phiên bản cũ.
+                $copy = $version->replicate([
+                    'pending_slot', 'submitted_at', 'reviewed_at',
+                    'ai_analysis_result', 'ai_analysis_status', 'ai_processing_token', 'ai_attempt_count',
+                    'ai_started_at', 'ai_lease_expires_at', 'ai_next_retry_at', 'ai_analyzed_at',
+                    'ai_model_version', 'ai_error_code',
+                ]);
                 $copy->version_number = $version->version_number + 1;
                 $copy->review_status = JobReviewStatus::Draft;
                 $this->saveContent($copy, $data, $version);
