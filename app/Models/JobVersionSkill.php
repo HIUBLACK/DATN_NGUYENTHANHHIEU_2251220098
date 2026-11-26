@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\JobCatalog;
+
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -32,8 +34,8 @@ class JobVersionSkill extends Pivot
         return $this->belongsTo(JobVersion::class, 'job_version_id');
     }
 
-    public function skill(): BelongsTo
+    public function getSkillAttribute(): ?\stdClass
     {
-        return $this->belongsTo(Skill::class, 'skill_id');
+        return JobCatalog::find('skills', $this->skill_id);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\CompleteGoogleRegistrationRequest;
 use App\Http\Requests\Auth\LinkGoogleRequest;
 use App\Services\GoogleAuthService;
+use App\Services\GooglePasswordSetupService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -21,9 +22,13 @@ class GoogleAuthController extends Controller
         return $this->google->start($request, $input['context']);
     }
 
-    public function callback(Request $request): RedirectResponse
+    public function callback(Request $request, GooglePasswordSetupService $setup): RedirectResponse
     {
-        return $this->google->callback($request)
+        $response = $request->session()->has('google_setup_flow')
+            ? $setup->callback($request)
+            : $this->google->callback($request);
+
+        return $response
             ->header('Cache-Control', 'no-store, private')
             ->header('Referrer-Policy', 'no-referrer');
     }

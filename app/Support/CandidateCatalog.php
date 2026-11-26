@@ -76,13 +76,13 @@ class CandidateCatalog
     public function filters(): array
     {
         return [
-            'industry' => ['Lĩnh vực', array_column(app(JobCategoryCatalog::class)->data()['industries'], 'name')],
+            'industry' => ['Lĩnh vực', JobCatalog::all('industries')->pluck('name')->all()],
             'company' => ['Công ty', $this->publicJobs()->pluck('company')->unique()->values()->all()],
             'location' => ['Địa điểm', ['Hà Nội', 'TP. Hồ Chí Minh', 'Đà Nẵng']],
-            'level' => ['Cấp bậc', array_column(app(JobCategoryCatalog::class)->data()['levels'], 'name')],
+            'level' => ['Cấp bậc', JobCatalog::all('levels')->pluck('name')->all()],
             'mode' => ['Hình thức làm việc', ['Tại văn phòng', 'Từ xa', 'Kết hợp']],
             'experience' => ['Kinh nghiệm', ['Chưa có kinh nghiệm', '1–3 năm', 'Trên 3 năm']],
-            'skill' => ['Kỹ năng yêu cầu', array_column(app(JobCategoryCatalog::class)->data()['skills'], 'name')],
+            'skill' => ['Kỹ năng yêu cầu', JobCatalog::all('skills')->pluck('name')->all()],
             'type' => ['Loại công việc', ['Toàn thời gian', 'Bán thời gian', 'Thực tập']],
         ];
     }
@@ -150,35 +150,4 @@ class CandidateCatalog
         ];
     }
 
-    public function recommendations(?array $resume, array $filters): array
-    {
-        if (! $resume || ! in_array($resume['status'], ['completed', 'needs_review'], true)) {
-            return [];
-        }
-
-        $skills = array_map('mb_strtolower', $resume['skills']);
-        $recommendations = [];
-
-        foreach ($this->search($filters)->where('status', 'open') as $job) {
-            $matched = [];
-            $missing = [];
-
-            foreach ($job['skills'] as $skill) {
-                if (in_array(mb_strtolower($skill), $skills, true)) {
-                    $matched[] = $skill;
-                } else {
-                    $missing[] = $skill;
-                }
-            }
-
-            $recommendations[] = [
-                'job' => $job,
-                'score' => max(55, 89 - $job['id'] * 3),
-                'matched' => $matched,
-                'missing' => $missing,
-            ];
-        }
-
-        return $recommendations;
-    }
 }

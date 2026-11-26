@@ -6,17 +6,20 @@ use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\CandidateProfile;
 use App\Models\Company;
+use App\Models\Resume;
 use App\Models\User;
-use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Process;
+use Tests\Support\PdfFixtures;
 use Tests\TestCase;
 
 class AuthenticationTest extends TestCase
 {
+    use PdfFixtures;
+
     public function test_real_console_reads_input_without_autoload_failure_on_windows(): void
     {
         if (PHP_OS_FAMILY !== 'Windows') {
@@ -77,6 +80,7 @@ class AuthenticationTest extends TestCase
         $user = User::where('email', 'register@test.invalid')->firstOrFail();
         $this->assertAuthenticatedAs($user);
         $this->assertSame(UserRole::Candidate, $user->role);
+        $this->assertTrue($user->has_local_password);
         $this->assertSame(UserStatus::Active, $user->status);
         $this->assertNotSame(99999, $user->id);
         $this->assertNotNull($user->candidateProfile);
@@ -90,6 +94,7 @@ class AuthenticationTest extends TestCase
         $this->post(route('auth.register'), $this->registration('recruiter'))->assertRedirect(route('recruiter.dashboard'));
         $user = User::where('email', 'register@test.invalid')->firstOrFail();
         $this->assertSame(UserRole::Recruiter, $user->role);
+        $this->assertTrue($user->has_local_password);
         $this->assertNull($user->company);
         $this->assertNull($user->candidateProfile);
         $this->assertSame(0, Company::count());
@@ -116,6 +121,7 @@ class AuthenticationTest extends TestCase
         $this->assertAuthenticatedAs($user);
         $this->assertNotSame($sessionId, session()->getId());
         $this->assertNotNull($user->fresh()->last_login_at);
+        $this->assertTrue($user->fresh()->has_local_password);
         $this->assertNull($user->fresh()->remember_token);
         foreach ($response->headers->getCookies() as $cookie) {
             $this->assertStringNotContainsString('remember_', $cookie->getName());
@@ -205,6 +211,7 @@ class AuthenticationTest extends TestCase
         $this->post(route('password.change'), $input)->assertRedirect(route('login'))->assertSessionHasNoErrors();
         $this->assertGuest();
         $this->assertTrue(Hash::check('NewPassword123', $user->fresh()->password));
+        $this->assertTrue($user->fresh()->has_local_password);
         $this->assertSame(0, DB::table('sessions')->where('user_id', $user->id)->count());
         $this->assertNull($user->fresh()->remember_token);
     }
@@ -223,7 +230,8 @@ class AuthenticationTest extends TestCase
     {
         $this->post(route('demo.enter'))->assertRedirect(route('login'));
         $this->post('/demo/tai-khoan/login', ['email' => 'fake@test.invalid', 'password' => 'Password123'])->assertNotFound();
-        $this->get(route('forgot'))->assertOk()->assertSee('Chưa có email khôi phục nào được gửi');
+        $this->get(route('forgot'))->assertRedirect(route('password.request'));
+        $this->get(route('password.request'))->assertOk()->assertSee('Chưa có email khôi phục nào được gửi');
         $this->assertGuest();
         $this->get(route('register'))->assertSee('name="role"', false)->assertDontSee('value="admin"', false);
     }
@@ -284,6 +292,7 @@ class AuthenticationTest extends TestCase
             ->assertSuccessful();
         $admin = User::where('email', 'admin@test.invalid')->firstOrFail();
         $this->assertSame(UserRole::Admin, $admin->role);
+        $this->assertTrue($admin->has_local_password);
         $this->assertSame(UserStatus::Active, $admin->status);
         $this->assertTrue(Hash::check('AdminPassword123', $admin->password));
         $this->assertNull($admin->remember_token);
@@ -349,30 +358,33 @@ class AuthenticationTest extends TestCase
         $this->withCookie(config('session.cookie'), $authenticatedSession)->get(route('candidate.profile'))->assertRedirect(route('login'));
     }
 
-    public function test_account_switch_cannot_read_previous_demo_pdf(): void
+    public function test_account_switch_cannot_read_previous_candidate_pdf(): void
     {
         Storage::fake('local');
         $first = $this->account();
         $second = $this->account();
         $this->actingAs($first)->post(route('candidate.upload'), [
-            'pdf' => UploadedFile::fake()->createWithContent('private.pdf', "%PDF-1.4\n%%EOF"),
+            'pdf' => $this->pdf(),
         ])->assertSessionHasNoErrors();
-        $resumeId = session('candidate_preview.resumes.0.id');
+        $resumeId = Resume::where('candidate_id', $first->id)->firstOrFail()->public_id;
         $this->get(route('candidate.pdf', $resumeId))->assertOk();
         $this->post(route('logout'))->assertRedirect();
         $this->post(route('auth.login'), ['email' => $second->email, 'password' => 'Password123'])->assertRedirect();
         $this->get(route('candidate.pdf', $resumeId))->assertNotFound();
     }
 
-    public function test_demo_company_owner_cannot_be_overridden_by_client_id(): void
+    public function test_company_owner_cannot_be_overridden_by_client_id(): void
     {
         $first = $this->account(UserRole::Recruiter);
         $second = $this->account(UserRole::Recruiter);
-        $this->actingAs($first)->get(route('recruiter.company-edit'))->assertOk();
-        $company = session('company_profile_preview');
+        $this->actingAs($first)->post(route('recruiter.company-store'), [
+            'name' => 'Company test', 'email' => 'contact@test.invalid',
+            'phone' => '0912345678', 'address' => 'Test address',
+        ])->assertSessionHasNoErrors();
+        $company = Company::where('recruiter_id', $first->id)->firstOrFail();
         $this->post(route('logout'))->assertRedirect();
         $this->post(route('auth.login'), ['email' => $second->email, 'password' => 'Password123'])->assertRedirect();
-        $this->put(route('recruiter.company-update', $company['id']), [
+        $this->put(route('recruiter.company-update', $company->public_id), [
             'recruiter_id' => $first->id, 'user_id' => $first->id, 'name' => 'Forged',
         ])->assertForbidden();
     }

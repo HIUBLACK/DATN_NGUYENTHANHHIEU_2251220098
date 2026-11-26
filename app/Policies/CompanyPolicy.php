@@ -19,7 +19,18 @@ class CompanyPolicy
             return true;
         }
 
-        return $company->status === CompanyStatus::Active
+        return $this->viewPublic($user, $company);
+    }
+
+    public function viewManagement(User $user, Company $company): bool
+    {
+        return $this->owns($user, $company);
+    }
+
+    public function viewPublic(?User $user, Company $company): bool
+    {
+        return (! $user || $user->status === UserStatus::Active)
+            && $company->status === CompanyStatus::Active
             && $company->recruiter?->status === UserStatus::Active
             && $company->recruiter?->role === UserRole::Recruiter;
     }

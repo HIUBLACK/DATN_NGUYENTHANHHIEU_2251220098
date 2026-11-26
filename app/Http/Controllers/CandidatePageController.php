@@ -3,14 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\Application;
+use App\Models\CandidateProfile;
+use App\Models\Resume;
+use App\Models\ResumeRevision;
+use App\Models\SavedJob;
+use App\Services\CandidateApplicationService;
 use App\Services\CandidateDemo;
-use App\Services\CompanyProfiles;
+use App\Services\CandidateProfileService;
+use App\Services\CompanyService;
+use App\Services\PublicJobService;
+use App\Services\SavedJobService;
 use App\Support\CandidateCatalog;
 use App\Support\CompanyDemoCatalog;
-use App\Support\JobCategoryCatalog;
-use App\Support\OccupationCatalog;
+use App\Support\DisplayDate;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class CandidatePageController extends Controller
@@ -18,6 +26,7 @@ class CandidatePageController extends Controller
     public function __construct(
         private CandidateCatalog $catalog,
         private CandidateDemo $demo,
+        private PublicJobService $publicJobs,
     ) {}
 
     public function home(): View
@@ -44,43 +53,37 @@ class CandidatePageController extends Controller
             'sort' => ['nullable', 'in:newest,salary'],
             'page' => ['nullable', 'integer', 'min:1'],
         ]);
-        $jobs = $this->catalog->search($filters);
-        $page = (int) ($filters['page'] ?? 1);
-        $paginator = new LengthAwarePaginator(
-            $jobs->slice(($page - 1) * 6, 6),
-            $jobs->count(),
-            6,
-            $page,
-            ['path' => $request->url(), 'query' => $request->query()],
-        );
+        $jobs = $this->publicJobs->search($filters)->paginate(6)->withQueryString()
+            ->through(fn ($job) => $this->publicJobs->card($job));
 
         return view('Candidate.ca_pages.jobs', $this->sharedData() + [
-            'advancedFiltersOpen' => count(array_filter(array_intersect_key($filters, array_flip(['specialtyId', 'industry', 'skill', 'company', 'experience', 'type'])))) > 0
-                || ($filters['sort'] ?? 'newest') !== 'newest'
-                || in_array($filters['browse'] ?? '', ['industry', 'skill', 'specialtyId', 'company'], true),
-            'title' => 'Tìm việc làm',
-            'page' => 'jobs',
-            'jobs' => $paginator,
-            'suggestedJobs' => array_slice($this->catalog->recommendations($this->demo->mainResume(), []), 0, 3),
-            'featuredCompanies' => $this->catalog->publicJobs()->groupBy('company')->map(function ($companyJobs) {
-                $company = $companyJobs->first();
-
-                return [
-                    'name' => $company['company'],
-                    'logo' => $company['logo'],
-                    'locations' => $companyJobs->pluck('location')->unique()->implode(' · '),
-                    'openings' => $companyJobs->where('status', 'open')->count(),
-                ];
-            })->values(),
+            'advancedFiltersOpen' => count(array_filter(array_intersect_key($filters, array_flip(['specialtyId', 'industry', 'skill', 'company', 'experience', 'type'])))) > 0,
+            'title' => 'Việc làm', 'page' => 'jobs', 'jobs' => $jobs,
+            'realJobs' => true, 'suggestedJobs' => [], 'featuredCompanies' => $this->publicJobs->featuredCompanies(),
         ]);
     }
 
     public function job(int $id): View
     {
+        $job = $this->publicJobs->query()->findOrFail($id);
+
+        return view('Candidate.ca_pages.job', $this->sharedData() + [
+            'page' => 'job', 'title' => $job->publishedVersion->title,
+            'job' => $this->publicJobs->card($job),
+            'applicationResumes' => auth()->check() && auth()->user()->can('viewAny', Resume::class)
+                ? Resume::forCandidate(auth()->id())->orderByDesc('is_primary')->get() : collect(),
+            'applicationEligibility' => auth()->check() && auth()->user()->can('viewAny', Resume::class)
+                ? app(CandidateApplicationService::class)->availability(auth()->id(), $job->id) : ['allowed' => false, 'attempt' => 1],
+            'applicationVersion' => $job->published_version_id,
+        ]);
+    }
+
+    public function demoJob(int $id): View
+    {
         $job = $this->catalog->find($id);
         abort_unless($job, 404);
 
-        return view('Candidate.ca_pages.job', $this->sharedData() + [
+        return view('Candidate.ca_pages.job-demo', array_replace($this->sharedData(), ['catalogJobs' => $this->catalog->publicJobs()]) + [
             'page' => 'job',
             'title' => $job['title'],
             'job' => $job,
@@ -98,20 +101,20 @@ class CandidatePageController extends Controller
             'title' => $profile['name'],
             'companyProfile' => $profile,
             'companyJobs' => $this->catalog->publicJobs()->where('company', $profile['name']),
+            'isDemoCompany' => true,
         ]);
     }
 
-    public function company(string $company, CompanyProfiles $profiles): View
+    public function company(string $company, CompanyService $profiles): View
     {
-        $record = $profiles->find($company);
-        abort_unless($record && $record['status'] === 'active', 404);
+        $record = $profiles->publicQuery()->where('public_id', $company)->firstOrFail();
         $profile = $profiles->publicData($record);
 
         return view('Candidate.ca_pages.company', $this->sharedData() + [
             'page' => 'company',
             'title' => $profile['name'],
             'companyProfile' => $profile,
-            'companyJobs' => collect(),
+            'companyJobs' => $this->publicJobs->query()->where('company_id', $record->id)->get()->map(fn ($job) => $this->publicJobs->card($job)),
         ]);
     }
 
@@ -122,15 +125,13 @@ class CandidatePageController extends Controller
         $data = $this->sharedData() + ['title' => $title, 'page' => $page];
 
         if ($page === 'companies') {
-            $data['companyProfiles'] = app(CompanyDemoCatalog::class)->profiles();
-            $preview = session('company_profile_preview');
-            $data['ownCompanyPreview'] = is_array($preview) && $preview['status'] === 'active'
-                ? app(CompanyProfiles::class)->publicData($preview) + ['id' => $preview['id']]
-                : null;
+            $companies = app(CompanyService::class);
+            $data['companyProfiles'] = $companies->publicQuery()->latest('id')->paginate(12)
+                ->through(fn ($company) => $companies->publicData($company));
         }
 
         if ($page === 'saved') {
-            $data['savedJobs'] = array_map($this->catalog->find(...), $data['demo']['saved']);
+            $data['savedJobs'] = app(SavedJobService::class)->listing($request->user());
         }
 
         if ($page === 'recommendations') {
@@ -138,46 +139,89 @@ class CandidatePageController extends Controller
                 'location' => ['nullable', 'string', 'max:100'],
                 'mode' => ['nullable', 'string', 'max:100'],
             ]);
-            $data['recommendations'] = $this->catalog->recommendations($data['mainResume'], $filters);
+            $data = array_merge($data, app(\App\Services\AIRecommendationService::class)->page($request->user(), $filters));
         }
 
+        if ($page === 'resumes') {
+            $data['resumes'] = Resume::forCandidate(auth()->id())->orderByDesc('is_primary')->latest('id')->get();
+            // Lấy chung kết quả revision hiện tại của CV thuộc người đăng nhập, tránh truy vấn từng CV.
+            $data['analyses'] = ResumeRevision::whereIn('resume_id', $data['resumes']->modelKeys())
+                ->whereHas('resume', fn ($query) => $query->whereColumn('resumes.current_revision', 'resume_revisions.revision'))
+                ->get()->keyBy('resume_id');
+        }
         if ($page === 'applications') {
-            foreach ($data['demo']['applications'] as &$application) {
-                $job = $this->catalog->find($application['job_id']);
-                $application['can_reapply'] = $application['status'] === 'withdrawn'
-                    && $this->demo->applicationError($job) === null;
-            }
+            $data['applications'] = Application::with(['jobVersion', 'job.company'])->where('candidate_id', auth()->id())->latest('id')->paginate(10);
         }
 
         if ($page === 'profile') {
+            Gate::authorize('viewAny', CandidateProfile::class);
+            $user = $request->user();
+            $profile = $user->candidateProfile;
+            $data['profileData'] = [
+                'name' => $user->name, 'email' => $user->email,
+                'phone' => $profile?->phone, 'location' => $profile?->location,
+                'profession' => $profile?->professional_title, 'experience' => $profile?->experience_summary,
+                'bio' => $profile?->summary,
+            ];
+            $data['hasAvatar'] = app(CandidateProfileService::class)->ownsAvatar($user->id, $profile?->avatar_path);
+            $data['loginMethods'] = $user->google_subject
+                ? ($user->has_local_password ? 'Google và mật khẩu' : 'Google')
+                : 'Email và mật khẩu';
             $data['profileFields'] = [
-                'name' => ['label' => 'Họ và tên', 'type' => 'text', 'required' => true],
-                'email' => ['label' => 'Email', 'type' => 'email', 'required' => true],
-                'phone' => ['label' => 'Số điện thoại', 'type' => 'tel', 'required' => false],
-                'location' => ['label' => 'Địa điểm', 'type' => 'text', 'required' => false],
-                'profession' => ['label' => 'Vị trí chuyên môn', 'type' => 'text', 'required' => false],
-                'experience' => ['label' => 'Kinh nghiệm', 'type' => 'text', 'required' => false],
+                'name' => ['label' => 'Họ và tên', 'type' => 'text', 'required' => true, 'max' => 255],
+                'email' => ['label' => 'Email', 'type' => 'email', 'required' => true, 'max' => 255],
+                'phone' => ['label' => 'Số điện thoại', 'type' => 'tel', 'required' => false, 'max' => 20],
+                'location' => ['label' => 'Địa chỉ / Nơi ở', 'type' => 'text', 'required' => false, 'max' => 100],
+                'profession' => ['label' => 'Vị trí chuyên môn', 'type' => 'text', 'required' => false, 'max' => 100],
+                'experience' => ['label' => 'Kinh nghiệm', 'type' => 'text', 'required' => false, 'max' => 100],
             ];
         }
 
         return view('Candidate.ca_pages.'.$page, $data);
     }
 
+    public function refreshRecommendations(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        app(\App\Services\AIRecommendationService::class)->page($request->user(), [], true);
+
+        return redirect()->route('candidate.recommendations');
+    }
+
+    public function applicationDetail(string $id): View
+    {
+        $application = Application::with(['jobVersion', 'job.company', 'statusHistories'])->where('candidate_id', auth()->id())->where('public_id', $id)->firstOrFail();
+        Gate::authorize('view', $application);
+
+        return view('Candidate.ca_pages.application-detail', $this->sharedData() + [
+            'page' => 'application-detail', 'title' => 'Chi tiết hồ sơ ứng tuyển', 'application' => $application,
+        ]);
+    }
+
     private function sharedData(): array
     {
         $demo = $this->demo->state();
         $demo['active'] = auth()->check() && auth()->user()->role === UserRole::Candidate;
+        $demo['notifications'] = [];
+        if ($demo['active']) {
+            $demo['notifications'] = auth()->user()->notifications()->latest()->limit(100)->get()->map(function ($notification) {
+                return [
+                    'id' => $notification->id, 'read' => $notification->read_at !== null,
+                    'application_id' => $notification->data['application_id'] ?? '',
+                    'status' => $notification->data['status'] ?? 'applied',
+                    'title' => $notification->data['title'] ?? 'Thông báo',
+                    'date' => DisplayDate::format($notification->created_at),
+                ];
+            })->all();
+        }
 
-        return [
-            'jobCategories' => app(JobCategoryCatalog::class)->data(),
+        return $this->publicJobs->navigation() + [
             'jobMenuGroups' => ['industry' => 'lĩnh vực', 'skill' => 'kỹ năng', 'specialtyId' => 'chuyên môn', 'level' => 'cấp bậc', 'company' => 'công ty', 'location' => 'thành phố'],
-            'catalogJobs' => $this->catalog->publicJobs(),
-            'occupationOptions' => app(OccupationCatalog::class)->occupations(),
-            'specialtyOptions' => app(OccupationCatalog::class)->specialties(),
-            'filterOptions' => $this->catalog->filters(),
-            'statusLabels' => $this->catalog->statuses(),
+            'catalogJobs' => $this->publicJobs->query()->latest('published_at')->limit(7)->get()->map(fn ($job) => $this->publicJobs->card($job)),
+            'statusLabels' => $this->catalog->statuses() + ['paused' => 'Tạm dừng'],
+            'savedJobIds' => auth()->user()?->can('viewAny', SavedJob::class)
+                ? SavedJob::where('candidate_id', auth()->id())->pluck('job_id')->map(fn ($id) => (int) $id)->all() : [],
             'demo' => $demo,
-            'unreadNotificationCount' => collect($this->demo->state()['notifications'])->where('read', false)->count(),
+            'unreadNotificationCount' => ($demo['active'] ? auth()->user()->unreadNotifications()->count() : 0),
             'mainResume' => $this->demo->mainResume(),
         ];
     }

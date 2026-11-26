@@ -11,8 +11,11 @@
         <link rel="stylesheet" href="{{ asset('recruiter/css/recruiter.css') }}">
         <link rel="stylesheet" href="{{ asset('css/company-profile.css') }}">
         <link rel="stylesheet" href="{{ asset('recruiter/css/theme.css') }}">
+        @if ($page === 'job-form')
+            <link rel="stylesheet" href="{{ asset('recruiter/css/job-review.css') }}">
+        @endif
     </head>
-    <body data-preview-user="{{ auth()->id() }}" data-recruiter-page="{{ $page }}">
+    <body data-preview-user="{{ auth()->id() }}" data-recruiter-page="{{ $page }}" data-real-jobs="{{ ($realJobs ?? false) ? '1' : '0' }}" data-real-applications="{{ ($realApplications ?? false) ? '1' : '0' }}" data-real-overview="{{ ($realOverview ?? false) ? '1' : '0' }}">
         @include('employer.component.sidebar')
         <div class="main-wrapper">
             @include('employer.component.header')
@@ -31,24 +34,12 @@
                 </nav>
             </div>
             <main id="recruiter-content">
-                <div class="alert alert-light border recruiter-demo-notice" role="note">
-                    <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
-                    Bản demo giao diện. Thao tác trong phiên thử nghiệm, chưa lưu database, gửi Admin, gửi email hoặc xử lý AI thật.
-                </div>
-                <div id="recruiter-feedback" class="alert alert-success" role="status" hidden></div>
-                <div id="recruiter-error" class="alert alert-danger" role="alert" hidden></div>
-                @if (session('company_notice'))
-                    <div class="alert alert-success" role="status">{{ session('company_notice') }}</div>
-                @endif
-                @if ($errors->any())
-                    <div class="alert alert-danger" role="alert">
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                @unless (($realJobs ?? false) || ($realApplications ?? false) || ($realOverview ?? false) || in_array($page, ['company', 'company-form'], true))
+                    <div class="alert alert-light border recruiter-demo-notice" role="note">
+                        <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
+                        Bản demo giao diện. Thao tác trong phiên thử nghiệm, chưa lưu database, gửi Admin, gửi email hoặc xử lý AI thật.
                     </div>
-                @endif
+                @endunless
                 @yield('content')
             </main>
             @include('employer.component.footer')
@@ -59,8 +50,8 @@
             data-dashboard="{{ route('recruiter.dashboard') }}"
             data-company="{{ route('recruiter.company') }}"
             data-company-create="{{ route('recruiter.company-create') }}"
-            data-job-edit="{{ route('recruiter.job-edit') }}"
-            data-job-detail="{{ route('recruiter.job-detail') }}"
+            data-job-edit="{{ route('recruiter.jobs') }}"
+            data-job-detail="{{ route('recruiter.jobs') }}"
             data-jobs="{{ route('recruiter.jobs') }}"
             data-applications="{{ route('recruiter.applications') }}"
             data-application-detail="{{ route('recruiter.application-detail') }}">
@@ -76,6 +67,13 @@
         <script src="{{ asset('recruiter/js/recruiter-categories.js') }}"></script>
         <script src="{{ asset('recruiter/js/company-profile-form.js') }}"></script>
         <script src="{{ asset('recruiter/js/recruiter.js') }}"></script>
+        @if ($realApplications ?? false)
+            <script src="{{ asset('recruiter/js/application-actions.js') }}"></script>
+        @endif
+        @if ($page === 'job-form')
+            <script src="{{ asset('recruiter/js/job-review.js') }}"></script>
+        @endif
         <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
+        @include('shared.form-validation')
     </body>
 </html>

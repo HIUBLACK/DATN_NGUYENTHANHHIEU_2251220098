@@ -72,8 +72,8 @@ try {
 
     verify(Artisan::call('migrate', ['--database' => 'schema_test', '--force' => true]) === 0, 'Business migrations');
     $tables = array_map(fn ($row) => array_values((array) $row)[0], DB::select('SHOW TABLES'));
-    verify(count($tables) === 32, 'Exactly 32 tables');
-    $expected = explode(' ', 'users candidate_profiles companies industries job_categories job_specializations skills job_levels jobs job_versions job_version_skills job_moderation_logs resumes resume_revisions resume_skills applications application_status_histories application_notes saved_jobs recommendation_runs recommendation_items application_ai_evaluations activity_logs notifications queue_jobs failed_jobs job_batches cache cache_locks password_reset_tokens migrations sessions');
+    verify(count($tables) === 27, 'Exactly 27 tables');
+    $expected = explode(' ', 'users candidate_profiles companies jobs job_versions job_version_skills job_moderation_logs resumes resume_revisions resume_skills applications application_status_histories application_notes saved_jobs recommendation_runs recommendation_items application_ai_evaluations activity_logs notifications queue_jobs failed_jobs job_batches cache cache_locks password_reset_tokens migrations sessions');
     sort($tables);
     sort($expected);
     verify($tables === $expected, 'Exact approved table inventory');
@@ -93,12 +93,11 @@ try {
     $recruiter = insertRow('users', ['name' => 'Recruiter', 'email' => 'recruiter@test.invalid', 'password' => 'test-only', 'role' => 'recruiter']);
     $admin = insertRow('users', ['name' => 'Admin', 'email' => 'admin@test.invalid', 'password' => 'test-only', 'role' => 'admin']);
     rejects(fn () => DB::table('users')->where('id', $candidate)->update(['role' => 'invalid']), 'Role CHECK');
-    $catalog = ['code' => 'TEST', 'name' => 'Test', 'normalized_name' => 'test', 'slug' => 'test'];
-    $industry = insertRow('industries', $catalog);
-    $level = insertRow('job_levels', $catalog);
-    $category = insertRow('job_categories', $catalog);
-    $specialization = insertRow('job_specializations', $catalog + ['job_category_id' => $category]);
-    $skill = insertRow('skills', ['code' => 'PHP', 'name' => 'PHP', 'normalized_name' => 'php']);
+    $industry = 1;
+    $level = 1;
+    $category = 1;
+    $specialization = 1;
+    $skill = 100;
     $company = insertRow('companies', [
         'public_id' => (string) Str::uuid(), 'recruiter_id' => $recruiter, 'name' => 'Test Company',
         'slug' => 'test-company', 'office_images' => '[]', 'email' => 'company@test.invalid', 'phone' => '0900000000', 'address' => 'Test',
@@ -180,12 +179,9 @@ try {
     DB::table('users')->where('id', $concurrentCandidate)->delete();
     DB::purge('schema_competing');
 
-    // All business fixtures were rolled back. The queue sentinel must survive down/up.
-    verify(Artisan::call('migrate:rollback', ['--database' => 'schema_test', '--force' => true]) === 0, 'Rollback empty business tables');
-    verify(DB::table('jobs')->find($queueId)->payload === $payload, 'Queue preserved on rollback');
-    verify(count(DB::select('SHOW TABLES')) === 9, 'Rollback returns to baseline schema');
-    verify(Artisan::call('migrate', ['--database' => 'schema_test', '--force' => true]) === 0, 'Migrations run again');
-    echo "PASS: $assertions assertions on $version; fresh install, queue preservation, constraints, rollback and reapply.\n";
+    // Bản chuyển danh mục là một chiều; kiểm tra queue vẫn giữ nguyên sau migration.
+    verify(DB::table('queue_jobs')->find($queueId)->payload === $payload, 'Queue preserved');
+    echo "PASS: $assertions assertions on $version; fresh install, queue preservation and constraints.\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, $exception->getMessage()."\n".Artisan::output());
     $failed = true;

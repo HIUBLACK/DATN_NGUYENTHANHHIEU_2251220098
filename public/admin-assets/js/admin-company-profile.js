@@ -27,7 +27,6 @@ window.renderAdminCompanyProfile = function (company) {
     }
 
     const logo = safeUrl(company.logo_url);
-    const cover = safeUrl(company.cover_url);
     const website = safeUrl(company.website);
     const gallery = (company.gallery_urls || []).map(safeUrl).filter(Boolean);
 
@@ -38,9 +37,6 @@ window.renderAdminCompanyProfile = function (company) {
                 Doanh nghiệp đang bị khóa. Hồ sơ vẫn hiển thị để Admin kiểm tra; tin tuyển dụng không đủ điều kiện công khai.
             </div>` : ''}
         <article class="company-profile">
-            ${cover ? `
-                <img class="company-cover" src="${cover}" alt="Ảnh bìa doanh nghiệp minh họa">
-            ` : '<div class="company-cover company-cover-placeholder" aria-hidden="true"></div>'}
             <header class="company-profile-heading">
                 ${logo ? `
                     <img class="company-profile-logo" src="${logo}" alt="Logo ${escape(company.name)}">
@@ -48,8 +44,6 @@ window.renderAdminCompanyProfile = function (company) {
                 <div>
                     <div class="mb-2">${badge(company.status)}</div>
                     <h2>${escape(company.name)}</h2>
-                    <p class="text-muted mb-2">${escape(company.short_name || 'Chưa cập nhật tên viết tắt')}</p>
-                    <p class="mb-0">${escape(company.summary || 'Chưa cập nhật mô tả ngắn')}</p>
                 </div>
             </header>
             <div class="company-profile-body">
@@ -69,7 +63,6 @@ window.renderAdminCompanyProfile = function (company) {
                         ${fact('Lĩnh vực', company.industry)}
                         ${fact('Mô hình công ty', company.company_type)}
                         ${fact('Quy mô nhân sự', company.size)}
-                        ${fact('Năm thành lập', company.founded_year)}
                         ${fact('Quốc gia', company.country)}
                         ${fact('Địa chỉ', company.address)}
                         <div>
@@ -86,9 +79,8 @@ window.renderAdminCompanyProfile = function (company) {
                         Môi trường làm việc
                     </h3>
                     ${environment('Thời gian làm việc', company.working_hours)}
+                    ${environment('Giới thiệu môi trường làm việc', company.work_environment)}
                     ${environment('Chính sách làm thêm giờ (OT)', company.overtime_policy)}
-                    ${environment('Phúc lợi nổi bật', company.benefits)}
-                    ${environment('Công nghệ sử dụng', company.technologies)}
                 </section>
                 <section>
                     <h3>

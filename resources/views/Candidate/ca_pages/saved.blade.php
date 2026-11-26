@@ -3,14 +3,14 @@
 @section('content')
     <section class="site-section">
         <div class="container">
-            @include('Candidate.demo-notice')
             @forelse ($savedJobs as $savedJob)
-                @if ($savedJob)
+                <p class="small text-muted">Đã lưu: {{ \App\Support\DisplayDate::format($savedJob['saved_at']) }}</p>
+                @if ($savedJob['card'])
                     <ul class="job-listings mb-3">
-                        @include('Candidate.job-row', ['job' => $savedJob])
+                        @include('Candidate.job-row', ['job' => $savedJob['card']])
                     </ul>
-                    @if ($savedJob['status'] === 'open')
-                        <a href="{{ route('jobs.show', $savedJob['id']) }}" class="btn btn-primary text-white mb-4">Xem và ứng tuyển</a>
+                    @if ($savedJob['card']['can_view'])
+                        <a href="{{ route('jobs.show', $savedJob['job_id']) }}" class="btn btn-primary text-white mb-4">Xem và ứng tuyển</a>
                     @else
                         <button class="btn btn-light mb-4" disabled>Không nhận ứng tuyển</button>
                     @endif
@@ -18,8 +18,9 @@
                     <div class="bg-light p-4 border rounded mb-3">
                         <h2 class="h5">Công việc không khả dụng</h2>
                         <p>Tin đã được ẩn. Nội dung chi tiết không được công khai.</p>
-                        <form action="{{ route('candidate.save', 999) }}" method="post">
+                        <form action="{{ route('candidate.unsave', $savedJob['job_id']) }}" method="post">
                             @csrf
+                            @method('DELETE')
                             <button class="btn btn-light">Bỏ lưu</button>
                         </form>
                     </div>
@@ -27,13 +28,7 @@
             @empty
                 @include('Candidate.empty-state', ['emptyTitle' => 'Chưa có việc làm đã lưu'])
             @endforelse
-            <details class="mt-4">
-                <summary>Kiểm tra tin không khả dụng</summary>
-                <form action="{{ route('candidate.save', 999) }}" method="post" class="mt-3">
-                    @csrf
-                    <button class="btn btn-light">Thêm/bỏ tin ẩn minh họa</button>
-                </form>
-            </details>
+            {{ $savedJobs->links('pagination::bootstrap-4') }}
         </div>
     </section>
 @endsection

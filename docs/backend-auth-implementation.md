@@ -48,7 +48,7 @@ Phần Auth email/mật khẩu không thêm package. Google OAuth được tri�
 | POST | /dang-xuat | logout | auth, CSRF |
 | POST | /tai-khoan/doi-mat-khau | password.change | auth, auth.session, throttle:5,1, CSRF |
 
-GET quên/đặt lại mật khẩu vẫn tồn tại nhưng thông báo rõ chưa hỗ trợ gửi email; không giả lập thành công. Không có GET đăng xuất. Endpoint `/demo/tai-khoan/{mode}` đã bỏ.
+Quên/đặt lại mật khẩu đã được bổ sung backend tại mục 10; gửi email chỉ bật khi SMTP được cấu hình. Không có GET đăng xuất. Endpoint `/demo/tai-khoan/{mode}` đã bỏ.
 
 Theo quyết định chính thức, `/login` là trang đăng nhập chung cho Candidate/Recruiter/Admin; không tạo `/admin/login`. `/register` dùng Blade riêng, không kế thừa trang login và không dùng modal/tab. Hai trang chỉ liên kết qua thẻ a; tái sử dụng partial trường nhập/CSS hiện có. Trang login không có lựa chọn vai trò; trang register chỉ có Candidate/Recruiter. Liên kết quên mật khẩu được ẩn vì chức năng email chưa triển khai. GET `/dang-nhap` và `/dang-ky` chuyển hướng tới URL mới để giữ liên kết cũ; các form POST dùng URL mới.
 
@@ -149,7 +149,7 @@ Kết quả: **13 tests JavaScript — đạt**. Kiểm tra cú pháp các JavaS
 
 ## 8. Giới hạn và bước tiếp theo
 
-- Quên mật khẩu email chưa triển khai vì chưa xác nhận hạ tầng gửi mail vận hành; giao diện không báo gửi thành công giả.
+- Backend quên mật khẩu đã triển khai ở mục 10; Gmail SMTP đã xác thực kết nối thành công và chức năng gửi đã bật. Chưa gửi email kiểm thử thật.
 - Không tạo Admin mặc định. Người vận hành dùng `php artisan admin:create` để cấp Admin thủ công trước khi sử dụng khu vực Admin.
 - Các script trình duyệt trước đây truy cập trực tiếp trang demo bảo vệ cần được cấp phiên/tài khoản thử nghiệm trước khi dùng lại.
 - Tiếp theo: CRUD doanh nghiệp thật với authorize; quản lý phiên bản tin và kiểm duyệt; CV/revision/snapshot và ứng tuyển với Service, transaction và Policy tương ứng. Chưa tích hợp FastAPI/AI trong giai đoạn này.
@@ -200,7 +200,7 @@ Socialite Google driver sử dụng OAuth 2.0/OpenID Connect với openid/profil
 - Subject đã liên kết: lấy User theo subject, khóa và đọc lại trạng thái Active, cập nhật last_login_at rồi Laravel Auth login(false), invalidate/regenerate session và điều hướng theo role database. Không ghi đè email tài khoản chỉ vì Google đổi email.
 - Subject mới nhưng email đã tồn tại: từ chối tự đăng nhập/tạo/liên kết; hướng dẫn đăng nhập phương thức hiện có rồi chủ động liên kết từ trang tài khoản.
 - Subject và email mới: lưu pending tối thiểu đã mã hóa (subject/email/name/expiry) trong server session tối đa 10 phút; không tạo User ngay. Người dùng chọn Candidate hoặc Recruiter, POST có CSRF mới tạo trong transaction. Candidate tạo thêm CandidateProfile; Recruiter không tự tạo Company. Form và Service đều cấm Admin.
-- Tạo tài khoản: kiểm tra lại email/subject trong transaction và bắt UNIQUE violation nếu request đồng thời; mật khẩu là hash của 32 byte random_bytes mã hóa hex, không công bố hoặc gửi plaintext. Không có mật khẩu mặc định có thể đoán. Tài khoản Google-only tiếp tục dùng Google; luồng tự đặt mật khẩu mới chưa thuộc phạm vi, form đổi mật khẩu hiện tại vẫn yêu cầu mật khẩu cũ.
+- Tạo tài khoản: kiểm tra lại email/subject trong transaction và bắt UNIQUE violation nếu request đồng thời; mật khẩu là hash của 32 byte random_bytes mã hóa hex, không công bố hoặc gửi plaintext. Không có mật khẩu mặc định có thể đoán. Google-only có thể thiết lập mật khẩu sau Google re-auth theo mục 11 hoặc dùng reset email; tài khoản đã có mật khẩu vẫn yêu cầu mật khẩu hiện tại khi đổi.
 - Liên kết: nhập mật khẩu hiện tại, lưu Auth ID và dấu vân tay hash mật khẩu vào context 10 phút; callback kiểm tra vẫn đúng user/active/mật khẩu chưa đổi. Transaction khóa User và từ chối subject thuộc người khác hoặc ghi đè identity khác. Không đổi email, password hoặc role. Chưa có unlink để tránh mất phương thức đăng nhập duy nhất.
 - State sai/mất, callback lặp, access_denied, flow hết hạn, provider lỗi hoặc email chưa xác minh: thông báo an toàn, không login; xóa flow/pending/state. Session lock cùng unique index chống callback/form lặp và request đồng thời. Mỗi callback tiêu thụ context trước khi xử lý.
 - Email login, logout, OAuth login xóa trạng thái Google cũ. Callback response có no-store/private và Referrer-Policy no-referrer. Không lưu access/refresh/ID token/code vào database, pending hoặc log; exception provider bị xử lý bằng thông báo chung.
@@ -243,7 +243,195 @@ HTTP tới Google dùng Guzzle MockHandler với Socialite provider thật trong
 
 ### 9.7. Giới hạn còn lại
 
-- Chưa triển khai đặt mật khẩu lần đầu cho Google-only, unlink, nhiều Google identity/User hoặc provider khác.
+- Google-only password setup đã bổ sung tại mục 11; chưa có unlink, nhiều Google identity/User hoặc provider khác.
 - Không thay nghiệp vụ demo bằng CRUD thật; không thêm AI hoặc bảng OAuth riêng.
 - Composer audit đã báo 8 advisory trên 5 package có sẵn: laravel/framework, symfony/http-foundation, symfony/http-kernel, symfony/routing, symfony/yaml; không có advisory được báo cho 6 package mới. Không tự nâng framework ngoài phạm vi; cần đánh giá cập nhật trước vận hành.
 - Schema đã được phê duyệt và áp dụng; không còn chờ phê duyệt phần google_subject. Việc thay Client Secret và xác nhận Google Cloud/đăng nhập thật là thao tác cấu hình phía chủ tài khoản.
+
+## 10. Giai đoạn 2.2 — Password Recovery và đề xuất Google-only Password Setup
+
+Trạng thái cập nhật sau phê duyệt: **khôi phục email và Google-only password setup đã triển khai**. Gmail SMTP đã xác thực kết nối; chưa kiểm chứng email tới hộp thư và Google re-auth thật trên trình duyệt. Kết quả cuối tại mục 11.
+
+### 10.1. Khảo sát và phạm vi đã thực hiện
+
+Password Broker users hiện dùng password_reset_tokens(email PK, token, created_at), expire=60 phút và throttle=60 giây. User kế thừa CanResetPassword của Laravel. Bảng sessions dùng database driver và Auth hiện tại đã có cơ chế thu hồi khi đổi mật khẩu. Không thêm hệ thống token, bảng hoặc package mới.
+
+Chỉ đọc số lượng bản ghi database chính: 4 User, trong đó 2 có Google subject tại thời điểm khảo sát. Mật khẩu thật và mật khẩu ngẫu nhiên đều là hash, không thể phân biệt đáng tin cậy. Không đọc/in mật khẩu/token/SMTP secret vào báo cáo. Không có migration, backfill hoặc dữ liệu thử trên db_job trong giai đoạn này.
+
+### 10.2. File tạo/sửa
+
+Tạo mới:
+
+- app/Services/PasswordRecoveryService.php.
+- app/Http/Controllers/PasswordRecoveryController.php.
+- app/Http/Requests/Auth/ForgotPasswordRequest.php và ResetPasswordRequest.php.
+- app/Notifications/PasswordRecoveryNotification.php (kế thừa notification reset chính thức).
+- tests/Auth/PasswordRecoveryTest.php.
+
+Chỉnh sửa:
+
+- routes/web.php: bốn route chuẩn, guest, CSRF/throttle và redirect URL cũ.
+- config/auth.php, .env.example: PASSWORD_RECOVERY_ENABLED mặc định false.
+- config/mail.php: timeout SMTP 10 giây; không đưa credential vào source.
+- app/Providers/AppServiceProvider.php: limiter theo IP và email chuẩn hóa/hash.
+- bootstrap/app.php: không flash token/password/current_password/password_confirmation.
+- app/Services/AuthService.php: đổi mật khẩu thông thường cũng hủy reset token còn tồn tại.
+- Candidate views ca_pages/forgot.blade.php, reset.blade.php, login.blade.php: form phục hồi thật và liên kết chỉ hiển thị khi đủ cấu hình.
+- tests/Auth/AuthenticationTest.php, GoogleAuthenticationTest.php: cập nhật redirect cũ và hồi quy Google sau reset.
+- docs/backend-auth-implementation.md: báo cáo phần độc lập và phương án phân loại; thiết kế database/ERD đã cập nhật sau phê duyệt ở mục 11.
+
+### 10.3. Routes và quy trình
+
+| Method | Route | Named route |
+| --- | --- | --- |
+| GET | /forgot-password | password.request |
+| POST | /forgot-password | password.email |
+| GET | /reset-password/{token} | password.reset |
+| POST | /reset-password | password.update |
+
+Tất cả dành cho guest. POST có CSRF; gửi mail tối đa 10 lần/phút/IP và 5 lần/giờ/email (kể cả email không tồn tại); broker giới hạn gửi lại token 60 giây. Reset POST tối đa 10 lần/phút/IP. URL tiếng Việt cũ chuyển hướng trang quên mật khẩu mới, không còn form demo reset.
+
+Form Request chuẩn hóa email, kiểm tra mật khẩu tối thiểu 8 ký tự có chữ/số, max 255 và xác nhận khớp. Không chấp nhận redirect URL hoặc Referer làm đích redirect validation; chỉ về named routes nội bộ.
+
+Yêu cầu email gọi Laravel Password Broker sendResetLink với status active, Notification tiếng Việt dùng mailer SMTP trực tiếp. Thông báo cho email tồn tại/không tồn tại/locked/throttled giống nhau: “Nếu email đã được đăng ký, chúng tôi sẽ gửi hướng dẫn đặt lại mật khẩu.” Không xác nhận đã gửi thành công cho một địa chỉ cụ thể. SMTP lỗi giữ thông báo trung tính, rollback token mới; chỉ ghi một warning cố định không kèm exception, credential, địa chỉ email hoặc token. Gửi đồng bộ, không dùng queue/worker và không thay queue_jobs/jobs. Đây là đồng nhất thông báo, không phải cam kết timing của SMTP hoàn toàn bằng nhau.
+
+Token do broker tạo và hash trong password_reset_tokens, thời hạn 60 phút, tiêu thụ sau một lần dùng. Email chứa nút đặt lại, thời hạn và hướng dẫn bỏ qua khi không yêu cầu; không chứa mật khẩu. URL được tạo từ APP_URL cấu hình tin cậy cùng named route, không lấy host/redirect người dùng gửi.
+
+Reset giữ row lock User trong transaction trước khi broker kiểm tra token và đổi mật khẩu; yêu cầu User active. Save hash mới, null remember_token, xóa tất cả database sessions của User; broker xóa token trong cùng transaction. Gửi lại email cũng khóa cùng User để không đua với reset. Không thay email/role/status/google_subject. Không tự đăng nhập; hủy phiên hiện tại/OAuth context, yêu cầu đăng nhập lại. Mở GET liên kết không đổi mật khẩu hoặc đăng nhập. Google-only có thể đặt mật khẩu qua email mà không biết mật khẩu ngẫu nhiên; Google Login sau đó vẫn giữ mật khẩu mới. Reset thành công đồng thời gán has_local_password=true trong transaction theo mục 11; không có setup bypass dựa vào trạng thái suy đoán.
+
+### 10.4. Cấu hình SMTP
+
+Ban đầu môi trường dùng MAIL_MAILER=log và recovery_enabled=false. Sau khi người dùng cung cấp SMTP, đã cấu hình smtp.gmail.com:587 với MAIL_SCHEME=smtp, tên gửi VIEJOB AI, APP_URL=http://localhost:8000 và bật PASSWORD_RECOVERY_ENABLED=true. Kết nối STARTTLS/xác thực SMTP thành công qua transport start/stop; không gửi email thật. Credentials chỉ lưu trong .env được Git ignore, không ghi vào báo cáo. Backend từ chối tạo/gửi token với log, array, failover hoặc roundrobin để tránh đưa email chứa token vào log hoặc báo thành công giả.
+
+Nhập cấu hình của nhà cung cấp vào .env local, không gửi mật khẩu qua chat:
+
+```dotenv
+APP_URL=http://localhost:8000
+PASSWORD_RECOVERY_ENABLED=true
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtp
+MAIL_HOST=<smtp-host>
+MAIL_PORT=587
+MAIL_USERNAME=<smtp-username>
+MAIL_PASSWORD=<smtp-password-or-app-password>
+MAIL_FROM_ADDRESS=<verified-sender>
+MAIL_FROM_NAME="VIEJOB AI"
+```
+
+Laravel 12/Symfony Mailer dùng MAIL_SCHEME: smtp trên port 587 tự thương lượng STARTTLS khi máy chủ hỗ trợ; smtps cho TLS ngay từ kết nối, thường port 465. Dùng thông số đúng của nhà cung cấp, không tắt xác minh TLS để khắc phục lỗi. MAIL_ENCRYPTION không được config hiện tại sử dụng. Có thể dùng SMTP local sandbox để kiểm tra, không mặc định log mailer cho reset.
+
+Sau cập nhật env chạy php artisan config:clear hoặc dựng lại cache theo quy trình deploy. Chỉ bật PASSWORD_RECOVERY_ENABLED khi đã cấu hình SMTP, APP_URL và địa chỉ gửi; kiểm tra này xác nhận cấu hình có mặt, không tự chứng minh SMTP kết nối/gửi thành công. Người dùng đã cung cấp cấu hình Gmail; kiểm tra runtime xác nhận recovery available. Cần đổi App Password đã chia sẻ trong hội thoại và cập nhật trực tiếp .env.
+
+Reset page có Cache-Control no-store/private và Referrer-Policy no-referrer. Trước vận hành cần cấu hình Apache/proxy/APM không ghi đầy đủ URL reset-password/{token} và query callback Google; bộ lọc log Laravel không kiểm soát access log của web server. Không tự thay cấu hình Apache ngoài workspace. Không ghi token/password vào application log hoặc sessionStorage/localStorage; token cũng bị loại khỏi flash old input.
+
+### 10.5. Phương án schema đã được phê duyệt (kế hoạch ban đầu)
+
+Đề xuất **users.has_local_password TINYINT(1) NULL DEFAULT NULL**, CHECK (has_local_password IS NULL OR has_local_password IN (0,1)); không thêm bảng/index/FK, vẫn 32 bảng. Trường được cast boolean nhưng giữ NULL, không fillable, chỉ Service/Command cập nhật.
+
+| Giá trị | Ý nghĩa và cách dùng |
+| --- | --- |
+| 1 / true | Đã biết có mật khẩu người dùng thiết lập; chỉ cho đổi mật khẩu với mật khẩu hiện tại hoặc reset email |
+| 0 / false | Được xác nhận Google-only từ luồng tạo tài khoản Google sau migration; được đề nghị setup bằng Google re-auth |
+| NULL | Nguồn gốc mật khẩu của tài khoản cũ chưa đủ bằng chứng; không được dùng setup để bỏ qua mật khẩu cũ |
+
+Không dùng google_subject khác NULL hoặc cấu trúc hash để gán false. Không dùng timestamp tự dựng hay activity_logs làm nguồn phân loại giả.
+
+Kế hoạch backfill sau duyệt:
+
+1. Thêm nullable không thay password/role/status/subject.
+2. Tài khoản cũ không có Google identity, theo các luồng tạo tài khoản hiện có đều dùng mật khẩu nhập qua form/command: gán true (2 tài khoản ở thời điểm khảo sát; kiểm tra lại trước chạy).
+3. Hai tài khoản đang có Google identity giữ NULL vì có thể là đăng ký Google hoặc liên kết sau đăng ký email. Không tự gán false, không đoán theo role/ngày tạo.
+4. Sau migration: register email/Admin command gán true; register Google gán false; link/login Google không tự thay flag hoặc password.
+5. Email login đúng mật khẩu có thể xác nhận NULL thành true. Đổi mật khẩu, reset email và Google setup thành công phải gán true trong cùng transaction thay hash. Cờ false không được dùng để khóa luồng email reset.
+6. User cũ NULL có thể dùng email reset để chứng minh quyền sở hữu và chuyển thành true. Chỉ chuyển NULL thành false nếu có nguồn gốc đăng ký Google đáng tin cậy đã được xác minh; không dựa trên lời khai/email/subject riêng lẻ.
+
+Thiết lập Google-only sau phê duyệt: nút riêng tại trang tài khoản ba vai trò chỉ khi flag=false và có subject. OAuth re-auth mới dùng context riêng cho password_setup, ràng buộc Auth ID, session, subject và dấu vân tay password; không tái sử dụng context login/link/register. Callback kiểm tra subject đúng tài khoản, active, flag vẫn false và thời hạn. Cấp grant dùng một lần 10 phút; form chỉ mật khẩu mới/xác nhận. POST kiểm tra lại dưới row lock, lưu hash+flag=true, xóa reset token/grant/phiên và bắt đăng nhập lại. Callback replay, form replay, subject khác, status locked hoặc flag true/NULL đều bị từ chối. Google Login về sau giữ hash/flag. Kế hoạch này đã được triển khai sau phê duyệt, xem kết quả mục 11.
+
+### 10.6. Kiểm thử
+
+Bộ MariaDB riêng chạy php tests/Database/models.php --auth, không ghi tài khoản/token thử vào db_job. Kết quả cuối: **85 tests / 1332 assertions đạt**, bao gồm redirect validation không dùng Referer bên ngoài. Pint và git diff --check đạt. Bổ sung kiểm tra trang, URL email, hash token, email trung tính, SMTP error rollback, rate limit, token sai/hết hạn/replay, hash mật khẩu, login cũ/mới, thu hồi session, giữ Google subject/role/status/email, locked, CSRF và không flash/log credential. Có test Admin/Recruiter reset, Google-only reset email và Google login giữ hash mới. Mail dùng Notification::fake; Google HTTP dùng mock. Không gửi SMTP/Google thật.
+
+JavaScript regression: **13 tests đạt** (recruiter-domain, admin-domain, admin-categories). Tests Models và các luồng Auth/Policy/Google cũ vẫn nằm trong bộ tích hợp. Chưa kiểm thử stress nhiều worker; tính một lần được bảo vệ bằng transaction, row lock và broker delete token. Các ca Google-only setup được bổ sung và kiểm thử riêng sau phê duyệt schema ở mục 11; không dùng tests reset email thay thế.
+
+### 10.7. Kiểm thử thủ công và phần còn lại
+
+1. Cấu hình SMTP và sender hợp lệ, APP_URL đúng host, bật recovery; mở /login xác nhận liên kết Quên mật khẩu xuất hiện.
+2. Yêu cầu reset cho tài khoản thử do người vận hành lựa chọn; kiểm tra email tiếng Việt, URL đúng host và thời hạn. Email không tồn tại/locked phải nhận cùng thông báo web.
+3. Mở liên kết không tự đăng nhập; nhập mật khẩu mới; xác nhận đăng nhập mật khẩu cũ thất bại, mật khẩu mới thành công và các phiên cũ bị thu hồi. Thử lại liên kết đã dùng phải thất bại.
+4. Với tài khoản có Google, xác nhận Google Login vẫn hoạt động sau reset và không đổi mật khẩu mới.
+5. Kiểm tra setup độc lập theo mục 11: chỉ Google-only xác định (false) có nút re-auth/setup, true và NULL không được dùng luồng này.
+
+Quyết định tiếp theo đã được người dùng phê duyệt: triển khai has_local_password nullable, giữ unknown cho tài khoản Google cũ; kết quả thực hiện tại mục 11. SMTP đã cấu hình/xác thực nhưng chưa kiểm chứng email tới hộp thư.
+
+## 11. Hoàn tất Google-only Password Setup sau phê duyệt
+
+### 11.1. Schema đã triển khai
+
+Migration `2026_11_17_000000_add_has_local_password_to_users_table.php` đã được diễn tập up/down/up trên MariaDB riêng rồi áp dụng thành công vào db_job. Thêm has_local_password TINYINT(1) NULL DEFAULT NULL và CHECK users_has_local_password_check giới hạn NULL/0/1. Không thêm bảng/index/FK; vẫn **32 bảng**.
+
+Backfill thực tế: **2 tài khoản có mật khẩu (true), 0 Google-only xác định (false), 2 chưa xác định (NULL)**. Chỉ tài khoản cũ không Google được gán true. Hai tài khoản Google cũ giữ NULL vì không đủ bằng chứng phân biệt đăng ký Google với liên kết sau đăng ký email. Tất cả trường User cũ (bao gồm hash mật khẩu, role/status/email/subject) được đối chiếu trước/sau và giữ nguyên. down() từ chối khi tồn tại User để không xóa mất phân loại mật khẩu.
+
+Đăng ký Google mới gán false; đăng ký email và admin:create gán true. Đăng nhập email kiểm tra lại mật khẩu dưới row lock rồi gán true; đổi mật khẩu, reset email và setup thành công cũng gán true. Đăng nhập/liên kết Google không tự đổi mật khẩu hoặc phân loại. User cast boolean giữ NULL và không thêm trường vào fillable. Không suy đoán từ hash hay tạo dữ liệu demo làm nguồn xác thực.
+
+### 11.2. Luồng thiết lập mật khẩu
+
+Cả ba trang tài khoản sử dụng partial auth/account-password:
+
+- false + Google subject + active: hiển thị Thiết lập mật khẩu và nút Xác thực lại Google; không yêu cầu mật khẩu cũ.
+- true: giữ form Đổi mật khẩu yêu cầu mật khẩu hiện tại.
+- NULL: giữ form đổi mật khẩu an toàn, kèm hướng dẫn đăng xuất rồi dùng Quên mật khẩu nếu không biết/chưa có mật khẩu. Không cấp setup qua Google cho trạng thái chưa xác định.
+
+POST bắt đầu setup tạo context server-side **google_setup_flow riêng biệt** và xóa context login/register/link/grant cũ. Flow ràng buộc Auth ID, Google subject, session ID, SHA-256 của hash mật khẩu và thời hạn 10 phút. Socialite tạo state mới; yêu cầu Google hiển thị lựa chọn tài khoản qua prompt=select_account. Đây là OAuth challenge mới; website không kiểm soát việc Google yêu cầu nhập lại mật khẩu Google hay sử dụng phiên Google sẵn có.
+
+Callback chung phân nhánh setup chỉ khi có google_setup_flow trong session. Flow bị tiêu thụ ngay; kiểm tra session, tài khoản, active/false và hạn trước khi gọi provider. Socialite xác minh state. Chỉ khi sub khớp chính xác subject hiện tại và email_verified=true, sau đọc lại User, mới cấp google_setup_grant dùng một lần 10 phút. Không nhận user_id/subject từ client làm nguồn quyền; không tái dùng kết quả login Google.
+
+Form mới yêu cầu mật khẩu ≥8 ký tự, chữ và số, xác nhận khớp. Validation không làm mất grant nếu người dùng nhập chưa đạt. POST hoàn tất kéo grant khỏi session, lock User và kiểm tra lại mọi ràng buộc; lưu hash mới + true + remember_token=NULL trong transaction, xóa password reset token và các database sessions của user. Sau commit logout/invalidate/CSRF regenerate, yêu cầu đăng nhập lại. Mật khẩu mới dùng được qua email; Google login vẫn hoạt động và không ghi đè mật khẩu mới.
+
+State/callback sai, Google bị từ chối, subject khác, context/phiên/tài khoản đổi, flag true/NULL, tài khoản locked hoặc quyền hết hạn đều bị từ chối. Callback replay xóa grant còn lại, submit replay không đổi mật khẩu lần nữa. Không thêm unlink hoặc thay role/Policy.
+
+### 11.3. Routes và file
+
+| Route | Named route | Bảo vệ |
+| --- | --- | --- |
+| POST /account/password/setup/google | password.setup.google | auth, auth.session, active, CSRF, limiter 5/phút/user, session lock |
+| GET /auth/google/callback | google.callback | callback hiện có; dispatch setup riêng theo server session, state Socialite |
+| POST /account/password/setup | password.setup.complete | auth, auth.session, active, CSRF, limiter 5/phút/user riêng, session lock, Form Request, grant |
+
+Hai limiter setup dùng key riêng để không cộng nhầm bộ đếm bắt đầu flow và lưu mật khẩu. Không cần khai báo callback URL mới trong Google Cloud.
+
+Tạo mới:
+
+- Migration nêu tại mục 11.1.
+- app/Services/GooglePasswordSetupService.php.
+- app/Http/Controllers/GooglePasswordSetupController.php.
+- app/Http/Requests/Auth/GooglePasswordSetupRequest.php.
+- resources/views/auth/account-password.blade.php.
+- tests/Auth/GooglePasswordSetupTest.php.
+
+Chỉnh sửa: User casts; CreateAdmin; AuthService/GoogleAuthService/PasswordRecoveryService để gán cờ đúng thời điểm và hủy quyền chờ; GoogleAuthController dispatch callback; routes/web.php và AppServiceProvider; Candidate settings, Recruiter/Admin account dùng partial mới; tests Auth/Google/Recovery; tests/Database/models.php và tests/Auth/phpunit.xml; database-design.md, database-erd.mmd, database-implementation.md và báo cáo này.
+
+### 11.4. Kiểm thử và cách chạy
+
+Trước triển khai dùng `php tests/Database/models.php --auth --pending-password-setup`; runner diễn tập rollback cột trên database test rỗng để so sánh baseline, sau đó migrate lại và chạy tests. Sau triển khai dùng `php tests/Database/models.php --auth`. Tuyệt đối không chạy migrate:fresh/db:wipe trên db_job.
+
+Kết quả trước và sau triển khai migration: **97 tests / 1459 assertions đạt**; **13 tests JavaScript đạt**; Pint và git diff --check đạt. Lần chạy sau xác nhận schema db_job khớp migration đầy đủ và database chính không bị thay đổi trong quá trình tests. Tests mới bao phủ:
+
+- Setup trọn luồng không biết mật khẩu ngẫu nhiên; đổi hash + flag, giữ email/role/status/subject, thu hồi grant/reset token/phiên cũ, đăng xuất, email login và Google login sau setup.
+- Từ chối true/NULL, subject sai/state sai, callback replay, grant replay, flow/grant hết hạn, session rotate/account switch, khóa tài khoản và đổi password/flag sau re-auth.
+- CSRF, mật khẩu yếu, giao diện ba vai trò và password confirmation.
+- Backfill chỉ tài khoản không Google; NULL giữ nguyên cho Google cũ; CHECK từ chối 2; không mass assign; rollback chặn khi có User và vẫn 32 bảng.
+- Các luồng email register/Admin create/email login/change/reset đều đánh dấu true, Google register đánh dấu false.
+
+Socialite provider dùng HTTP mock. Tests mail dùng Notification::fake; runner ép MAIL_MAILER=array và SMTP host giả, xóa credential SMTP khỏi môi trường subprocess để không kế thừa Gmail thật. PHPunit cũng force recovery off mặc định; test recovery bật config riêng cùng fake notification. Bộ kiểm thử không gửi SMTP hoặc gọi Google thật. Gmail connection/auth đã được kiểm tra ở bước trước, không gửi email.
+
+Chưa stress test nhiều worker; quyền một lần được kiểm tra lại dưới row lock, flag và session lock. Chưa kiểm chứng Google re-auth thật trên trình duyệt hoặc email tới hộp thư.
+
+### 11.5. Hướng dẫn sử dụng và điểm cần lưu ý
+
+1. Google-only mới: đăng ký Google, chọn Candidate/Recruiter, mở Cài đặt/Tài khoản → Thiết lập mật khẩu → Xác thực lại Google. Chọn đúng tài khoản, tạo và xác nhận mật khẩu trong 10 phút, sau đó đăng nhập lại.
+2. Tài khoản đã có mật khẩu: dùng Đổi mật khẩu với mật khẩu hiện tại; nếu quên, đăng xuất và mở /forgot-password.
+3. **Hai tài khoản Google cũ đang NULL không hiện nút setup Google-only.** Hãy dùng reset email để chứng minh quyền truy cập và gán true, hoặc đăng nhập email với mật khẩu đã biết. Không sửa cờ false thủ công chỉ vì tài khoản có Google subject.
+4. Sau reset/setup, kiểm tra cả email login và Google login; thử lại callback/grant cũ phải bị từ chối. Cần kiểm tra thêm thông qua Google Cloud/test users trên trình duyệt của người vận hành.
+5. SMTP và OAuth secret chỉ có trong .env; thay các secret đã chia sẻ trong hội thoại. Web server/proxy/APM phải không ghi token trong URL reset hoặc code/query OAuth như mục 10.4.
+
+Không còn phần schema/setup chờ phê duyệt. Các giới hạn còn lại là kiểm thử tích hợp với dịch vụ thật và chính sách vận hành đã nêu; không triển khai CRUD/AI ngoài phạm vi.

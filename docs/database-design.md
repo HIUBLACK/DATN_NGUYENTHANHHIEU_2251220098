@@ -1,6 +1,39 @@
-# Thiết kế database VIEJOB AI
+﻿# Thiết kế database VIEJOB AI
 
-**Thiết kế đã chốt: 24 bảng nghiệp vụ + 8 bảng hạ tầng. Schema đã triển khai ngày 15/11/2026 sau khi người dùng cho phép.** Xem [báo cáo triển khai, kiểm thử và giới hạn](database-implementation.md). Mục 1 ghi hiện trạng tại thời điểm khảo sát trước triển khai; các quy tắc Service/Policy dưới đây vẫn là yêu cầu cho giai đoạn backend tiếp theo. ERD tổng thể ở mục 12 và [database-erd.mmd](database-erd.mmd).
+**Làm sạch dữ liệu ngày 25/11/2026:** theo yêu cầu người dùng, đã xóa dữ liệu nghiệp vụ để nhập lại và thử AI, chỉ giữ 8 tài khoản cùng lịch sử migration. Các file sao lưu cũ đã xóa. Danh mục code được chuẩn hóa tên, không còn cần ánh xạ dữ liệu database cũ. Cấu trúc vẫn 27 bảng; xem cập nhật mới nhất trong [báo cáo danh mục](cac-thay-doi-danh-muc-co-dinh.md). Các nội dung bảo toàn dữ liệu/backup bên dưới mô tả đợt chuyển đổi trước lần làm sạch này.
+
+**Cập nhật ngày 25/11/2026: 19 bảng nghiệp vụ + 8 bảng hạ tầng = 27 bảng.** Theo yêu cầu mới, bỏ quản lý danh mục Admin và 6 bảng `industries`, `job_categories`, `job_specializations`, `skills`, `job_levels`, `job_positions`. Các lựa chọn chuyển sang `config/job-catalog.php`; `App\Support\JobCatalog` đọc danh sách này.
+
+### Cập nhật địa chỉ ngày 26/11/2026
+
+Đã áp dụng migration `2026_11_26_100000_add_administrative_address_codes` theo phê duyệt. Tổng số bảng vẫn **27**.
+
+| Cột bổ sung | Kiểu dữ liệu | Cho phép NULL | Ý nghĩa |
+| --- | --- | --- | --- |
+| `companies.province_code` | VARCHAR(2) | Có | Mã tỉnh/thành của doanh nghiệp tại Việt Nam |
+| `companies.ward_code` | VARCHAR(5) | Có | Mã xã/phường/đặc khu của doanh nghiệp |
+| `job_versions.ward_code` | VARCHAR(5) | Có | Mã xã/phường/đặc khu của phiên bản tin |
+
+- `job_versions.province_code` VARCHAR(2) nullable đã tồn tại, không tạo lại. Ba cột mới không có PK, FK, UNIQUE, CHECK hoặc index bổ sung; mã lưu dạng chuỗi để giữ số 0 đầu.
+- Danh mục tỉnh/xã nằm trong `resources/data/vietnam-administrative-address.json`, không có bảng hành chính. Backend kiểm tra mã hợp lệ và xã thuộc đúng tỉnh qua `VietnamAddress`.
+- `companies.address` VARCHAR(255) và `job_versions.location` VARCHAR(150) giữ nguyên kiểu dữ liệu, dùng lưu **số nhà, tên đường**. Tên xã/tỉnh chỉ ghép khi hiển thị qua `full_address`/`full_location`, không ghi ngược chuỗi ghép vào database.
+- Doanh nghiệp tại Việt Nam bắt buộc chọn tỉnh/xã khi lưu; quốc gia khác nhập địa chỉ tự do và hai mã để NULL. Tin nháp được phép thiếu mã; gửi duyệt cần đủ tỉnh/xã. Pending cũ thiếu mã xã được giữ tương thích, không sửa nội dung lịch sử.
+- Địa chỉ cũ thiếu mã được giữ nguyên, không suy đoán xã, không backfill phiên bản đã duyệt. Không thêm quan hệ Eloquent tới danh mục tỉnh/xã; dùng helper đọc JSON.
+- Không đổi published pointer, kết quả AI, FK hiện hữu hoặc cơ chế phiên bản. Migration rollback từ chối bỏ cột nếu còn dữ liệu mã địa chỉ.
+- Cập nhật ô lương chỉ thuộc giao diện; `salary_min`/`salary_max` vẫn DECIMAL(15,2), không thêm hoặc đổi cột.
+
+Chi tiết nguồn danh mục và giới hạn đối chiếu cấp xã: [báo cáo địa chỉ](vietnam-administrative-address-implementation.md).
+
+### Quyết định hiện hành về danh mục cố định
+
+- Giữ nguyên mã lựa chọn đã lưu. Các cột `companies.industry_id`, `job_versions.industry_id/job_specialization_id/job_level_id/job_position_id`, `job_version_skills.skill_id`, `resume_skills.skill_id` là **mã trong code**, không còn FK tới bảng danh mục. Kiểu dữ liệu, NULL, index và UNIQUE còn lại giữ nguyên.
+- Bỏ 8 FK tới danh mục (gồm FK nội bộ chuyên môn → nhóm nghề), không thay FK JobVersion, CV revision, ứng tuyển hoặc published pointer.
+- Lĩnh vực, vị trí, chuyên môn, cấp bậc và kỹ năng được kiểm tra tại backend bằng danh sách cố định. Nhóm nghề suy ra từ chuyên môn. Không có API thêm/sửa/ẩn danh mục.
+- Quan hệ Eloquent tới bảng danh mục được thay bằng accessor chỉ đọc. `JobVersion::skillRequirements()` và `Resume::skills()` vẫn là quan hệ với bảng nghiệp vụ. `JobVersion::$skills` trả danh sách tên/mã từ code cùng pivot đã lưu.
+- Không đổi/tái sử dụng mã, không chuyển nhóm chuyên môn đã dùng; muốn bổ sung thì thêm mã mới. Ghi SQL trực tiếp phải tuân thủ danh sách này vì không còn FK kiểm tra mã danh mục.
+- Migration chuyển đổi kiểm tra tên/mã/nhóm cũ, sao lưu JSON gồm DDL và các dòng danh mục vào private storage trước khi bỏ bảng. Không tự rollback; phục hồi cần đối chiếu cả lựa chọn mới đã được sử dụng.
+- Tài liệu khảo sát và quyết định cũ bên dưới là lịch sử theo thời điểm. Mục này và ERD hiện hành thay thế các quy định cũ về CRUD, trạng thái danh mục và FK tới 6 bảng đã bỏ. Xem [báo cáo thay đổi](cac-thay-doi-danh-muc-co-dinh.md).
+
 
 ## 1. Kết quả phân tích hiện trạng
 
@@ -86,6 +119,8 @@ Giữ `id ID`, `name/email/password V(255)`, `email_verified_at TIMESTAMP?`, `re
 
 Bổ sung Google OAuth đã được phê duyệt ngày 16/11/2026: `google_subject VARCHAR(255) CHARACTER SET ascii COLLATE ascii_bin NULL`, UNIQUE `users_google_subject_unique`. Lưu sub ổn định do Google xác minh, không dùng email làm identity; một Google account liên kết tối đa một User. Nhiều User có NULL được phép. Không thêm bảng, vẫn 24 nghiệp vụ + 8 hạ tầng. Không backfill/liên kết tự động theo email. Model ẩn google_subject và không mass assign; Service gán explicit. Password vẫn NOT NULL: đăng ký Google mới dùng hash chuỗi ngẫu nhiên mật mã, không có mật khẩu mặc định được công bố. Không lưu OAuth token/code vào schema. Liên kết tài khoản cũ phải xác nhận mật khẩu và hoàn tất Google state trong cùng phiên.
 
+Bổ sung Giai đoạn 2.2 đã được phê duyệt: `has_local_password TINYINT(1) NULL DEFAULT NULL`, CHECK `users_has_local_password_check` giới hạn NULL/0/1. True: đã biết có mật khẩu người dùng; false: Google-only được xác định từ luồng đăng ký mới; NULL: chưa đủ nguồn gốc. Không index/FK/bảng mới; không fillable, cast boolean giữ NULL. Backfill tài khoản không Google thành true, tài khoản có Google cũ giữ NULL. Đăng ký email/Admin=true, Google mới=false; login Google/link không đổi cờ. Email login thành công, đổi/reset/setup mật khẩu cập nhật true; không suy đoán từ hash/email/Google subject. Google re-auth setup chỉ dành cho false + active + subject; true/NULL không được bỏ qua mật khẩu cũ. Rollback cột bị chặn khi tồn tại User để bảo toàn phân loại.
+
 UNIQUE(email); INDEX(role,status,id). CHECK role candidate/recruiter/admin; status active/locked. User cũ: thêm role nullable, mapping/backfill có kiểm tra rồi NOT NULL; không tự gán vai trò. Không hard delete tài khoản có nghiệp vụ. Role phù hợp với company/profile kiểm tra Service, FK không kiểm tra role.
 
 ### 4.2 candidate_profiles — mới
@@ -96,14 +131,14 @@ FK user_id→users.id; UNIQUE(user_id). Các ? là input không bắt buộc. Kh
 
 ### 4.3 companies — mới
 
-`id ID`, `public_id UUID`, `recruiter_id`, `name V(150)`, `short_name V(80)?`, `slug V(160)`, `logo_path V(255)?`, `cover_image_path V(255)?`, `office_images JSON`, `short_description V(500)?`, `description TEXT?` (≤10000), `founded_year U16?`, `company_size V(30)?`, `industry_id?`, `company_type V(80)?`, `country V(80)?`, `website V(255)?`, `email V(150)`, `phone V(30)`, `address V(255)`, `working_hours V(255)?`, `overtime_policy TEXT?` (≤2000), `benefits TEXT?` (≤3000), `technologies TEXT?` (≤2000), `status V(20) DEFAULT 'active'`, TS.
+`id ID`, `public_id UUID`, `recruiter_id`, `name V(150)`, `slug V(160)`, `logo_path V(255)?`, `office_images JSON`, `description TEXT?` (≤10000), `company_size V(30)?`, `industry_id?`, `company_type V(80)?`, `country V(80)?`, `website V(255)?`, `email V(150)`, `phone V(30)`, `address V(255)`, `province_code V(2)?`, `ward_code V(5)?`, `working_hours V(255)?`, `overtime_policy TEXT?` (≤2000), `work_environment TEXT?` (≤3000), `status V(20) DEFAULT 'active'`, TS.
 
-UNIQUE(public_id), UNIQUE(slug), UNIQUE(recruiter_id). FK recruiter_id→users.id, industry_id→industries.id; INDEX(status,name,id). Các ? do form cho phép thiếu. CHECK status active/locked; founded_year≥1800, upper bound năm hiện tại kiểm tra Service. Size giữ 6 khoảng nhân sự của form. Technologies/benefits là nội dung mô tả, chưa tạo pivot. Mapping summary→short_description, size→company_size, ot_policy→overtime_policy. AdminCatalog/renderer đã dùng overtime_policy, trong khi Recruiter/shared Blade dùng ot_policy; adapter phải thống nhất hai tên này, không tạo hai cột OT. Public projection không xuất email/phone quản trị, owner_token, disk paths, lịch sử nội bộ (theo CompanyProfiles hiện tại); website http(s).
+UNIQUE(public_id), UNIQUE(slug), UNIQUE(recruiter_id). FK recruiter_id→users.id, industry_id→industries.id; INDEX(status,name,id). Các ? do form cho phép thiếu. CHECK status active/locked, work_environment NULL hoặc tối đa 3000 ký tự. Size giữ 6 khoảng nhân sự; mapping size→company_size, ot_policy→overtime_policy. Theo phê duyệt ngày 18/11/2026, migration `2026_11_18_120000_simplify_company_profile` bỏ short_name, short_description, founded_year, benefits, technologies, cover_image_path và CHECK liên quan, thêm work_environment. Không backfill bằng nội dung phúc lợi cũ. Địa chỉ nhập thủ công, không Google Maps. Public projection không xuất email/phone quản trị hoặc disk paths; website http(s) hoặc NULL khi không có website. Vẫn 32 bảng; sao lưu đầy đủ trước khi bỏ cột, không dùng down để khôi phục nội dung đã xóa.
 
 
 Office_images NOT NULL, Service khởi tạo `[]`, không phụ thuộc SQL default biểu thức. JSON là mảng tối đa 6 object dạng `{"path":"companies/<public_id>/office/<uuid>.webp","caption":null}`; caption tùy chọn ≤255, path ≤255. **Thứ tự phần tử là thứ tự hiển thị**, không lưu sort_order riêng. CHECK JSON_VALID, JSON_TYPE='ARRAY', JSON_LENGTH≤6; Service kiểm tra object chỉ có path/caption, path không trùng, đúng namespace doanh nghiệp và file thuộc upload hợp lệ. Không nhận đường dẫn máy Windows, URL ngoài, `..`, tên file thực thi hoặc path của doanh nghiệp khác từ client. JSON không có FK tới file; đây là giới hạn được bù bằng validation và đối soát storage.
 
-Chỉ owner Recruiter đang hoạt động được sửa. JPEG/PNG/WebP kiểm tra nội dung/MIME và giải mã ảnh, logo≤2MiB, cover≤5MiB, mỗi ảnh văn phòng≤3MiB, kích thước≤5000×5000. File UUID lưu private ngoài webroot; endpoint ảnh công khai chỉ phục vụ file đã được company tham chiếu và company/recruiter còn active; owner/Admin xem theo Policy. Không trả disk path qua API công khai. Thay/xếp ảnh khóa company row, kiểm tra updated_at mà form đã đọc để từ chối ghi đè thay đổi mới; ghi cả mảng trong một transaction. Upload staging trước transaction; chỉ dọn file cũ sau commit và kiểm tra không còn tham chiếu. DB rollback không xóa file đang sử dụng. Không tạo company_images.
+Chỉ owner Recruiter đang hoạt động được sửa. JPEG/PNG/WebP kiểm tra nội dung/MIME và giải mã ảnh, logo≤2MiB, mỗi ảnh văn phòng≤3MiB, kích thước≤5000×5000. File UUID lưu private ngoài webroot; endpoint ảnh công khai chỉ phục vụ file đã được company tham chiếu và company/recruiter còn active; owner/Admin xem theo Policy. Không trả disk path qua API công khai. Thay/xếp ảnh khóa company row, kiểm tra updated_at mà form đã đọc để từ chối ghi đè thay đổi mới; ghi cả mảng trong một transaction. Upload staging trước transaction; chỉ dọn file cũ sau commit và kiểm tra không còn tham chiếu. DB rollback không xóa file đang sử dụng. Không tạo company_images.
 
 ### 4.4 industries — mới
 
@@ -131,17 +166,25 @@ Cột/khóa/index giống industries. Giữ nhãn Thực tập sinh/Có kinh ngh
 
 ### 4.9 jobs — mới sau rename queue
 
+**Danh mục bổ sung `job_positions` (19/11/2026):** id BIGINT UNSIGNED PK; code VARCHAR(20) UNIQUE; name VARCHAR(120); normalized_name VARCHAR(120) COLLATE utf8mb4_bin UNIQUE; slug VARCHAR(160) UNIQUE; description TEXT NULL CHECK tối đa 1000 ký tự; is_active boolean CHECK 0/1 DEFAULT 1; sort_order SMALLINT UNSIGNED DEFAULT 0; created_at/updated_at DATETIME(6). INDEX(is_active,sort_order,id). Không xóa cứng; tái sử dụng dịch vụ danh mục Admin. Eloquent: JobPosition::jobVersions() hasMany, JobVersion::positionCatalog() belongsTo.
+
+`job_versions.job_position_id` FK nullable tới job_positions (RESTRICT); `province_code` VARCHAR(2) nullable, index riêng từng cột. Backend kiểm tra danh sách 34 mã tỉnh/thành phố trong `Provinces::ALL`. Vị trí và tỉnh được yêu cầu khi gửi bản nháp mới; pending cũ thiếu cả hai trường vẫn được kiểm duyệt mà không sửa nội dung. Cột position mở rộng 120 ký tự, lưu tên vị trí tại thời điểm chọn; đổi tên danh mục không đổi nội dung phiên bản cũ. Kinh nghiệm giữ dữ liệu lịch sử nhưng bỏ khỏi form và yêu cầu gửi duyệt. Nhóm nghề suy ra từ chuyên môn, không nhận lựa chọn nhóm từ client. Không tạo bảng liên kết lĩnh vực.
+
 `id ID`, `company_id`, `status V(20) DEFAULT 'draft'`, `status_before_block V(20)?`, `published_version_id?`, `published_at DATETIME(6)?`, `expires_at DATETIME(6)?`, TS.
 
 FK company_id→companies.id; **composite FK(id,published_version_id)→job_versions(job_id,id)** thêm sau khi có cả hai bảng. CHECK status draft/open/paused/closed/blocked; status_before_block chỉ draft/open/paused/closed hoặc NULL, chỉ có khi blocked. Published pointer/date/cache nullable vì chưa công khai; CHECK pointer NULL thì published_at/expires_at NULL. Approved của version phải kiểm tra Service, FK không thể kiểm tra. INDEX(company_id,status,created_at,id), INDEX(status,published_at,id), INDEX(status,expires_at,id). Không có nội dung nháp trong jobs.
 
 ### 4.10 job_versions — mới
 
-`id ID`, `job_id`, `version_number U32`, `title V(150)`, `position V(100)`, `description TEXT`, `requirements TEXT`, `benefits TEXT`, `salary_min DECIMAL(15,2)`, `salary_max DECIMAL(15,2)`, `salary_currency CHAR(3) DEFAULT 'VND'`, `salary_negotiable BOOL DEFAULT 0`, `location V(150)`, `work_mode V(10)`, `employment_type V(20)`, `quantity U16`, `experience_summary V(100)`, `experience_min DECIMAL(4,1)?`, `experience_max DECIMAL(4,1)?`, `industry_id?`, `job_specialization_id`, `job_level_id?`, `application_deadline DATE`, `review_status V(20) DEFAULT 'draft'`, `submitted_at DATETIME(6)?`, `reviewed_at DATETIME(6)?`, `pending_slot U8 GENERATED STORED` = CASE WHEN review_status='pending' THEN 1 ELSE NULL END, TS.
+`id ID`, `job_id`, `version_number U32`, `title V(150)`, `position V(120)?`, `job_position_id?`, `province_code V(2)?`, `ward_code V(5)?`, `description TEXT?`, `requirements TEXT?`, `benefits TEXT?`, `salary_min DECIMAL(15,2)?`, `salary_max DECIMAL(15,2)?`, `salary_currency CHAR(3) DEFAULT 'VND'`, `salary_negotiable BOOL DEFAULT 0`, `location V(150)?`, `work_mode V(10)?`, `employment_type V(20)?`, `quantity U16?`, `experience_summary V(100)?`, `experience_min DECIMAL(4,1)?`, `experience_max DECIMAL(4,1)?`, `industry_id?`, `job_specialization_id?`, `job_level_id?`, `application_deadline DATE?`, `review_status V(20) DEFAULT 'draft'`, `submitted_at DATETIME(6)?`, `reviewed_at DATETIME(6)?`, `pending_slot U8 GENERATED STORED` = CASE WHEN review_status='pending' THEN 1 ELSE NULL END, TS.
 
-FK job_id→jobs.id; industry_id→industries.id; job_specialization_id→job_specializations.id; job_level_id→job_levels.id. UNIQUE(job_id,version_number), UNIQUE(job_id,id), UNIQUE(job_id,pending_slot). INDEX(review_status,submitted_at,id), INDEX(job_specialization_id,id), INDEX(industry_id,id), INDEX(job_level_id,id), INDEX(location,work_mode,id). FK jobs.published_version_id dùng unique composite nói trên để chặn trỏ nhầm tin.
+FK job_position_id→job_positions.id (RESTRICT), INDEX(job_position_id), INDEX(province_code); job_id→jobs.id; industry_id→industries.id; job_specialization_id→job_specializations.id; job_level_id→job_levels.id. UNIQUE(job_id,version_number), UNIQUE(job_id,id), UNIQUE(job_id,pending_slot). INDEX(review_status,submitted_at,id), INDEX(job_specialization_id,id), INDEX(industry_id,id), INDEX(job_level_id,id), INDEX(location,work_mode,id). FK jobs.published_version_id dùng unique composite nói trên để chặn trỏ nhầm tin.
 
-CHECK version_number≥1, quantity 1..1000, 0≤salary_min≤salary_max, currency='VND' trong MVP, experience_min/max≥0 nếu có và min≤max nếu đủ hai giá trị. work_mode onsite/remote/hybrid; employment_type full_time/part_time/internship. Review status draft/pending/approved/rejected. CHECK review_status='draft' OR (industry_id IS NOT NULL AND job_level_id IS NOT NULL). Hai FK nullable do form hiện thiếu, nhưng gửi duyệt phải đủ. Experience range NULL khi text không parse chắc chắn, không đoán. submitted_at NULL trước gửi, reviewed_at NULL trước quyết định. TEXT tối đa 10000 như form. Lưu VND/tháng: 15 triệu→15000000, chuyển bằng decimal/integer, không FLOAT. Salary_negotiable chưa có UI, default false.
+Theo phương án A được phê duyệt cho Giai đoạn 3.2, bản nháp chỉ bắt buộc title có nội dung, tối đa 150 ký tự. Đúng 13 cột đánh dấu `?` mới ở trên cho phép NULL: position, description, requirements, benefits, salary_min, salary_max, location, work_mode, employment_type, quantity, experience_summary, job_specialization_id, application_deadline. industry_id/job_level_id/experience_min/max đã nullable từ trước. Không điền dữ liệu giả để lấp chỗ trống.
+
+CHECK version_number≥1; quantity NULL hoặc 1..1000; từng đầu lương NULL hoặc không âm, min≤max nếu đủ hai đầu; currency='VND'; experience_min/max≥0 nếu có và min≤max nếu đủ hai giá trị. work_mode NULL hoặc onsite/remote/hybrid; employment_type NULL hoặc full_time/part_time/internship. Review status draft/pending/approved/rejected. CHECK title không toàn khoảng trắng; khi review_status khác draft, 12 cột nội dung (không gồm experience_summary) phải NOT NULL, các trường văn bản bắt buộc có nội dung sau TRIM, industry_id/job_level_id/submitted_at phải NOT NULL. Dùng IS NOT NULL tường minh để SQL UNKNOWN không vượt ràng buộc. TEXT NULL hoặc tối đa 10000 ký tự. Service bổ sung kiểm tra danh mục đang hoạt động, chuyên môn đúng nhóm, ít nhất một kỹ năng và hạn tuyển không trước ngày gửi theo Asia/Ho_Chi_Minh. Experience range NULL khi text không parse chắc chắn, không đoán. submitted_at NULL trước gửi, reviewed_at NULL trước quyết định. Lưu VND/tháng bằng decimal, không FLOAT; form thật nhập VND. Salary_negotiable chưa có UI, default false.
+
+Migration bổ sung: `2026_11_17_100000_allow_incomplete_job_drafts`. Giữ nguyên kiểu cột, PK/FK/UNIQUE, generated pending_slot và 32 bảng. Up kiểm tra dữ liệu trước DDL; down từ chối nếu còn NULL trong 13 cột. Rollback cần ngừng ghi vì MariaDB yêu cầu tháo rồi dựng lại nguyên định nghĩa FK chuyên môn khi chuyển về NOT NULL. Không tự xóa hay lấp dữ liệu để rollback. Xem biên bản backup/restore và diễn tập trong `backend-jobs-implementation.md`.
 
 Nội dung/pivot/hạn của pending/approved bất biến. Sửa sau reject cũng tạo version mới; chỉ ModerationService đổi review_status và metadata duyệt. Draft hiện phải đủ trường form, chưa hỗ trợ autosave từng ô. Chỉ đề xuất FULLTEXT(title,description,requirements) sau benchmark tiếng Việt; MVP LIKE escaped, không hứa B-tree tăng tốc `%từ khóa%`.
 
@@ -159,7 +202,22 @@ Nội dung/pivot/hạn của pending/approved bất biến. Sửa sau reject cũ
 
 FK candidate_id→users.id; UNIQUE(public_id), UNIQUE(id,candidate_id), UNIQUE(candidate_id,primary_slot); INDEX(candidate_id,deleted_at,id). CHECK current_revision≥1; deleted_at IS NULL OR is_primary=0. Deleted_at NULL là CV hoạt động. **Service tạo resume+revision 1 cùng transaction và bảo đảm current_revision có row tương ứng**; không thêm FK vòng resumes↔resume_revisions. File/parse nằm ở revision, không lặp trong resumes. Tối đa 10 và luôn có CV chính nếu còn CV do lock parent + Service thực thi; unique chỉ bảo đảm tối đa một.
 
+### Bổ sung AI JobVersion được duyệt ngày 24/11/2026
+
+Giai đoạn 3.6B giữ 33 bảng, bổ sung metadata tại job_versions: ai_analysis_result JSON nullable,
+ai_analysis_status VARCHAR(20) nullable, ai_processing_token CHAR(36) nullable,
+ai_attempt_count SMALLINT UNSIGNED DEFAULT 0; ai_started_at, ai_lease_expires_at,
+ai_next_retry_at, ai_analyzed_at DATETIME(6) nullable; ai_model_version VARCHAR(100),
+ai_error_code VARCHAR(60) nullable. CHECK trạng thái pending/processing/completed/failed hoặc NULL,
+attempt_count <=3; completed phải có result/analyzed_at/model_version.
+INDEX(ai_analysis_status, ai_next_retry_at, id). PK JobVersion xác định duy nhất kết quả;
+không thêm FK/UNIQUE. Eloquent cast result=array, attempt_count=integer, các thời gian=datetime;
+không thêm fillable. Worker chỉ cập nhật cột AI, giữ updated_at nghiệp vụ. Replicate V2 loại bỏ
+metadata AI V1. Chi tiết: backend-ai-job-analysis-implementation.md.
+
 ### 4.14 resume_revisions — mới bổ sung có lý do
+
+Bổ sung được duyệt và triển khai ngày 24/11/2026: `analysis_result JSON NULL`, lưu kết quả Ollama theo revision, cast Eloquent `array`. Không thêm bảng hoặc thay đổi khóa. JSON có schema_version và bảy nhóm thông tin kèm bằng chứng; xem `backend-ai-cv-analysis-implementation.md`. Token được cấp lúc enqueue, kiểm tra lại trước khi worker ghi kết quả.
 
 `id ID`, `resume_id`, `revision U32`, `file_path V(255)`, `original_filename V(255)`, `file_size U32`, `mime_type V(100)`, `file_hash CHAR(64)`, `parsing_status V(20) DEFAULT 'pending'`, `extracted_text_path V(255)?`, `parser_version V(100)?`, `parsed_at DATETIME(6)?`, `error_code V(60)?`, `error_message V(1000)?`, `processing_token UUID?`, `attempt_count U16 DEFAULT 0`, `started_at DATETIME(6)?`, `lease_expires_at DATETIME(6)?`, `next_retry_at DATETIME(6)?`, TS.
 
@@ -403,10 +461,11 @@ Các cột trong hình là khóa/mốc chính; mục 4 là từ điển cột đ
 
 ```mermaid
 erDiagram
-    %% Final design: 24 business tables + 8 Laravel infrastructure tables.
+    %% Current design: 19 business tables + 8 Laravel infrastructure tables (static catalog update 2026-11-25).
     %% MariaDB 11.5.2: validate generated slots, composite FKs and CHECKs on staging.
-    %% Industry/level: nullable in draft, required on submission.
-    %% Referenced specialization cannot change category (Service + locking).
+    %% Stage 3.2: title-only drafts; nullable drafts; experience no longer required outside draft.
+    %% Industry/level: nullable in draft, required on submission; 27 tables; catalog codes validated by application.
+    %% Static catalog IDs and specialization parents must remain stable in config/job-catalog.php.
     %% Active resumes require exactly one primary (unique slot + Service).
     %% Published version belongs to same job and requires Admin approval.
     %% AI formula v1: 60 percent semantic + 40 percent skill; preserve history.
@@ -415,6 +474,7 @@ erDiagram
         bigint id PK
         varchar email UK
         varchar google_subject UK "nullable, ASCII binary"
+        boolean has_local_password "nullable: unknown"
         varchar role
         varchar status
     }
@@ -426,37 +486,15 @@ erDiagram
     companies {
         bigint id PK
         uuid public_id UK
+        varchar province_code "nullable, length 2, local JSON code"
+        varchar ward_code "nullable, length 5, local JSON code"
+        varchar address "length 255, house number and street"
         varchar logo_path
-        varchar cover_image_path
+        text work_environment "nullable, max 3000"
         json office_images
         bigint recruiter_id FK, UK
-        bigint industry_id FK
+        bigint industry_id "static catalog code"
         varchar status
-    }
-    industries {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_categories {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_specializations {
-        bigint id PK
-        bigint job_category_id FK
-        varchar code UK
-    }
-    skills {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_levels {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
     }
     jobs {
         bigint id PK
@@ -466,19 +504,23 @@ erDiagram
         datetime expires_at
     }
     job_versions {
+        bigint job_position_id "static catalog code"
+        varchar province_code "34 provinces, nullable for legacy"
+        varchar ward_code "nullable, length 5, local JSON code"
+        varchar location "nullable, length 150, house number and street"
         bigint id PK
         bigint job_id FK
         int version_number
-        bigint industry_id FK
-        bigint job_specialization_id FK
-        bigint job_level_id FK
+        bigint industry_id "static catalog code"
+        bigint job_specialization_id "static catalog code"
+        bigint job_level_id "static catalog code"
         varchar review_status
         int pending_slot
     }
     job_version_skills {
         bigint id PK
         bigint job_version_id FK
-        bigint skill_id FK
+        bigint skill_id "static catalog code"
     }
     job_moderation_logs {
         bigint id PK
@@ -505,7 +547,7 @@ erDiagram
         bigint id PK
         bigint resume_id FK
         int resume_revision FK
-        bigint skill_id FK
+        bigint skill_id "static catalog code"
     }
     applications {
         bigint id PK
@@ -610,22 +652,15 @@ erDiagram
 
     users ||--o| candidate_profiles : "candidate profile"
     users ||--o| companies : "recruiter owner"
-    industries o|--o{ companies : "optional industry"
     companies ||--o{ jobs : "owns"
-    job_categories ||--o{ job_specializations : "contains"
     jobs ||--o{ job_versions : "content versions"
     jobs o|--o| job_versions : "published pointer same job"
-    industries o|--o{ job_versions : "required on submit"
-    job_levels o|--o{ job_versions : "required on submit"
-    job_specializations ||--o{ job_versions : "specialization"
     job_versions ||--o{ job_version_skills : "requirements"
-    skills ||--o{ job_version_skills : "skill"
     job_versions ||--o| job_moderation_logs : "final decision"
     users ||--o{ job_moderation_logs : "reviewer"
     users ||--o{ resumes : "candidate owner"
     resumes ||--|{ resume_revisions : "immutable files"
     resume_revisions ||--o{ resume_skills : "composite revision FK"
-    skills ||--o{ resume_skills : "recognized"
     users ||--o{ applications : "candidate"
     jobs ||--o{ applications : "attempts"
     job_versions ||--o{ applications : "JD at submission"
@@ -687,3 +722,5 @@ Không mặc nhiên giữ dữ liệu cá nhân vô hạn. Trong MVP chưa có t
 - [Laravel 12 queues](https://laravel.com/framework/docs/12.x/queues): dispatch sau commit; idempotency/retry vẫn cần ở lớp nghiệp vụ.
 
 Nguồn kỹ thuật kiểm tra giới hạn, không thay kết quả khảo sát repository. Kết quả migration và kiểm thử thực tế được ghi trong [báo cáo triển khai](database-implementation.md).
+
+

@@ -42,7 +42,7 @@ try {
     if (! $process->isSuccessful()) {
         throw new RuntimeException($process->getErrorOutput());
     }
-    if (count($testConnection->select('SHOW TABLES')) !== 32 || $testConnection->table('migrations')->count() !== 29) {
+    if (count($testConnection->select('SHOW TABLES')) !== 27 || $testConnection->table('migrations')->count() !== count(glob(database_path('migrations/*.php')))) {
         throw new RuntimeException('Deployment did not migrate isolated target.');
     }
     if ($testConnection->table('queue_jobs')->first()->payload !== '{"sentinel":true}') {

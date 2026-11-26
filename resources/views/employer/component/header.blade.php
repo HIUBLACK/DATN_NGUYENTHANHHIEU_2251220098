@@ -14,7 +14,7 @@
     <div class="navbar-actions">
         <a href="{{ route('recruiter.notifications') }}" class="navbar-action-btn" aria-label="Thông báo">
             <i class="bi bi-bell" aria-hidden="true"></i>
-            <span class="navbar-action-badge" data-unread-indicator hidden></span>
+            <span class="navbar-action-badge" title="{{ $recruiterUnreadCount }} thông báo chưa đọc" aria-label="{{ $recruiterUnreadCount }} thông báo chưa đọc" @if ($recruiterUnreadCount === 0) hidden @endif></span>
         </a>
         <a href="{{ route('recruiter.account') }}" class="navbar-profile-btn text-decoration-none">
             <img src="{{ asset('recruiter/images/avatar.png') }}" alt="Ảnh minh họa" class="navbar-profile-img">

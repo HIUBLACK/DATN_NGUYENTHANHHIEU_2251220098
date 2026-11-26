@@ -30,6 +30,16 @@ return [
 
     'connections' => [
 
+        // Thời gian nhận lại job lớn hơn timeout worker, tránh nhận lại khi worker còn xử lý.
+        'ai' => [
+            'driver' => 'database',
+            'connection' => env('DB_QUEUE_CONNECTION'),
+            'table' => env('DB_QUEUE_TABLE', 'queue_jobs'),
+            'queue' => 'ai',
+            'retry_after' => 360,
+            'after_commit' => true,
+        ],
+
         'sync' => [
             'driver' => 'sync',
         ],

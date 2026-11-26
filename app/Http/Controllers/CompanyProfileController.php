@@ -2,42 +2,128 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\SaveCompanyRequest;
-use App\Services\CompanyProfiles;
+use App\Http\Requests\StoreCompanyRequest;
+use App\Http\Requests\UpdateCompanyRequest;
+use App\Models\Company;
+use App\Support\JobCatalog;
+use App\Services\CompanyImageStorage;
+use App\Services\CompanyService;
+use App\Support\CompanyOptions;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class CompanyProfileController extends Controller
 {
-    public function __construct(private CompanyProfiles $profiles) {}
+    public function __construct(private CompanyService $companies, private CompanyImageStorage $images) {}
 
-    public function store(SaveCompanyRequest $request): RedirectResponse
+    public function show(): View
     {
-        $this->profiles->save(null, $request->validated());
+        $company = Company::query()->where('recruiter_id', auth()->id())->first();
+        if ($company) {
+            Gate::authorize('viewManagement', $company);
+        }
 
-        return redirect()->route('recruiter.company-edit')->with('company_notice', 'Đã lưu hồ sơ doanh nghiệp trong phiên demo, chưa cập nhật database.');
+        return $this->page($company, false);
     }
 
-    public function update(SaveCompanyRequest $request, string $company): RedirectResponse
+    public function create(): View|RedirectResponse
     {
-        $this->profiles->save($company, $request->validated());
+        Gate::authorize('create', Company::class);
+        if (Company::where('recruiter_id', auth()->id())->exists()) {
+            return redirect()->route('recruiter.company');
+        }
 
-        return redirect()->route('recruiter.company-edit')->with('company_notice', 'Đã cập nhật hồ sơ trong phiên demo, chưa cập nhật database.');
+        return $this->page(null, true);
+    }
+
+    public function edit(): View|RedirectResponse
+    {
+        $company = Company::query()->where('recruiter_id', auth()->id())->first();
+        if (! $company) {
+            return redirect()->route('recruiter.company-create');
+        }
+        Gate::authorize('update', $company);
+
+        return $this->page($company, true);
+    }
+
+    public function store(StoreCompanyRequest $request): RedirectResponse
+    {
+        $this->companies->save($request->user(), null, $request->validated());
+
+        return redirect()->route('recruiter.company')->with('company_notice', 'Đã tạo hồ sơ doanh nghiệp.');
+    }
+
+    public function update(UpdateCompanyRequest $request, string $company): RedirectResponse
+    {
+        $record = Company::where('public_id', $company)->firstOrFail();
+        $this->companies->save($request->user(), $record, $request->validated());
+
+        return redirect()->route('recruiter.company')->with('company_notice', 'Đã cập nhật hồ sơ doanh nghiệp.');
     }
 
     public function media(string $company, string $slot): BinaryFileResponse
     {
-        $record = $this->profiles->find($company);
-        abort_unless($record && $record['status'] === 'active', 404);
+        $record = Company::where('public_id', $company)->firstOrFail();
+        abort_unless(Gate::allows('viewPublic', $record), 404);
+
+        return $this->imageResponse($record, $slot);
+    }
+
+    public function privateMedia(string $company, string $slot): BinaryFileResponse
+    {
+        $record = Company::where('public_id', $company)->firstOrFail();
+        Gate::authorize('viewManagement', $record);
+
+        return $this->imageResponse($record, $slot);
+    }
+
+    public function adminMedia(string $company, string $slot): BinaryFileResponse
+    {
+        $record = Company::where('public_id', $company)->firstOrFail();
+        Gate::authorize('moderate', $record);
+
+        return $this->imageResponse($record, $slot);
+    }
+
+    private function page(?Company $company, bool $form): View
+    {
+        $types = CompanyOptions::TYPES;
+        $countries = array_values(CompanyOptions::countries());
+        if ($company?->company_type && ! in_array($company->company_type, $types, true)) {
+            $types[] = $company->company_type;
+        }
+        if ($company?->country && ! in_array($company->country, $countries, true)) {
+            $countries[] = $company->country;
+        }
+
+        return view($form ? 'employer.company-form' : 'employer.company', [
+            'companyTypes' => $types,
+            'companyCountries' => $countries,
+            'page' => $form ? 'company-form' : 'company',
+            'title' => $form ? ($company ? 'Chỉnh sửa doanh nghiệp' : 'Tạo hồ sơ doanh nghiệp') : 'Hồ sơ doanh nghiệp',
+            'section' => 'company',
+            'seed' => [],
+            'companyRecord' => $company ? $this->companies->formData($company) : null,
+            'companyForm' => $company ? $this->companies->formData($company) : [],
+            'companyProfile' => $company ? $this->companies->publicData($company, true) : [],
+            'canSaveCompany' => $company ? Gate::allows('update', $company) : Gate::allows('create', Company::class),
+            'industries' => JobCatalog::all('industries'),
+        ]);
+    }
+
+    private function imageResponse(Company $company, string $slot): BinaryFileResponse
+    {
         $path = match ($slot) {
-            'logo' => $record['logo'],
-            'cover' => $record['cover'],
-            default => preg_match('/^office-([0-5])$/', $slot, $match) ? ($record['office_images'][(int) $match[1]] ?? null) : null,
+            'logo' => $company->logo_path,
+            default => preg_match('/^office-([0-5])$/', $slot, $match) ? ($company->office_images[(int) $match[1]]['path'] ?? null) : null,
         };
-        abort_unless($path && Storage::disk('local')->exists($path), 404);
+        abort_unless($this->images->owns($company->public_id, $path) && Storage::disk('local')->exists($path), 404);
         $absolute = Storage::disk('local')->path($path);
-        $mime = getimagesize($absolute)['mime'] ?? '';
+        $mime = @getimagesize($absolute)['mime'] ?? '';
         abort_unless(in_array($mime, ['image/png', 'image/jpeg', 'image/webp'], true), 404);
 
         return response()->file($absolute, ['Content-Type' => $mime, 'X-Content-Type-Options' => 'nosniff', 'Cache-Control' => 'private, no-store']);

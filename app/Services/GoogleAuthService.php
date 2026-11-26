@@ -139,6 +139,7 @@ class GoogleAuthService
                 $user->google_subject = $pending['subject'];
                 $user->email_verified_at = now();
                 $user->password = Hash::make(bin2hex(random_bytes(32)));
+                $user->has_local_password = false;
                 $user->role = UserRole::from($role);
                 $user->status = UserStatus::Active;
                 $user->save();
@@ -193,7 +194,7 @@ class GoogleAuthService
 
     private function clear(Request $request): void
     {
-        $request->session()->forget(['google_flow', 'google_pending', 'state']);
+        $request->session()->forget(['google_flow', 'google_pending', 'google_setup_flow', 'google_setup_grant', 'state']);
     }
 
     private function failure(Request $request, string $message, string $context = 'login'): RedirectResponse

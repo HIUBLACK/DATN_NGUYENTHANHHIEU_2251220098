@@ -2,16 +2,22 @@
 
 namespace App\Models;
 
+use App\Support\JobCatalog;
+
 use App\Enums\JobReviewStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class JobVersion extends Model
 {
+    public function getFullLocationAttribute(): string
+    {
+        return \App\Support\VietnamAddress::format($this->location, $this->province_code, $this->ward_code);
+    }
+
     public function scopeForJob(Builder $query, int $jobId): Builder
     {
         return $query->where('job_versions.job_id', $jobId);
@@ -24,6 +30,8 @@ class JobVersion extends Model
     protected $fillable = [
         'title',
         'position',
+        'province_code',
+        'ward_code',
         'description',
         'requirements',
         'benefits',
@@ -44,6 +52,12 @@ class JobVersion extends Model
     protected function casts(): array
     {
         return [
+            'ai_analysis_result' => 'array',
+            'ai_attempt_count' => 'integer',
+            'ai_started_at' => 'datetime',
+            'ai_lease_expires_at' => 'datetime',
+            'ai_next_retry_at' => 'datetime',
+            'ai_analyzed_at' => 'datetime',
             'id' => 'integer',
             'job_id' => 'integer',
             'version_number' => 'integer',
@@ -54,6 +68,7 @@ class JobVersion extends Model
             'experience_min' => 'decimal:1',
             'experience_max' => 'decimal:1',
             'industry_id' => 'integer',
+            'job_position_id' => 'integer',
             'job_specialization_id' => 'integer',
             'job_level_id' => 'integer',
             'application_deadline' => 'date',
@@ -71,19 +86,24 @@ class JobVersion extends Model
         return $this->belongsTo(Job::class, 'job_id');
     }
 
-    public function industry(): BelongsTo
+    public function getPositionCatalogAttribute(): ?\stdClass
     {
-        return $this->belongsTo(Industry::class, 'industry_id');
+        return JobCatalog::find('positions', $this->job_position_id);
     }
 
-    public function specialization(): BelongsTo
+    public function getIndustryAttribute(): ?\stdClass
     {
-        return $this->belongsTo(JobSpecialization::class, 'job_specialization_id');
+        return JobCatalog::find('industries', $this->industry_id);
     }
 
-    public function level(): BelongsTo
+    public function getSpecializationAttribute(): ?\stdClass
     {
-        return $this->belongsTo(JobLevel::class, 'job_level_id');
+        return JobCatalog::find('specializations', $this->job_specialization_id);
+    }
+
+    public function getLevelAttribute(): ?\stdClass
+    {
+        return JobCatalog::find('levels', $this->job_level_id);
     }
 
     public function applications(): HasMany
@@ -101,11 +121,16 @@ class JobVersion extends Model
         return $this->hasOne(JobModerationLog::class, 'job_version_id');
     }
 
-    public function skills(): BelongsToMany
+    /** Giữ pivot nghiệp vụ; tên kỹ năng lấy từ danh sách cố định. */
+    public function getSkillsAttribute(): \Illuminate\Support\Collection
     {
-        return $this->belongsToMany(Skill::class, 'job_version_skills', 'job_version_id', 'skill_id')
-            ->using(JobVersionSkill::class)
-            ->withPivot(['id', 'is_required'])
-            ->withTimestamps();
+        return $this->skillRequirements->map(function ($requirement) {
+            $skill = JobCatalog::find('skills', $requirement->skill_id);
+            if ($skill) {
+                $skill->pivot = $requirement;
+            }
+
+            return $skill;
+        })->filter()->values();
     }
 }

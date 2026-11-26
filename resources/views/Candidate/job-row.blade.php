@@ -1,7 +1,17 @@
 <li class="job-listing d-block d-sm-flex pb-3 pb-sm-0 align-items-center">
-    <a href="{{ route('jobs.show', $job['id']) }}" aria-label="Chi tiết {{ $job['title'] }}"></a>
+    @if ($job['can_view'] ?? true)
+        <a href="{{ route(($job['real'] ?? false) ? 'jobs.show' : 'jobs.demo', $job['id']) }}" aria-label="Chi tiết {{ $job['title'] }}"></a>
+    @endif
     <div class="job-listing-logo">
-        <img src="{{ asset('jobboard/images/'.$job['logo']) }}" alt="Logo minh họa {{ $job['company'] }}" class="img-fluid">
+        @if ($job['real'] ?? false)
+            @if ($job['logo_url'])
+                <img src="{{ $job['logo_url'] }}" alt="Logo {{ $job['company'] }}" class="img-fluid">
+            @else
+                <span aria-hidden="true">DN</span>
+            @endif
+        @else
+            <img src="{{ asset('jobboard/images/'.$job['logo']) }}" alt="Logo minh họa {{ $job['company'] }}" class="img-fluid">
+        @endif
     </div>
     <div class="job-listing-about d-sm-flex custom-width w-100 justify-content-between mx-4">
         <div class="job-listing-position custom-width w-50 mb-3 mb-sm-0">
@@ -9,9 +19,12 @@
             <strong>{{ $job['company'] }}</strong>
             @unless ($compact ?? false)
                 <p class="small mb-1">
-                    {{ $job['salary_min'] }}–{{ $job['salary_max'] }} triệu/tháng · {{ $job['level'] }}
+                    {{ ($job['salary_negotiable'] ?? false) ? 'Lương thỏa thuận' : $job['salary_min'].'–'.$job['salary_max'].' triệu/tháng' }} · {{ $job['level'] }}
                 </p>
                 <p class="small mb-1">{{ implode(' · ', $job['skills']) }}</p>
+                @if (isset($job['can_view']))
+                    <p class="small mb-1">{{ $job['position'] }}</p>
+                @endif
                 <p class="small mb-1">Hạn: {{ $job['deadline']->format('d/m/Y') }}</p>
             @endunless
         </div>
@@ -20,22 +33,18 @@
             {{ $job['location'] }}
             @unless ($compact ?? false)
                 <p class="small">{{ $job['mode'] }}</p>
+                @if (isset($job['can_view']))
+                    <p class="small">{{ $job['location_detail'] }}</p>
+                @endif
             @endunless
         </div>
         <div class="job-listing-meta">
-            <span class="badge badge-success">{{ $statusLabels[$job['status']] }}</span>
+            <span class="badge {{ $job['status'] === 'open' ? 'badge-success' : 'badge-secondary' }}">{{ $statusLabels[$job['status']] }}</span>
             @unless ($compact ?? false)
-                <a class="btn btn-outline-primary btn-sm candidate-detail-link mt-2" href="{{ route('jobs.show', $job['id']) }}">Xem chi tiết</a>
-                <form action="{{ route('candidate.save', $job['id']) }}" method="post" class="candidate-row-action mt-2">
-                    @csrf
-                    <button type="submit" class="btn btn-light btn-sm" aria-label="Lưu hoặc bỏ lưu {{ $job['title'] }}">
-                        @if (in_array($job['id'], $demo['saved']))
-                            Bỏ lưu
-                        @else
-                            Lưu việc
-                        @endif
-                    </button>
-                </form>
+                @if ($job['can_view'] ?? true)
+                    <a class="btn btn-outline-primary btn-sm candidate-detail-link mt-2" href="{{ route(($job['real'] ?? false) ? 'jobs.show' : 'jobs.demo', $job['id']) }}">Xem chi tiết</a>
+                @endif
+                @include('Candidate.save-job-button', ['saveButtonClass' => 'btn btn-light btn-sm mt-2', 'saveButtonLabel' => true])
             @endunless
         </div>
     </div>

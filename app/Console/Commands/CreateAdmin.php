@@ -90,6 +90,7 @@ class CreateAdmin extends Command
             $admin->name = $input['name'];
             $admin->email = $input['email'];
             $admin->password = Hash::make($input['password']);
+            $admin->has_local_password = true;
             $admin->role = UserRole::Admin;
             $admin->status = UserStatus::Active;
             $admin->save();

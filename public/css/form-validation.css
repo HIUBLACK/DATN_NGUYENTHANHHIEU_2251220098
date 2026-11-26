@@ -1,0 +1,66 @@
+form .field-validation-error {
+    border-color: #c62828;
+    box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.15);
+    background-color: #fff5f5;
+}
+
+form .field-validation-error:focus {
+    border-color: #c62828;
+    box-shadow: 0 0 0 3px rgba(198, 40, 40, 0.2);
+}
+
+.validation-toast {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 11000;
+    width: min(380px, calc(100vw - 40px));
+    display: grid;
+    gap: 12px;
+    max-height: calc(100vh - 40px);
+    overflow-y: auto;
+    pointer-events: none;
+}
+
+.app-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    border-left: 5px solid #c62828;
+    border-radius: 8px;
+    background: #fff;
+    color: #8b1a1a;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+    overflow-wrap: anywhere;
+    pointer-events: auto;
+}
+
+.app-toast-success {
+    border-color: #188038;
+    color: #146c2e;
+}
+
+.app-toast-warning {
+    border-color: #b46b00;
+    color: #875000;
+}
+
+.app-toast-info {
+    border-color: #0069d1;
+    color: #0053a6;
+}
+
+.app-toast span {
+    flex: 1;
+}
+
+.app-toast button {
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 24px;
+    line-height: 1;
+    padding: 0;
+    cursor: pointer;
+}

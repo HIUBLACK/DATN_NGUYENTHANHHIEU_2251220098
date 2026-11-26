@@ -43,30 +43,10 @@
                     @endif
                 @endisset
 
-                @if (session('notice') || $errors->any())
-                    <div class="container pt-4">
-                        @if (session('notice'))
-                            <div class="alert alert-success" role="status">
-                                {{ session('notice') }}
-                            </div>
-                        @endif
-
-                        @if ($errors->any())
-                            <div class="alert alert-danger" role="alert">
-                                <ul class="mb-0">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        @endif
-                    </div>
-                @endif
-
-                @if (request()->routeIs('candidate.*'))
+                @if (request()->routeIs('candidate.settings', 'candidate.messages'))
                     <div class="container pt-3">
                         <div class="alert alert-info" role="note">
-                            Bạn đã đăng nhập. Nội dung CV, hồ sơ cá nhân và ứng tuyển hiện vẫn là demo trong phiên; chưa lưu nghiệp vụ vào database.
+                            Bạn đã đăng nhập. Nội dung của trang này vẫn là demo trong phiên. CV và hồ sơ ứng tuyển đã dùng dữ liệu thật.
                         </div>
                     </div>
                 @endif
@@ -90,8 +70,10 @@
         <script src="{{ asset('jobboard/js/navigation-bridge.js') }}"></script>
         <script src="{{ asset('jobboard/js/custom.js') }}"></script>
         <script src="{{ asset('jobboard/js/candidate.js') }}"></script>
+        <script src="{{ asset('jobboard/js/application-submit.js') }}"></script>
         <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
         <script type="application/json" id="job-menu-data">{!! Illuminate\Support\Js::encode(['categories' => $jobCategories, 'occupations' => $occupationOptions, 'specialties' => $specialtyOptions, 'filters' => $filterOptions, 'url' => route('jobs')]) !!}</script>
         <script src="{{ asset('jobboard/js/job-menu.js') }}"></script>
+        @include('shared.form-validation')
     </body>
 </html>

@@ -1,9 +1,17 @@
 <article class="search-job-card">
     <div class="search-job-card-top">
-        <img src="{{ asset('jobboard/images/'.$job['logo']) }}" alt="Logo minh họa {{ $job['company'] }}" class="search-job-logo" loading="lazy">
+        @if ($job['real'] ?? false)
+            @if ($job['logo_url'])
+                <img src="{{ $job['logo_url'] }}" alt="Logo {{ $job['company'] }}" class="search-job-logo" loading="lazy">
+            @else
+                <span class="search-job-logo" aria-hidden="true">DN</span>
+            @endif
+        @else
+            <img src="{{ asset('jobboard/images/'.$job['logo']) }}" alt="Logo minh họa {{ $job['company'] }}" class="search-job-logo" loading="lazy">
+        @endif
         <div class="search-job-identity">
             <h3>
-                <a href="{{ route('jobs.show', $job['id']) }}">{{ $job['title'] }}</a>
+                <a href="{{ route(($job['real'] ?? false) ? 'jobs.show' : 'jobs.demo', $job['id']) }}">{{ $job['title'] }}</a>
             </h3>
             <p>{{ $job['company'] }}</p>
         </div>
@@ -30,12 +38,7 @@
         </span>
     </div>
     <div class="search-job-actions">
-        <a href="{{ route('jobs.show', $job['id']) }}" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
-        <form action="{{ route('candidate.save', $job['id']) }}" method="post">
-            @csrf
-            <button type="submit" class="search-job-save" aria-label="{{ in_array($job['id'], $demo['saved']) ? 'Bỏ lưu' : 'Lưu việc' }} {{ $job['title'] }}" aria-pressed="{{ in_array($job['id'], $demo['saved']) ? 'true' : 'false' }}">
-                <span class="{{ in_array($job['id'], $demo['saved']) ? 'icon-heart' : 'icon-heart-o' }}" aria-hidden="true"></span>
-            </button>
-        </form>
+        <a href="{{ route(($job['real'] ?? false) ? 'jobs.show' : 'jobs.demo', $job['id']) }}" class="btn btn-outline-primary btn-sm">Xem chi tiết</a>
+        @include('Candidate.save-job-button')
     </div>
 </article>

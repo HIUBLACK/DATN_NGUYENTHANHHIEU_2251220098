@@ -8,8 +8,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const storageKey = 'viejob-admin-preview-v1-user-' + document.body.dataset.previewUser;
     const page = document.body.dataset.adminPage;
     const routes = routeElement.dataset;
-    const feedback = document.getElementById('admin-feedback');
-    const error = document.getElementById('admin-error');
     const modal = new bootstrap.Modal(document.getElementById('admin-confirm'));
     const reason = document.getElementById('admin-reason');
     let state = structuredClone(seed);
@@ -17,9 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let list = null;
 
     function showError(message) {
-        error.textContent = message;
-        error.hidden = false;
-        feedback.hidden = true;
+        window.ViejobToast.notify(message, 'error');
     }
 
     try {
@@ -35,25 +31,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 const defaults = seed.companies.find(entry => entry.id === company.id);
                 return { ...defaults, ...company };
             });
-            // Bổ sung danh mục cho phiên demo cũ mà không đặt lại các thao tác Admin.
-            if (!Array.isArray(state.occupations) || !Array.isArray(state.specialties)) {
-                state.occupations = structuredClone(seed.occupations);
-                state.specialties = structuredClone(seed.specialties);
-            }
+
         }
     } catch (failure) {
         showError('Không đọc được phiên demo. Đang dùng dữ liệu mẫu ban đầu.');
     }
 
-    ['industries', 'skills', 'levels'].forEach(function (key) {
-        if (!Array.isArray(state[key])) {
-            state[key] = structuredClone(seed[key]);
-        }
-        state[key] = state[key].map(function (item) {
-            const original = seed[key].find(entry => entry.id === item.id);
-            return { ...original, ...item };
-        });
-    });
+
 
     function commit(change) {
         const next = structuredClone(state);
@@ -61,9 +45,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             sessionStorage.setItem(storageKey, JSON.stringify(next));
             state = next;
-            feedback.textContent = 'Đã lưu thay đổi mô phỏng trong tab này. Chưa cập nhật database hoặc hệ thống thật.';
-            feedback.hidden = false;
-            error.hidden = true;
+            window.ViejobToast.notify('Đã lưu thay đổi mô phỏng trong tab này. Chưa cập nhật database hoặc hệ thống thật.', 'success');
             return true;
         } catch (failure) {
             showError('Không thể lưu phiên demo. Thay đổi chưa được áp dụng; hãy cho phép bộ nhớ phiên của trình duyệt.');
@@ -112,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (document.getElementById('admin-filters')) {
         list = window.createAdminList(context);
-        window.setupAdminCategories(context, list);
     }
     if (page === 'dashboard') {
         window.setupAdminDashboard(context);

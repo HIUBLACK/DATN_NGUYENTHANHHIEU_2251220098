@@ -1,15 +1,22 @@
 <?php
 
+use App\Http\Controllers\AIResumeController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CandidateDemoController;
+use App\Http\Controllers\CandidateDocumentController;
 use App\Http\Controllers\CandidatePageController;
+use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\CompanyProfileController;
 use App\Http\Controllers\GoogleAuthController;
+use App\Http\Controllers\GooglePasswordSetupController;
+use App\Http\Controllers\PasswordRecoveryController;
 use App\Http\Controllers\RecruiterPageController;
+use App\Http\Controllers\SavedJobController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [CandidatePageController::class, 'home'])->name('home');
 Route::get('/viec-lam', [CandidatePageController::class, 'jobs'])->name('jobs');
+Route::get('/viec-lam/mau/{id}', [CandidatePageController::class, 'demoJob'])->whereNumber('id')->name('jobs.demo');
 Route::get('/viec-lam/{id}', [CandidatePageController::class, 'job'])->whereNumber('id')->name('jobs.show');
 
 $publicPages = [
@@ -17,8 +24,6 @@ $publicPages = [
     'gioi-thieu' => ['about', 'Giới thiệu'],
     'login' => ['login', 'Đăng nhập'],
     'register' => ['register', 'Đăng ký'],
-    'quen-mat-khau' => ['forgot', 'Quên mật khẩu'],
-    'dat-lai-mat-khau' => ['reset', 'Đặt lại mật khẩu'],
 ];
 
 foreach ($publicPages as $path => [$page, $title]) {
@@ -30,6 +35,19 @@ foreach ($publicPages as $path => [$page, $title]) {
 }
 
 Route::redirect('/dang-nhap', '/login');
+Route::redirect('/quen-mat-khau', '/forgot-password')->name('forgot');
+Route::redirect('/dat-lai-mat-khau', '/forgot-password')->name('reset');
+Route::middleware('guest')->group(function () {
+    Route::get('/forgot-password', [PasswordRecoveryController::class, 'page'])
+        ->defaults('page', 'forgot')->defaults('title', 'Quên mật khẩu')->name('password.request');
+    Route::get('/reset-password/{token}', [PasswordRecoveryController::class, 'page'])
+        ->where('token', '[A-Za-z0-9]{1,255}')
+        ->defaults('page', 'reset')->defaults('title', 'Đặt lại mật khẩu')->name('password.reset');
+    Route::post('/forgot-password', [PasswordRecoveryController::class, 'send'])
+        ->middleware('throttle:password-email')->name('password.email');
+    Route::post('/reset-password', [PasswordRecoveryController::class, 'reset'])
+        ->middleware('throttle:10,1')->name('password.update');
+});
 Route::get('/auth/google/redirect', [GoogleAuthController::class, 'redirect'])
     ->middleware(['guest', 'throttle:10,1'])->block()->name('google.redirect');
 Route::get('/auth/google/callback', [GoogleAuthController::class, 'callback'])
@@ -41,6 +59,10 @@ Route::post('/register/google', [GoogleAuthController::class, 'complete'])
     ->middleware(['guest', 'throttle:register'])->block()->name('google.complete');
 Route::post('/account/google/link', [GoogleAuthController::class, 'link'])
     ->middleware(['auth', 'auth.session', 'throttle:5,1'])->block()->name('google.link');
+Route::post('/account/password/setup/google', [GooglePasswordSetupController::class, 'start'])
+    ->middleware(['auth', 'auth.session', 'throttle:password-setup-start'])->block()->name('password.setup.google');
+Route::post('/account/password/setup', [GooglePasswordSetupController::class, 'complete'])
+    ->middleware(['auth', 'auth.session', 'throttle:password-setup-complete'])->block()->name('password.setup.complete');
 Route::redirect('/dang-ky', '/register');
 Route::post('/register', [AuthController::class, 'register'])->middleware(['guest', 'throttle:register'])->name('auth.register');
 Route::post('/login', [AuthController::class, 'login'])->middleware(['guest', 'throttle:login'])->name('auth.login');
@@ -49,6 +71,8 @@ Route::post('/tai-khoan/doi-mat-khau', [AuthController::class, 'password'])
     ->middleware(['auth', 'auth.session', 'throttle:5,1'])->name('password.change');
 
 Route::middleware(['auth', 'auth.session', 'role:candidate'])->group(function () {
+    Route::post('/ung-vien/goi-y-ai/lam-moi', [CandidatePageController::class, 'refreshRecommendations'])
+        ->middleware('throttle:5,1')->name('candidate.recommendations.refresh');
     $candidatePages = [
         'cv' => ['resumes', 'Quản lý CV'],
         'goi-y-ai' => ['recommendations', 'Việc làm gợi ý AI'],
@@ -71,18 +95,24 @@ Route::middleware(['auth', 'auth.session', 'role:candidate'])->group(function ()
     Route::post('/demo/thoat', [CandidateDemoController::class, 'leave'])->name('demo.leave');
     Route::post('/demo/xoa-du-lieu', [CandidateDemoController::class, 'reset'])->name('demo.reset');
     Route::post('/demo/ho-so-mau', [CandidateDemoController::class, 'sampleApplications'])->name('demo.applications');
-    Route::post('/ung-vien/cv', [CandidateDemoController::class, 'upload'])->name('candidate.upload');
-    Route::post('/ung-vien/cv/{id}/pdf', [CandidateDemoController::class, 'upload'])->name('candidate.replace');
-    Route::get('/ung-vien/cv/{id}/pdf', [CandidateDemoController::class, 'pdf'])->name('candidate.pdf');
-    Route::post('/ung-vien/cv/{id}/{action}', [CandidateDemoController::class, 'resumeAction'])
-        ->whereIn('action', ['main', 'rename', 'delete', 'state', 'sample'])
-        ->name('candidate.resume-action');
-    Route::post('/ung-vien/luu/{id}', [CandidateDemoController::class, 'save'])->whereNumber('id')->name('candidate.save');
-    Route::post('/ung-vien/ung-tuyen/{id}', [CandidateDemoController::class, 'apply'])->whereNumber('id')->block()->name('candidate.apply');
-    Route::post('/ung-vien/rut-ho-so/{id}', [CandidateDemoController::class, 'withdraw'])->block()->name('candidate.withdraw');
-    Route::post('/ung-vien/thong-bao/{id}', [CandidateDemoController::class, 'readNotification'])->name('candidate.read');
-    Route::post('/ung-vien/ho-so', [CandidateDemoController::class, 'profile'])->name('candidate.profile-save');
-    Route::get('/ung-vien/anh-dai-dien', [CandidateDemoController::class, 'avatar'])->name('candidate.avatar');
+    Route::post('/ung-vien/cv', [CandidateDocumentController::class, 'upload'])->middleware('throttle:20,1')->block()->name('candidate.upload');
+    Route::post('/ung-vien/cv/{id}/pdf', [CandidateDocumentController::class, 'upload'])->whereUuid('id')->middleware('throttle:20,1')->block()->name('candidate.replace');
+    Route::get('/ung-vien/cv/{id}/pdf', [CandidateDocumentController::class, 'pdf'])->whereUuid('id')->name('candidate.pdf');
+    // Giới hạn lượt thử lại AI và khóa session để giảm thao tác gửi lặp.
+    Route::post('/ung-vien/cv/{id}/phan-tich-lai', [AIResumeController::class, 'retryAnalysis'])
+        ->whereUuid('id')->middleware('throttle:5,1')->block()->name('candidate.analysis-retry');
+    Route::post('/ung-vien/cv/{id}/{action}', [CandidateDocumentController::class, 'resumeAction'])
+        ->whereIn('action', ['main', 'rename', 'delete'])
+        ->whereUuid('id')->block()->name('candidate.resume-action');
+    Route::post('/ung-vien/luu/{id}', [SavedJobController::class, 'update'])->whereNumber('id')->block()->name('candidate.save');
+    Route::delete('/ung-vien/luu/{id}', [SavedJobController::class, 'update'])->whereNumber('id')->block()->name('candidate.unsave');
+    Route::post('/ung-vien/ung-tuyen/{id}', [CandidateDocumentController::class, 'apply'])->whereNumber('id')->block()->name('candidate.apply');
+    Route::get('/ung-vien/ho-so-ung-tuyen/{id}', [CandidatePageController::class, 'applicationDetail'])->whereUuid('id')->name('candidate.application-detail');
+    Route::get('/ung-vien/ho-so-ung-tuyen/{id}/pdf', [CandidateDocumentController::class, 'snapshot'])->whereUuid('id')->name('candidate.snapshot');
+    Route::post('/ung-vien/rut-ho-so/{id}', [CandidateDocumentController::class, 'withdraw'])->block()->name('candidate.withdraw');
+    Route::post('/ung-vien/thong-bao/{id}', [CandidateDocumentController::class, 'readNotification'])->name('candidate.read');
+    Route::post('/ung-vien/ho-so', [CandidateProfileController::class, 'update'])->middleware('throttle:20,1')->block()->name('candidate.profile-save');
+    Route::get('/ung-vien/anh-dai-dien', [CandidateProfileController::class, 'avatar'])->name('candidate.avatar');
 });
 
 Route::middleware(['auth', 'auth.session', 'role:recruiter'])->group(function () {

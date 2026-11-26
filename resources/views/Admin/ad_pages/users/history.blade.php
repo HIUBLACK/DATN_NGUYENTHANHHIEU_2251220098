@@ -1,5 +1,5 @@
 @extends('Admin.layout.admin')
 
 @section('content')
-    <div id="admin-detail"></div>
+    @include('Admin.component.management-detail')
 @endsection

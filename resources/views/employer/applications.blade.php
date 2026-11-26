@@ -2,48 +2,59 @@
 
 @section('content')
     <div class="card p-4 mb-4">
-        <form id="application-filters" class="row g-3 align-items-end">
+        <form id="application-filters" method="get" action="{{ route('recruiter.applications') }}" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label for="candidate-search" class="form-label-custom">Tìm theo tên ứng viên</label>
-                <input id="candidate-search" name="q" class="form-control-custom" placeholder="Nhập họ tên">
+                <input id="candidate-search" name="q" value="{{ request('q') }}" maxlength="150" class="form-control-custom" placeholder="Nhập họ tên">
             </div>
             <div class="col-md-3">
                 <label for="application-status" class="form-label-custom">Trạng thái hồ sơ</label>
-                <select id="application-status" name="status" class="form-select-custom" data-options="application"></select>
+                <select id="application-status" name="status" class="form-select-custom">
+                    <option value="">Tất cả trạng thái</option>
+                    @foreach ($statusLabels as $value => $label)
+                        <option value="{{ $value }}" @selected(request('status') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="col-md-3">
                 <label for="application-job" class="form-label-custom">Tin tuyển dụng</label>
-                <select id="application-job" name="jobId" class="form-select-custom"></select>
+                <select id="application-job" name="jobId" class="form-select-custom">
+                    <option value="">Tất cả tin tuyển dụng</option>
+                    @foreach ($jobs as $job)
+                        <option value="{{ $job->id }}" @selected((string) request('jobId') === (string) $job->id)>{{ $job->latestVersion?->title }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="col-md-3">
                 <label for="application-ai-status" class="form-label-custom">Đánh giá AI</label>
-                <select id="application-ai-status" name="aiStatus" class="form-select-custom">
-                    <option value="">Tất cả đánh giá</option>
-                    <option value="completed">Đã đánh giá</option>
-                    <option value="unrated">Chưa có kết quả</option>
-                    <option value="pending">Chưa đánh giá</option>
-                    <option value="processing">Đang đánh giá</option>
-                    <option value="failed">Đánh giá thất bại</option>
+                <select id="application-ai-status" name="ai_status" class="form-select-custom">
+                    <option value="">Tất cả trạng thái đã lưu</option>
+                    @foreach (['not_evaluated' => 'Chưa đánh giá', 'pending' => 'Chờ đánh giá', 'processing' => 'Đang đánh giá', 'completed' => 'Đã đánh giá', 'failed' => 'Thất bại'] as $value => $label)
+                        <option value="{{ $value }}" @selected(request('ai_status') === $value)>{{ $label }}</option>
+                    @endforeach
                 </select>
             </div>
             <div class="col-md-3">
                 <label for="application-sort" class="form-label-custom">Sắp xếp</label>
                 <select id="application-sort" name="sort" class="form-select-custom">
-                    <option value="">Thứ tự mặc định</option>
-                    <option value="ai-desc">Điểm AI cao nhất</option>
-                    <option value="ai-asc">Điểm AI thấp nhất</option>
+                    <option value="">Ngày ứng tuyển mới nhất</option>
+                    <option value="score" @selected(request('sort') === 'score')>Điểm AI đã lưu cao nhất</option>
                 </select>
             </div>
             <div class="col-md-3">
-                <button type="reset" class="btn btn-light">
+                <button type="submit" class="btn btn-outline-dark">
+                    <i class="bi bi-search" aria-hidden="true"></i> Tìm kiếm
+                </button>
+                <a href="{{ route('recruiter.applications') }}" class="btn btn-light">
                     <i class="bi bi-arrow-counterclockwise" aria-hidden="true"></i>
                     Xóa tìm kiếm
-                </button>
+                </a>
             </div>
         </form>
     </div>
-    <p class="small text-muted-green">Điểm AI là dữ liệu minh họa về độ phù hợp CV–JD, không phải xác suất được tuyển. Quyết định tuyển dụng thuộc về nhà tuyển dụng.</p>
-    <p id="application-count"></p>
+    <p class="small text-muted-green">Điểm AI là mức độ phù hợp tham khảo, không phải xác suất trúng tuyển. Quyết định tuyển dụng thuộc về nhà tuyển dụng.</p>
+    <p class="small text-muted-green">Bộ lọc và sắp xếp AI dùng lần đánh giá đã lưu gần nhất. Kết quả cũ sẽ được đánh dấu cần đánh giá lại.</p>
+    <p id="application-count">{{ $applications->total() }} hồ sơ ứng tuyển</p>
     <div class="table-card-custom">
         <div class="table-responsive">
             <table class="table-custom">
@@ -57,8 +68,48 @@
                         <th>Thao tác</th>
                     </tr>
                 </thead>
-                <tbody id="application-table-body"></tbody>
+                <tbody id="application-table-body">
+                    @forelse ($applications as $application)
+                        <tr>
+                            <td class="recruiter-order">{{ $applications->firstItem() + $loop->index }}</td>
+                            <td>
+                                <a href="{{ route('recruiter.application-detail', ['id' => $application->public_id]) }}">{{ $application->candidate->name }}</a>
+                                <p class="small mb-0">{{ $application->jobVersion->title }}</p>
+                            </td>
+                            <td>
+                                {{ \App\Support\DisplayDate::format($application->applied_at) }}
+                                <p class="small mb-0">Lượt {{ $application->attempt_no }}/2</p>
+                            </td>
+                            <td>
+                                <span class="badge-table {{ $statusTones[$application->status->value] }}">{{ $statusLabels[$application->status->value] }}</span>
+                            </td>
+                            <td>
+                                @if ($aiSummaries[$application->id]['result'])
+                                    <strong>{{ number_format($aiSummaries[$application->id]['result']->score, 2, ',', '.') }}/100</strong>
+                                @endif
+                                <p class="text-muted-green mb-0">{{ $aiSummaries[$application->id]['label'] }}</p>
+                            </td>
+                            <td>
+                                <div class="recruiter-actions">
+                                    <a class="btn btn-light btn-sm" href="{{ route('recruiter.application-detail', ['id' => $application->public_id]) }}">
+                                        <i class="bi bi-person-lines-fill" aria-hidden="true"></i> Chi tiết
+                                    </a>
+                                    <a class="btn btn-outline-dark btn-sm" href="{{ route('recruiter.application-pdf', $application->public_id) }}" target="_blank" rel="noopener">
+                                        <i class="bi bi-file-earmark-pdf" aria-hidden="true"></i> Xem CV
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="text-center p-4">Không có hồ sơ phù hợp.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
             </table>
         </div>
+    </div>
+    <div class="mt-4">
+        {{ $applications->links('pagination::bootstrap-5') }}
     </div>
 @endsection

@@ -5,15 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!source || !groupSelect || !specialtySelect) {
         return;
     }
-    let categories = JSON.parse(source.textContent);
-    try {
-        const admin = JSON.parse(sessionStorage.getItem('viejob-admin-preview-v1') || 'null');
-        if (Array.isArray(admin?.occupations) && Array.isArray(admin?.specialties)) {
-            categories = admin;
-        }
-    } catch (error) {
-        // Phiên demo không đọc được thì giữ danh mục mẫu do server cung cấp.
-    }
+    const categories = JSON.parse(source.textContent);
     const parameters = new URLSearchParams(location.search);
     const requestedGroup = parameters.get('occupationId') || '';
     const requestedSpecialty = parameters.get('specialtyId') || '';

@@ -2,13 +2,18 @@
 
 namespace App\Providers;
 
+use App\Enums\UserRole;
+use App\Enums\UserStatus;
 use App\Models\Company;
 use App\Models\Job;
 use App\Models\User;
+use App\Notifications\RecruiterApplicationNotice;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -26,6 +31,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        View::composer('employer.component.header', function ($view) {
+            $view->with('recruiterUnreadCount', auth()->user()?->unreadNotifications()
+                ->where('type', RecruiterApplicationNotice::class)->count() ?? 0);
+        });
+        Gate::define('manage-system', function (User $user) {
+            return $user->role === UserRole::Admin
+                && $user->status === UserStatus::Active;
+        });
         RateLimiter::for('login', function (Request $request) {
             $email = is_string($request->input('email')) ? mb_strtolower(trim($request->input('email'))) : '';
 
@@ -35,6 +48,16 @@ class AppServiceProvider extends ServiceProvider
             ];
         });
         RateLimiter::for('register', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
+        RateLimiter::for('password-setup-start', fn (Request $request) => Limit::perMinute(5)->by('setup-start:'.$request->user()->id));
+        RateLimiter::for('password-setup-complete', fn (Request $request) => Limit::perMinute(5)->by('setup-complete:'.$request->user()->id));
+        RateLimiter::for('password-email', function (Request $request) {
+            $email = is_string($request->input('email')) ? mb_strtolower(trim($request->input('email'))) : '';
+
+            return [
+                Limit::perMinute(10)->by('password-ip:'.$request->ip()),
+                Limit::perHour(5)->by('password-email:'.hash('sha256', $email)),
+            ];
+        });
         // Stable aliases match the CHECK constraint on activity_logs.subject_type.
         Relation::enforceMorphMap([
             'user' => User::class,
