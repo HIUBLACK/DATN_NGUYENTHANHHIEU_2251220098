@@ -27,14 +27,18 @@
             </div>
             <div class="col-md-3">
                 <label for="application-ai-status" class="form-label-custom">Đánh giá AI</label>
-                <select id="application-ai-status" class="form-select-custom" disabled>
-                    <option>Chưa triển khai đánh giá AI</option>
+                <select id="application-ai-status" name="ai_status" class="form-select-custom">
+                    <option value="">Tất cả trạng thái đã lưu</option>
+                    @foreach (['not_evaluated' => 'Chưa đánh giá', 'pending' => 'Chờ đánh giá', 'processing' => 'Đang đánh giá', 'completed' => 'Đã đánh giá', 'failed' => 'Thất bại'] as $value => $label)
+                        <option value="{{ $value }}" @selected(request('ai_status') === $value)>{{ $label }}</option>
+                    @endforeach
                 </select>
             </div>
             <div class="col-md-3">
                 <label for="application-sort" class="form-label-custom">Sắp xếp</label>
-                <select id="application-sort" class="form-select-custom" disabled>
-                    <option>Ngày ứng tuyển mới nhất</option>
+                <select id="application-sort" name="sort" class="form-select-custom">
+                    <option value="">Ngày ứng tuyển mới nhất</option>
+                    <option value="score" @selected(request('sort') === 'score')>Điểm AI đã lưu cao nhất</option>
                 </select>
             </div>
             <div class="col-md-3">
@@ -48,7 +52,8 @@
             </div>
         </form>
     </div>
-    <p class="small text-muted-green">Chưa triển khai đánh giá AI. Quyết định tuyển dụng thuộc về nhà tuyển dụng.</p>
+    <p class="small text-muted-green">Điểm AI là mức độ phù hợp tham khảo, không phải xác suất trúng tuyển. Quyết định tuyển dụng thuộc về nhà tuyển dụng.</p>
+    <p class="small text-muted-green">Bộ lọc và sắp xếp AI dùng lần đánh giá đã lưu gần nhất. Kết quả cũ sẽ được đánh dấu cần đánh giá lại.</p>
     <p id="application-count">{{ $applications->total() }} hồ sơ ứng tuyển</p>
     <div class="table-card-custom">
         <div class="table-responsive">
@@ -79,7 +84,10 @@
                                 <span class="badge-table {{ $statusTones[$application->status->value] }}">{{ $statusLabels[$application->status->value] }}</span>
                             </td>
                             <td>
-                                <span class="text-muted-green">Chưa đánh giá</span>
+                                @if ($aiSummaries[$application->id]['result'])
+                                    <strong>{{ number_format($aiSummaries[$application->id]['result']->score, 2, ',', '.') }}/100</strong>
+                                @endif
+                                <p class="text-muted-green mb-0">{{ $aiSummaries[$application->id]['label'] }}</p>
                             </td>
                             <td>
                                 <div class="recruiter-actions">

@@ -17,6 +17,8 @@ Route::post('/nha-tuyen-dung/quan-ly/thong-bao/{id}/da-doc', [RecruiterPageContr
 
 Route::get('/nha-tuyen-dung/quan-ly/ho-so', [RecruiterApplicationController::class, 'index'])->name('recruiter.applications');
 Route::get('/nha-tuyen-dung/quan-ly/ho-so/chi-tiet', [RecruiterApplicationController::class, 'show'])->name('recruiter.application-detail');
+Route::post('/nha-tuyen-dung/quan-ly/ho-so/{id}/danh-gia-ai', [RecruiterApplicationController::class, 'evaluate'])
+    ->whereUuid('id')->middleware('throttle:10,1')->block()->name('recruiter.application-evaluate');
 Route::get('/nha-tuyen-dung/quan-ly/ho-so/{id}/pdf', [RecruiterApplicationController::class, 'snapshot'])->whereUuid('id')->name('recruiter.application-pdf');
 Route::post('/nha-tuyen-dung/quan-ly/ho-so/{id}/trang-thai', [RecruiterApplicationController::class, 'transition'])
     ->whereUuid('id')->middleware('throttle:30,1')->block()->name('recruiter.application-status');

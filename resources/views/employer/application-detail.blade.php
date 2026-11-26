@@ -8,9 +8,39 @@
                     <i class="bi bi-stars me-2" aria-hidden="true"></i>
                     Đánh giá phù hợp bằng AI
                 </h2>
-                <span class="badge-table pending">Chưa đánh giá</span>
+                <span class="badge-table {{ $ai['state'] === 'completed' ? 'success' : 'pending' }}">{{ $ai['label'] }}</span>
             </div>
-            <p class="alert alert-light border">Chưa triển khai đánh giá AI. Bạn vẫn có thể xem CV và xử lý hồ sơ bình thường.</p>
+            <p class="alert alert-light border">Điểm AI là mức độ phù hợp tham khảo, không phải xác suất trúng tuyển. Quyết định tuyển dụng thuộc về nhà tuyển dụng.</p>
+            @if ($ai['result'])
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <strong>Điểm phù hợp: {{ number_format($ai['result']->score, 2, ',', '.') }}/100</strong>
+                    </div>
+                    <div class="col-md-4">Ngữ nghĩa: {{ number_format($ai['result']->semantic_score, 2, ',', '.') }}/100</div>
+                    <div class="col-md-4">Kỹ năng: {{ number_format($ai['result']->skill_score, 2, ',', '.') }}/100</div>
+                </div>
+                <h3 class="h6">Kỹ năng có bằng chứng đáp ứng</h3>
+                <p>{{ collect($ai['result']->matched_skills)->pluck('name')->join(', ') ?: 'Chưa tìm thấy bằng chứng' }}</p>
+                <h3 class="h6">Kỹ năng bắt buộc chưa tìm thấy bằng chứng</h3>
+                <p>{{ collect($ai['result']->missing_skills)->pluck('name')->join(', ') ?: 'Không có' }}</p>
+                @foreach (explode("\n", $ai['result']->explanation) as $line)
+                    <p class="small mb-1 text-break">{{ $line }}</p>
+                @endforeach
+                <p class="small">Đánh giá lúc {{ \App\Support\DisplayDate::format($ai['result']->evaluated_at) }} · Công thức {{ $ai['result']->formula_version }}</p>
+            @elseif (in_array($ai['state'], ['pending', 'processing']))
+                <p>AI đang chờ hoặc đang xử lý. Bạn vẫn có thể xử lý hồ sơ và tải lại trang để xem kết quả.</p>
+            @else
+                <p>{{ $ai['message'] ?? 'Chưa có điểm hợp lệ cho dữ liệu hiện tại. Có thể yêu cầu đánh giá riêng hồ sơ này.' }}</p>
+            @endif
+            @if (! in_array($ai['state'], ['completed', 'pending', 'processing']))
+                <form method="post" action="{{ route('recruiter.application-evaluate', $application->public_id) }}" class="mb-3">
+                    @csrf
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-stars me-1" aria-hidden="true"></i>
+                        {{ $ai['state'] === 'not_evaluated' ? 'Yêu cầu đánh giá AI' : 'Thử đánh giá lại' }}
+                    </button>
+                </form>
+            @endif
             <p class="mb-0">Tin ứng tuyển: <strong>{{ $application->jobVersion->title }}</strong> · Phiên bản V{{ $application->jobVersion->version_number }}</p>
         </section>
         <div class="row g-4">

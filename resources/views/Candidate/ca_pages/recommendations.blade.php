@@ -3,13 +3,17 @@
 @section('content')
     <section class="site-section">
         <div class="container">
-            @include('Candidate.demo-notice')
-            <p>Điểm phù hợp chỉ là chỉ số tham khảo, không phải xác suất trúng tuyển. Các điểm trên trang này là số liệu minh họa, chưa có mô hình AI xử lý CV.</p>
+            <p>Điểm phù hợp chỉ là chỉ số tham khảo, không phải xác suất trúng tuyển.</p>
+            <p class="small text-muted">Mỗi lượt xét tối đa {{ max(1, min(20, (int) config('ai.recommendation.max_jobs'))) }} tin công khai mới nhất. Tin chưa đủ dữ liệu AI chưa có điểm đề xuất.</p>
             <div class="bg-light p-4 border rounded mb-4">
-                <h2 class="h5">CV chính: {{ $mainResume['name'] ?? 'Chưa có' }}</h2>
+                <h2 class="h5">CV chính: {{ $recommendationResume ?? 'Chưa có' }}</h2>
                 <a class="btn btn-outline-primary" href="{{ route('candidate.resumes') }}">Thay đổi CV chính</a>
+                <form method="post" action="{{ route('candidate.recommendations.refresh') }}" class="d-inline">
+                    @csrf
+                    <button class="btn btn-outline-primary" type="submit">Kiểm tra lại đề xuất</button>
+                </form>
             </div>
-            @if ($mainResume && in_array($mainResume['status'], ['completed', 'needs_review']))
+            @if ($recommendationState === 'completed')
                 <form method="get" class="row mb-4">
                     <div class="col-md-5 form-group">
                         <label for="recommend-location">Địa điểm</label>
@@ -39,20 +43,23 @@
                             @include('Candidate.job-row', ['job' => $recommendation['job']])
                         </ul>
                         <div class="bg-light border rounded p-4">
-                            <h3 class="h5 text-primary">{{ $recommendation['score'] }}% phù hợp — minh họa</h3>
-                            <progress class="candidate-progress mb-3" value="{{ $recommendation['score'] }}" max="100" aria-label="Điểm phù hợp minh họa"></progress>
+                            <h3 class="h5 text-primary">{{ $recommendation['score'] }}/100 phù hợp</h3>
+                            <progress class="candidate-progress mb-3" value="{{ $recommendation['score'] }}" max="100" aria-label="Điểm phù hợp AI"></progress>
+                            <p>Ngữ nghĩa: {{ $recommendation['semantic_score'] }}/100 · Kỹ năng: {{ $recommendation['skill_score'] }}/100</p>
                             <p>Kỹ năng đáp ứng: {{ implode(', ', $recommendation['matched']) ?: 'Chưa có' }}</p>
-                            <p>Kỹ năng còn thiếu: {{ implode(', ', $recommendation['missing']) ?: 'Không có trong danh sách mẫu' }}</p>
-                            <a class="btn btn-primary text-white" href="{{ route('jobs.demo', $recommendation['job']['id']) }}">Chi tiết và ứng tuyển</a>
+                            <p>Kỹ năng bắt buộc chưa tìm thấy bằng chứng: {{ implode(', ', $recommendation['missing']) ?: 'Không có' }}</p>
+                            <p>{{ $recommendation['explanation'] }}</p>
+                            <a class="btn btn-primary text-white" href="{{ route('jobs.show', $recommendation['job']['id']) }}">Chi tiết và ứng tuyển</a>
                         </div>
                     </div>
                 @empty
-                    @include('Candidate.empty-state', ['emptyTitle' => 'Không có gợi ý theo bộ lọc'])
+                    @include('Candidate.empty-state', ['emptyTitle' => 'Chưa có tin đủ dữ liệu phù hợp với bộ lọc'])
                 @endforelse
+                {{ $recommendations->links() }}
             @else
                 @include('Candidate.empty-state', [
-                    'emptyTitle' => 'Gợi ý AI đang tạm dừng',
-                    'emptyDescription' => 'Cần CV chính hợp lệ đã phân tích. Hãy tải PDF và nạp kết quả phân tích mẫu trước khi tiếp tục.',
+                    'emptyTitle' => $recommendationMessage,
+                    'emptyDescription' => 'Bạn có thể tải lại trang hoặc bấm Kiểm tra lại đề xuất. Thử lại tác vụ lỗi sau ít nhất 60 giây.',
                     'emptyUrl' => route('candidate.resumes'),
                     'emptyAction' => 'Hoàn thiện CV',
                 ])

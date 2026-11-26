@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RecruiterApplicationRequest;
 use App\Models\Job;
 use App\Services\RecruiterApplicationService;
+use App\Services\AIApplicationEvaluationService;
 use App\Support\CandidateCatalog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -12,7 +13,10 @@ use Illuminate\Support\Facades\Storage;
 
 class RecruiterApplicationController extends Controller
 {
-    public function __construct(private RecruiterApplicationService $applications) {}
+    public function __construct(
+        private RecruiterApplicationService $applications,
+        private AIApplicationEvaluationService $evaluations
+    ) {}
 
     public function index(Request $request)
     {
@@ -27,11 +31,14 @@ class RecruiterApplicationController extends Controller
         if ($request->filled('jobId')) {
             $query->where('job_id', (int) $request->query('jobId'));
         }
+        $this->evaluations->filterList($query, (string) $request->query('ai_status', ''), (string) $request->query('sort', ''));
         $jobs = Job::whereHas('company', fn ($company) => $company->where('recruiter_id', $request->user()->id)->where('status', 'active'))
             ->with('latestVersion')->orderByDesc('id')->get();
+        $applications = $query->orderByDesc('applied_at')->orderByDesc('id')->paginate(15)->withQueryString();
 
         return view('employer.applications', $this->layout('applications', 'Hồ sơ ứng tuyển') + [
-            'applications' => $query->orderByDesc('applied_at')->orderByDesc('id')->paginate(15)->withQueryString(),
+            'applications' => $applications,
+            'aiSummaries' => $this->evaluations->summaries($request->user(), $applications),
             'jobs' => $jobs,
         ]);
     }
@@ -45,6 +52,7 @@ class RecruiterApplicationController extends Controller
 
         return view('employer.application-detail', $this->layout('application-detail', 'Chi tiết hồ sơ ứng tuyển') + [
             'application' => $application,
+            'ai' => $this->evaluations->summaries($request->user(), [$application])[$application->id],
             'nextStatuses' => RecruiterApplicationService::TRANSITIONS[$application->status->value],
         ]);
     }
@@ -64,6 +72,16 @@ class RecruiterApplicationController extends Controller
         }
 
         return $disk->response($application->resume_snapshot_path, $application->resume_snapshot_filename, $headers);
+    }
+
+    public function evaluate(Request $request, string $id)
+    {
+        $evaluation = $this->evaluations->request($request->user(), $id);
+        $message = $evaluation->evaluation_status->value === 'completed'
+            ? 'Đánh giá đã hoàn thành. Bạn có thể xem kết quả bên dưới.'
+            : 'Đã ghi nhận yêu cầu đánh giá AI. Hãy tải lại trang sau khi Queue xử lý.';
+
+        return redirect()->route('recruiter.application-detail', ['id' => $id])->with('job_notice', $message);
     }
 
     public function transition(RecruiterApplicationRequest $request, string $id)

@@ -37,7 +37,7 @@ class AIOllamaService
     /**
      * Gọi Ollama cục bộ và chỉ trả kết quả đã kiểm tra cấu trúc, bằng chứng.
      */
-    public function analyze(string $text, array $sections = self::SECTIONS): array
+    public function endpoint(): string
     {
         // Chỉ gửi CV đến máy cục bộ; chặn URL ngoài máy kể cả khi cấu hình bị nhập sai.
         $url = rtrim(config('ai.base_url'), '/');
@@ -46,6 +46,13 @@ class AIOllamaService
             || isset($parts['user']) || isset($parts['pass']) || isset($parts['query']) || isset($parts['fragment']) || ! empty($parts['path'])) {
             throw new RuntimeException('invalid_local_endpoint');
         }
+
+        return $url;
+    }
+
+    public function analyze(string $text, array $sections = self::SECTIONS): array
+    {
+        $url = $this->endpoint();
         // Giới hạn đầu vào và đầu ra để phù hợp tài nguyên máy chạy Ollama.
         $text = mb_substr($this->normalize($text), 0, max(1000, min(16000, config('ai.max_characters'))));
         $response = Http::connectTimeout(3)->timeout(max(5, min(150, config('ai.timeout'))))
@@ -189,5 +196,13 @@ class AIOllamaService
         }
 
         return ['schema_version' => 1] + $result;
+    }
+
+    /** Kiểm chứng lại các claim đã lưu với snapshot, bỏ metadata trước khi kiểm tra schema. */
+    public function validateResult(array $result, string $text): array
+    {
+        $claims = array_intersect_key($result, self::SECTIONS);
+
+        return $this->validate($claims, $this->normalize($text), self::SECTIONS);
     }
 }

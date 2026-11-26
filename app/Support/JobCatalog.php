@@ -33,4 +33,22 @@ class JobCatalog
             return in_array(mb_strtolower(trim($skill->name)), $names, true);
         });
     }
+
+    /** Nhận diện tên kỹ năng trong claim đã qua kiểm tra bằng chứng, không so cả câu với tên. */
+    public static function skillsInVerifiedClaims(array $claims): Collection
+    {
+        return self::all('skills')->filter(function ($skill) use ($claims) {
+            $name = preg_quote($skill->name, '~');
+            $name = str_replace(' ', '\\s+', $name);
+            // Biên Unicode tránh nhận Git từ GitHub, Java từ JavaScript hoặc C từ CSS.
+            $pattern = '~(?<![\p{L}\p{N}_+#.])'.$name.'(?![\p{L}\p{N}_+#]|\.[\p{L}\p{N}])~iu';
+            foreach ($claims as $claim) {
+                if (preg_match($pattern, $claim['text'])) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+    }
 }

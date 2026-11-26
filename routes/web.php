@@ -71,6 +71,8 @@ Route::post('/tai-khoan/doi-mat-khau', [AuthController::class, 'password'])
     ->middleware(['auth', 'auth.session', 'throttle:5,1'])->name('password.change');
 
 Route::middleware(['auth', 'auth.session', 'role:candidate'])->group(function () {
+    Route::post('/ung-vien/goi-y-ai/lam-moi', [CandidatePageController::class, 'refreshRecommendations'])
+        ->middleware('throttle:5,1')->name('candidate.recommendations.refresh');
     $candidatePages = [
         'cv' => ['resumes', 'Quản lý CV'],
         'goi-y-ai' => ['recommendations', 'Việc làm gợi ý AI'],

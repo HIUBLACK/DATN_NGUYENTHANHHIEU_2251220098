@@ -146,6 +146,15 @@ try {
     }
     $phpArguments = in_array('--with-gd', $argv, true) ? ['-d', 'extension=gd'] : [];
     $testArguments = in_array('--moderation', $argv, true) ? ['--filter', 'JobModerationTest|RecruiterJobTest|AdminPageTest|AuthenticationTest|PoliciesTest|GooglePreparationTest|GooglePasswordSetupTest|PasswordRecoveryTest'] : [];
+    if (in_array('--matching', $argv, true)) {
+        $testArguments = ['--filter', 'AIMatchingTest|AIJobAnalysisTest|ResumeAnalysisTest'];
+    }
+    if (in_array('--recommendation', $argv, true)) {
+        $testArguments = ['--filter', 'AIRecommendationTest|AIMatchingTest'];
+    }
+    if (in_array('--evaluation', $argv, true)) {
+        $testArguments = ['--filter', 'AIApplicationEvaluationTest|RecruiterApplicationsTest|AIMatchingTest|AIRecommendationTest|ResumeAnalysisTest'];
+    }
     if (in_array('--address', $argv, true)) {
         $testArguments = ['--filter', 'VietnamAddressTest|CompanyProfileTest|RecruiterJobTest|JobModerationTest|PoliciesTest'];
     }

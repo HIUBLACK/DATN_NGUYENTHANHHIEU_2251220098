@@ -215,6 +215,28 @@ class ResumeAnalysisTest extends AuthenticatedDemoTestCase
         return $resume->currentRevision()->firstOrFail();
     }
 
+    public function test_catalog_skills_inside_verified_sentences_are_saved_and_matched(): void
+    {
+        $text = 'Backend skills: PHP, Laravel, MySQL, REST API, Git, Docker. GitHub and JavaScript.';
+        $resume = app(CandidateResumeService::class)->upload(auth()->user(), $this->pdf($text));
+        $revision = $resume->currentRevision()->firstOrFail();
+        $result = array_fill_keys(array_keys(AIOllamaService::SECTIONS), []);
+        $result['technical_skills'] = [['text' => $text, 'evidence' => $text]];
+        $result['technical_skills'][] = ['text' => 'Kubernetes', 'evidence' => 'Invented Kubernetes'];
+        Http::fake(['*' => Http::response(['done' => true, 'message' => ['content' => json_encode($result)]])]);
+        $this->process($revision);
+        $ids = $revision->skills()->pluck('skill_id')->all();
+        $match = app(\App\Services\AIMatchingService::class)->matchSkills($ids, [2, 100, 101, 102, 103, 105]);
+        $this->assertEquals(100, $match['skill_score']);
+        $this->assertCount(6, $match['matched_skills']);
+        $this->assertSame(1, $revision->fresh()->analysis_result['rejected_claim_count']);
+        $names = \App\Support\JobCatalog::skillsInVerifiedClaims([
+            ['text' => 'GitHub JavaScript', 'evidence' => 'GitHub JavaScript'],
+        ])->pluck('name')->all();
+        $this->assertNotContains('Git', $names);
+        $this->assertNotContains('Java', $names);
+    }
+
     private function process(ResumeRevision $revision): void
     {
         app(AIResumeAnalysisService::class)->process($revision->id, $revision->processing_token);

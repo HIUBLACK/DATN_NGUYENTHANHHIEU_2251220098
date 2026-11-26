@@ -3,7 +3,6 @@
 namespace Tests\Feature;
 
 use App\Enums\UserRole;
-use App\Jobs\SendApplicationReceipt;
 use App\Models\Application;
 use App\Models\User;
 use App\Services\CandidateApplicationService;
@@ -11,7 +10,7 @@ use App\Services\CandidateResumeService;
 use App\Services\RecruiterApplicationService;
 use App\Services\RecruiterJobService;
 use Illuminate\Foundation\Testing\DatabaseTransactionsManager;
-use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -180,12 +179,16 @@ class RecruiterApplicationsTest extends AuthenticatedDemoTestCase
         $this->assertSame(1, $this->candidate->notifications()->count());
         Queue::assertNothingPushed();
         $input = $this->statusInput('interview');
+        // SMTP hiện gửi trực tiếp sau commit, không còn đẩy SendApplicationReceipt vào Queue.
+        Mail::shouldReceive('mailer')->andReturnSelf();
+        Mail::shouldReceive('send')->once()->andReturnNull();
+        app(\Illuminate\Notifications\ChannelManager::class)->forgetDrivers();
         $this->post(route('recruiter.application-status', $this->application->public_id), $input)->assertSessionHasNoErrors();
-        Queue::assertPushed(SendApplicationReceipt::class, 1);
+        Queue::assertNothingPushed();
         $this->post(route('recruiter.application-status', $this->application->public_id), $input)->assertSessionHasErrors('status');
         $this->assertSame(2, $this->candidate->notifications()->count());
-        Queue::assertPushed(SendApplicationReceipt::class, 1);
-        Bus::shouldReceive('dispatch')->once()->andThrow(new \RuntimeException('Queue unavailable'));
+        Queue::assertNothingPushed();
+        Mail::shouldReceive('send')->once()->andThrow(new \RuntimeException('SMTP unavailable'));
         $this->change('rejected')->assertSessionHasNoErrors();
         $this->assertSame('rejected', $this->application->fresh()->status->value);
         $this->assertSame(3, $this->candidate->notifications()->count());

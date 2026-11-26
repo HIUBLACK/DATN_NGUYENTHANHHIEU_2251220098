@@ -139,7 +139,7 @@ class CandidatePageController extends Controller
                 'location' => ['nullable', 'string', 'max:100'],
                 'mode' => ['nullable', 'string', 'max:100'],
             ]);
-            $data['recommendations'] = $this->catalog->recommendations($data['mainResume'], $filters);
+            $data = array_merge($data, app(\App\Services\AIRecommendationService::class)->page($request->user(), $filters));
         }
 
         if ($page === 'resumes') {
@@ -178,6 +178,13 @@ class CandidatePageController extends Controller
         }
 
         return view('Candidate.ca_pages.'.$page, $data);
+    }
+
+    public function refreshRecommendations(Request $request): \Illuminate\Http\RedirectResponse
+    {
+        app(\App\Services\AIRecommendationService::class)->page($request->user(), [], true);
+
+        return redirect()->route('candidate.recommendations');
     }
 
     public function applicationDetail(string $id): View

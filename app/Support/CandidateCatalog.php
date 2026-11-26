@@ -150,35 +150,4 @@ class CandidateCatalog
         ];
     }
 
-    public function recommendations(?array $resume, array $filters): array
-    {
-        if (! $resume || ! in_array($resume['status'], ['completed', 'needs_review'], true)) {
-            return [];
-        }
-
-        $skills = array_map('mb_strtolower', $resume['skills']);
-        $recommendations = [];
-
-        foreach ($this->search($filters)->where('status', 'open') as $job) {
-            $matched = [];
-            $missing = [];
-
-            foreach ($job['skills'] as $skill) {
-                if (in_array(mb_strtolower($skill), $skills, true)) {
-                    $matched[] = $skill;
-                } else {
-                    $missing[] = $skill;
-                }
-            }
-
-            $recommendations[] = [
-                'job' => $job,
-                'score' => max(55, 89 - $job['id'] * 3),
-                'matched' => $matched,
-                'missing' => $missing,
-            ];
-        }
-
-        return $recommendations;
-    }
 }

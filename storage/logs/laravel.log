@@ -5,3 +5,497 @@
 [2026-11-26 05:26:26] testing.ERROR: Company save failed. {"company_public_id":"5ef939c3-1f0c-4dab-aa67-4d8c24c1880b","sql_state":"23000"} 
 [2026-11-26 05:52:01] local.INFO: Job AI queue trace. {"queue_job_id":50,"queue_uuid":"9e8c94c7-2e6a-4d6d-8ac6-dfbf67d1f69e","queue_attempts":1,"job_version_id":26,"token_hash":"940852f31ac8","token_matches":true,"attempt_count":0,"status":"pending","error_code":null,"has_result":false,"outcome":"started","database":"db_job"} 
 [2026-11-26 05:52:20] local.INFO: Job AI queue trace. {"queue_job_id":50,"queue_uuid":"9e8c94c7-2e6a-4d6d-8ac6-dfbf67d1f69e","queue_attempts":1,"job_version_id":26,"token_hash":"940852f31ac8","token_matches":true,"attempt_count":1,"status":"completed","error_code":null,"has_result":true,"outcome":"completed","database":"db_job"} 
+[2026-11-26 06:05:00] testing.WARNING: Job AI attempt failed. {"job_version_id":6,"stage":"json","error_code":"invalid_ai_output","token_hash":"3f09ae8810a6","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:00] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"3ba579ca3d23","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:00] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"3ba579ca3d23","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:00] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"3ba579ca3d23","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:01] testing.WARNING: Job AI attempt failed. {"job_version_id":8,"stage":"ollama","error_code":"ollama_response_failed","token_hash":"ed0f0b733943","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:01] testing.WARNING: Job AI attempt failed. {"job_version_id":10,"stage":"evidence","error_code":"empty_job_extraction","token_hash":"a446bfc876bf","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:02] testing.INFO: Job AI queue trace. {"queue_job_id":"e01498d1-5d7f-4ae2-9958-7c6de0230755","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"4573346e4750","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"started","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:02] testing.INFO: Job AI queue trace. {"queue_job_id":"e01498d1-5d7f-4ae2-9958-7c6de0230755","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"4573346e4750","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"busy","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:02] testing.INFO: Job AI queue trace. {"queue_job_id":"4fdd4091-bf33-4c4c-910b-4afde817b09b","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"4573346e4750","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"started","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:02] testing.INFO: Job AI queue trace. {"queue_job_id":"4fdd4091-bf33-4c4c-910b-4afde817b09b","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"4573346e4750","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"exception","database":"viejob_models_test_a22dd8c14308"} 
+[2026-11-26 06:05:07] testing.INFO: CV analysis not executed. {"revision_id":9,"outcome":"completed"} 
+[2026-11-26 06:05:12] testing.WARNING: CV analysis attempt failed. {"revision_id":14,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:05:12] testing.WARNING: CV analysis attempt failed. {"revision_id":14,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 06:05:12] testing.WARNING: CV analysis attempt failed. {"revision_id":14,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 06:05:12] testing.INFO: CV analysis not executed. {"revision_id":14,"outcome":"failed"} 
+[2026-11-26 06:05:12] testing.WARNING: CV analysis attempt failed. {"revision_id":15,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:05:13] testing.WARNING: CV analysis attempt failed. {"revision_id":17,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 06:05:54] testing.WARNING: Job AI attempt failed. {"job_version_id":6,"stage":"json","error_code":"invalid_ai_output","token_hash":"15fcefd7fb68","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:54] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"5cc8f3f3fe61","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:54] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"5cc8f3f3fe61","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:54] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"5cc8f3f3fe61","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:54] testing.WARNING: Job AI attempt failed. {"job_version_id":8,"stage":"ollama","error_code":"ollama_response_failed","token_hash":"d60a2fd17348","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:55] testing.WARNING: Job AI attempt failed. {"job_version_id":10,"stage":"evidence","error_code":"empty_job_extraction","token_hash":"c97d433069b3","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:55] testing.INFO: Job AI queue trace. {"queue_job_id":"f6a8977e-4a2a-4f8c-b05c-3d4f7f68f89b","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"25eb64b5777d","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"started","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:55] testing.INFO: Job AI queue trace. {"queue_job_id":"f6a8977e-4a2a-4f8c-b05c-3d4f7f68f89b","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"25eb64b5777d","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"busy","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:55] testing.INFO: Job AI queue trace. {"queue_job_id":"dd3f4c0c-aa9b-441e-bcf0-424be02597fe","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"25eb64b5777d","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"started","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:55] testing.INFO: Job AI queue trace. {"queue_job_id":"dd3f4c0c-aa9b-441e-bcf0-424be02597fe","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"25eb64b5777d","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"exception","database":"viejob_models_test_be53e57f3ec6"} 
+[2026-11-26 06:05:59] testing.INFO: CV analysis not executed. {"revision_id":9,"outcome":"completed"} 
+[2026-11-26 06:06:01] testing.WARNING: CV analysis attempt failed. {"revision_id":14,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:06:01] testing.WARNING: CV analysis attempt failed. {"revision_id":14,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 06:06:01] testing.WARNING: CV analysis attempt failed. {"revision_id":14,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 06:06:01] testing.INFO: CV analysis not executed. {"revision_id":14,"outcome":"failed"} 
+[2026-11-26 06:06:01] testing.WARNING: CV analysis attempt failed. {"revision_id":15,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:06:02] testing.WARNING: CV analysis attempt failed. {"revision_id":17,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 06:37:40] testing.WARNING: Job AI attempt failed. {"job_version_id":6,"stage":"json","error_code":"invalid_ai_output","token_hash":"6ceeb85edb69","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:40] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"54f54acd4d43","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:40] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"54f54acd4d43","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:40] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"54f54acd4d43","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:40] testing.WARNING: Job AI attempt failed. {"job_version_id":8,"stage":"ollama","error_code":"ollama_response_failed","token_hash":"cfefbc9d3ff2","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:41] testing.WARNING: Job AI attempt failed. {"job_version_id":10,"stage":"evidence","error_code":"empty_job_extraction","token_hash":"58fe8a8d478b","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:42] testing.INFO: Job AI queue trace. {"queue_job_id":"482069ce-e947-4a6f-8ac6-329a0911a622","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"b4e37768c52c","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"started","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:42] testing.INFO: Job AI queue trace. {"queue_job_id":"482069ce-e947-4a6f-8ac6-329a0911a622","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"b4e37768c52c","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"busy","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:42] testing.INFO: Job AI queue trace. {"queue_job_id":"30b34aca-9b29-4673-b35e-83fda756fc14","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"b4e37768c52c","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"started","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:42] testing.INFO: Job AI queue trace. {"queue_job_id":"30b34aca-9b29-4673-b35e-83fda756fc14","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"b4e37768c52c","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"exception","database":"viejob_models_test_a22f8306bf7a"} 
+[2026-11-26 06:37:49] testing.INFO: CV analysis not executed. {"revision_id":13,"outcome":"completed"} 
+[2026-11-26 06:37:53] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:37:53] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 06:37:53] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 06:37:53] testing.INFO: CV analysis not executed. {"revision_id":18,"outcome":"failed"} 
+[2026-11-26 06:37:53] testing.WARNING: CV analysis attempt failed. {"revision_id":19,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:37:54] testing.WARNING: CV analysis attempt failed. {"revision_id":21,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 06:38:41] testing.WARNING: Job AI attempt failed. {"job_version_id":6,"stage":"json","error_code":"invalid_ai_output","token_hash":"37b61c5f821e","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:41] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"d53621cdb5d1","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:41] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"d53621cdb5d1","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:41] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"d53621cdb5d1","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:42] testing.WARNING: Job AI attempt failed. {"job_version_id":8,"stage":"ollama","error_code":"ollama_response_failed","token_hash":"c5ce76e47234","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:42] testing.WARNING: Job AI attempt failed. {"job_version_id":10,"stage":"evidence","error_code":"empty_job_extraction","token_hash":"275d1ef714b2","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:43] testing.INFO: Job AI queue trace. {"queue_job_id":"cfd9f44c-aee7-424f-9be2-2d5710783d77","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"2cdbedd3a8b0","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"started","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:43] testing.INFO: Job AI queue trace. {"queue_job_id":"cfd9f44c-aee7-424f-9be2-2d5710783d77","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"2cdbedd3a8b0","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"busy","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:43] testing.INFO: Job AI queue trace. {"queue_job_id":"a149bb36-1bd4-487f-9b94-93b0869ba671","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"2cdbedd3a8b0","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"started","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:43] testing.INFO: Job AI queue trace. {"queue_job_id":"a149bb36-1bd4-487f-9b94-93b0869ba671","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"2cdbedd3a8b0","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"exception","database":"viejob_models_test_2ba310591f16"} 
+[2026-11-26 06:38:49] testing.INFO: CV analysis not executed. {"revision_id":13,"outcome":"completed"} 
+[2026-11-26 06:38:50] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:38:50] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 06:38:50] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 06:38:50] testing.INFO: CV analysis not executed. {"revision_id":18,"outcome":"failed"} 
+[2026-11-26 06:38:51] testing.WARNING: CV analysis attempt failed. {"revision_id":19,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:38:51] testing.WARNING: CV analysis attempt failed. {"revision_id":21,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 06:40:44] testing.WARNING: Job AI attempt failed. {"job_version_id":6,"stage":"json","error_code":"invalid_ai_output","token_hash":"790f6a36fbf9","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:45] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"249368b7c767","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:45] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"249368b7c767","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:45] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"249368b7c767","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:45] testing.WARNING: Job AI attempt failed. {"job_version_id":8,"stage":"ollama","error_code":"ollama_response_failed","token_hash":"6b7a1319ee70","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:46] testing.WARNING: Job AI attempt failed. {"job_version_id":10,"stage":"evidence","error_code":"empty_job_extraction","token_hash":"0dded3a562e5","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:46] testing.INFO: Job AI queue trace. {"queue_job_id":"599e81d8-fd0f-438e-8b97-36ae9201e58d","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"e4f3af5dc1b6","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"started","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:46] testing.INFO: Job AI queue trace. {"queue_job_id":"599e81d8-fd0f-438e-8b97-36ae9201e58d","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"e4f3af5dc1b6","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"busy","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:46] testing.INFO: Job AI queue trace. {"queue_job_id":"2eb71f04-368c-48b4-af97-85cf037f00ed","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"e4f3af5dc1b6","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"started","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:46] testing.INFO: Job AI queue trace. {"queue_job_id":"2eb71f04-368c-48b4-af97-85cf037f00ed","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"e4f3af5dc1b6","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"exception","database":"viejob_models_test_2c77f1ff35f2"} 
+[2026-11-26 06:40:52] testing.INFO: CV analysis not executed. {"revision_id":13,"outcome":"completed"} 
+[2026-11-26 06:40:54] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:40:54] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 06:40:54] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 06:40:54] testing.INFO: CV analysis not executed. {"revision_id":18,"outcome":"failed"} 
+[2026-11-26 06:40:54] testing.WARNING: CV analysis attempt failed. {"revision_id":19,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 06:40:54] testing.WARNING: CV analysis attempt failed. {"revision_id":21,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:18:46] testing.ERROR: Namespace declaration statement has to be the very first statement or after any declare call in the script {"userId":28,"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Namespace declaration statement has to be the very first statement or after any declare call in the script at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Support/CandidateCatalog.php:3)
+[stacktrace]
+#0 {main}
+"} 
+[2026-11-26 10:25:45] local.ERROR: Recommendation temporarily unavailable. {"exception":"[object] (RuntimeException(code: 0): Recommendation temporarily unavailable. at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Services/AIRecommendationService.php:251)
+[stacktrace]
+#0 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Jobs/AIRecommendJobsJob.php(39): App/Services/AIRecommendationService->process(1, '59f5d627-0726-4...', Array, 0)
+#1 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Jobs/AIRecommendJobsJob->handle(Object(App/Services/AIRecommendationService))
+#2 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#3 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#4 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#5 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#6 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(129): Illuminate/Container/Container->call(Array)
+#7 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Bus/Dispatcher->Illuminate/Bus/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#8 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#9 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(133): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#10 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(136): Illuminate/Bus/Dispatcher->dispatchNow(Object(App/Jobs/AIRecommendJobsJob), false)
+#11 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Queue/CallQueuedHandler->Illuminate/Queue/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#12 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#13 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(129): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#14 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(70): Illuminate/Queue/CallQueuedHandler->dispatchThroughMiddleware(Object(Illuminate/Queue/Jobs/DatabaseJob), Object(App/Jobs/AIRecommendJobsJob))
+#15 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(102): Illuminate/Queue/CallQueuedHandler->call(Object(Illuminate/Queue/Jobs/DatabaseJob), Array)
+#16 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(518): Illuminate/Queue/Jobs/Job->fire()
+#17 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(468): Illuminate/Queue/Worker->process('ai', Object(Illuminate/Queue/Jobs/DatabaseJob), Object(Illuminate/Queue/WorkerOptions))
+#18 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(226): Illuminate/Queue/Worker->runJob(Object(Illuminate/Queue/Jobs/DatabaseJob), 'ai', Object(Illuminate/Queue/WorkerOptions))
+#19 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(149): Illuminate/Queue/Worker->daemon('ai', 'ai', Object(Illuminate/Queue/WorkerOptions))
+#20 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(132): Illuminate/Queue/Console/WorkCommand->runWorker('ai', 'ai')
+#21 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Queue/Console/WorkCommand->handle()
+#22 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Command/Command.php(341): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(1127): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(357): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Queue/Console/WorkCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(196): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/artisan(16): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#35 {main}
+"} 
+[2026-11-26 10:26:19] local.ERROR: Recommendation temporarily unavailable. {"exception":"[object] (RuntimeException(code: 0): Recommendation temporarily unavailable. at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Services/AIRecommendationService.php:251)
+[stacktrace]
+#0 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Jobs/AIRecommendJobsJob.php(39): App/Services/AIRecommendationService->process(1, '59f5d627-0726-4...', Array, 0)
+#1 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Jobs/AIRecommendJobsJob->handle(Object(App/Services/AIRecommendationService))
+#2 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#3 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#4 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#5 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#6 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(129): Illuminate/Container/Container->call(Array)
+#7 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Bus/Dispatcher->Illuminate/Bus/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#8 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#9 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(133): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#10 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(136): Illuminate/Bus/Dispatcher->dispatchNow(Object(App/Jobs/AIRecommendJobsJob), false)
+#11 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Queue/CallQueuedHandler->Illuminate/Queue/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#12 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#13 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(129): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#14 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(70): Illuminate/Queue/CallQueuedHandler->dispatchThroughMiddleware(Object(Illuminate/Queue/Jobs/DatabaseJob), Object(App/Jobs/AIRecommendJobsJob))
+#15 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(102): Illuminate/Queue/CallQueuedHandler->call(Object(Illuminate/Queue/Jobs/DatabaseJob), Array)
+#16 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(518): Illuminate/Queue/Jobs/Job->fire()
+#17 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(468): Illuminate/Queue/Worker->process('ai', Object(Illuminate/Queue/Jobs/DatabaseJob), Object(Illuminate/Queue/WorkerOptions))
+#18 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(226): Illuminate/Queue/Worker->runJob(Object(Illuminate/Queue/Jobs/DatabaseJob), 'ai', Object(Illuminate/Queue/WorkerOptions))
+#19 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(149): Illuminate/Queue/Worker->daemon('ai', 'ai', Object(Illuminate/Queue/WorkerOptions))
+#20 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(132): Illuminate/Queue/Console/WorkCommand->runWorker('ai', 'ai')
+#21 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Queue/Console/WorkCommand->handle()
+#22 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Command/Command.php(341): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(1127): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(357): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Queue/Console/WorkCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(196): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/artisan(16): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#35 {main}
+"} 
+[2026-11-26 10:27:53] local.ERROR: Recommendation temporarily unavailable. {"exception":"[object] (RuntimeException(code: 0): Recommendation temporarily unavailable. at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Services/AIRecommendationService.php:251)
+[stacktrace]
+#0 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Jobs/AIRecommendJobsJob.php(39): App/Services/AIRecommendationService->process(1, '59f5d627-0726-4...', Array, 0)
+#1 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Jobs/AIRecommendJobsJob->handle(Object(App/Services/AIRecommendationService))
+#2 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#3 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#4 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#5 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#6 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(129): Illuminate/Container/Container->call(Array)
+#7 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Bus/Dispatcher->Illuminate/Bus/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#8 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#9 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(133): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#10 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(136): Illuminate/Bus/Dispatcher->dispatchNow(Object(App/Jobs/AIRecommendJobsJob), false)
+#11 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Queue/CallQueuedHandler->Illuminate/Queue/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#12 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#13 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(129): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#14 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(70): Illuminate/Queue/CallQueuedHandler->dispatchThroughMiddleware(Object(Illuminate/Queue/Jobs/DatabaseJob), Object(App/Jobs/AIRecommendJobsJob))
+#15 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(102): Illuminate/Queue/CallQueuedHandler->call(Object(Illuminate/Queue/Jobs/DatabaseJob), Array)
+#16 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(518): Illuminate/Queue/Jobs/Job->fire()
+#17 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(468): Illuminate/Queue/Worker->process('ai', Object(Illuminate/Queue/Jobs/DatabaseJob), Object(Illuminate/Queue/WorkerOptions))
+#18 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(226): Illuminate/Queue/Worker->runJob(Object(Illuminate/Queue/Jobs/DatabaseJob), 'ai', Object(Illuminate/Queue/WorkerOptions))
+#19 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(149): Illuminate/Queue/Worker->daemon('ai', 'ai', Object(Illuminate/Queue/WorkerOptions))
+#20 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(132): Illuminate/Queue/Console/WorkCommand->runWorker('ai', 'ai')
+#21 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Queue/Console/WorkCommand->handle()
+#22 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Command/Command.php(341): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(1127): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(357): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Queue/Console/WorkCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(196): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/artisan(16): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#35 {main}
+"} 
+[2026-11-26 10:41:14] local.INFO: Job AI queue trace. {"queue_job_id":55,"queue_uuid":"f47e7fbc-b141-40c6-925c-5dd9d71d54c5","queue_attempts":1,"job_version_id":27,"token_hash":"83e62cd274d5","token_matches":true,"attempt_count":0,"status":"pending","error_code":null,"has_result":false,"outcome":"started","database":"db_job"} 
+[2026-11-26 10:41:26] local.INFO: Job AI queue trace. {"queue_job_id":55,"queue_uuid":"f47e7fbc-b141-40c6-925c-5dd9d71d54c5","queue_attempts":1,"job_version_id":27,"token_hash":"83e62cd274d5","token_matches":true,"attempt_count":1,"status":"completed","error_code":null,"has_result":true,"outcome":"completed","database":"db_job"} 
+[2026-11-26 10:42:29] local.ERROR: Recommendation temporarily unavailable. {"exception":"[object] (RuntimeException(code: 0): Recommendation temporarily unavailable. at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Services/AIRecommendationService.php:251)
+[stacktrace]
+#0 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Jobs/AIRecommendJobsJob.php(39): App/Services/AIRecommendationService->process(2, '107baa0c-7a24-4...', Array, 0)
+#1 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Jobs/AIRecommendJobsJob->handle(Object(App/Services/AIRecommendationService))
+#2 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#3 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#4 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#5 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#6 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(129): Illuminate/Container/Container->call(Array)
+#7 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Bus/Dispatcher->Illuminate/Bus/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#8 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#9 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(133): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#10 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(136): Illuminate/Bus/Dispatcher->dispatchNow(Object(App/Jobs/AIRecommendJobsJob), false)
+#11 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Queue/CallQueuedHandler->Illuminate/Queue/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#12 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#13 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(129): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#14 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(70): Illuminate/Queue/CallQueuedHandler->dispatchThroughMiddleware(Object(Illuminate/Queue/Jobs/DatabaseJob), Object(App/Jobs/AIRecommendJobsJob))
+#15 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(102): Illuminate/Queue/CallQueuedHandler->call(Object(Illuminate/Queue/Jobs/DatabaseJob), Array)
+#16 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(518): Illuminate/Queue/Jobs/Job->fire()
+#17 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(468): Illuminate/Queue/Worker->process('ai', Object(Illuminate/Queue/Jobs/DatabaseJob), Object(Illuminate/Queue/WorkerOptions))
+#18 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(226): Illuminate/Queue/Worker->runJob(Object(Illuminate/Queue/Jobs/DatabaseJob), 'ai', Object(Illuminate/Queue/WorkerOptions))
+#19 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(149): Illuminate/Queue/Worker->daemon('ai', 'ai', Object(Illuminate/Queue/WorkerOptions))
+#20 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(132): Illuminate/Queue/Console/WorkCommand->runWorker('ai', 'ai')
+#21 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Queue/Console/WorkCommand->handle()
+#22 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Command/Command.php(341): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(1127): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(357): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Queue/Console/WorkCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(196): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/artisan(16): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#35 {main}
+"} 
+[2026-11-26 10:43:03] local.ERROR: Recommendation temporarily unavailable. {"exception":"[object] (RuntimeException(code: 0): Recommendation temporarily unavailable. at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Services/AIRecommendationService.php:251)
+[stacktrace]
+#0 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Jobs/AIRecommendJobsJob.php(39): App/Services/AIRecommendationService->process(2, '107baa0c-7a24-4...', Array, 0)
+#1 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Jobs/AIRecommendJobsJob->handle(Object(App/Services/AIRecommendationService))
+#2 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#3 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#4 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#5 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#6 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(129): Illuminate/Container/Container->call(Array)
+#7 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Bus/Dispatcher->Illuminate/Bus/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#8 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#9 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(133): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#10 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(136): Illuminate/Bus/Dispatcher->dispatchNow(Object(App/Jobs/AIRecommendJobsJob), false)
+#11 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Queue/CallQueuedHandler->Illuminate/Queue/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#12 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#13 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(129): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#14 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(70): Illuminate/Queue/CallQueuedHandler->dispatchThroughMiddleware(Object(Illuminate/Queue/Jobs/DatabaseJob), Object(App/Jobs/AIRecommendJobsJob))
+#15 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(102): Illuminate/Queue/CallQueuedHandler->call(Object(Illuminate/Queue/Jobs/DatabaseJob), Array)
+#16 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(518): Illuminate/Queue/Jobs/Job->fire()
+#17 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(468): Illuminate/Queue/Worker->process('ai', Object(Illuminate/Queue/Jobs/DatabaseJob), Object(Illuminate/Queue/WorkerOptions))
+#18 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(226): Illuminate/Queue/Worker->runJob(Object(Illuminate/Queue/Jobs/DatabaseJob), 'ai', Object(Illuminate/Queue/WorkerOptions))
+#19 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(149): Illuminate/Queue/Worker->daemon('ai', 'ai', Object(Illuminate/Queue/WorkerOptions))
+#20 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(132): Illuminate/Queue/Console/WorkCommand->runWorker('ai', 'ai')
+#21 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Queue/Console/WorkCommand->handle()
+#22 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Command/Command.php(341): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(1127): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(357): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Queue/Console/WorkCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(196): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/artisan(16): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#35 {main}
+"} 
+[2026-11-26 10:44:36] local.ERROR: Recommendation temporarily unavailable. {"exception":"[object] (RuntimeException(code: 0): Recommendation temporarily unavailable. at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Services/AIRecommendationService.php:251)
+[stacktrace]
+#0 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Jobs/AIRecommendJobsJob.php(39): App/Services/AIRecommendationService->process(2, '107baa0c-7a24-4...', Array, 0)
+#1 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Jobs/AIRecommendJobsJob->handle(Object(App/Services/AIRecommendationService))
+#2 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#3 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#4 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#5 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#6 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(129): Illuminate/Container/Container->call(Array)
+#7 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Bus/Dispatcher->Illuminate/Bus/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#8 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#9 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(133): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#10 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(136): Illuminate/Bus/Dispatcher->dispatchNow(Object(App/Jobs/AIRecommendJobsJob), false)
+#11 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Queue/CallQueuedHandler->Illuminate/Queue/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#12 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIRecommendJobsJob))
+#13 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(129): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#14 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(70): Illuminate/Queue/CallQueuedHandler->dispatchThroughMiddleware(Object(Illuminate/Queue/Jobs/DatabaseJob), Object(App/Jobs/AIRecommendJobsJob))
+#15 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(102): Illuminate/Queue/CallQueuedHandler->call(Object(Illuminate/Queue/Jobs/DatabaseJob), Array)
+#16 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(518): Illuminate/Queue/Jobs/Job->fire()
+#17 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(468): Illuminate/Queue/Worker->process('ai', Object(Illuminate/Queue/Jobs/DatabaseJob), Object(Illuminate/Queue/WorkerOptions))
+#18 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(226): Illuminate/Queue/Worker->runJob(Object(Illuminate/Queue/Jobs/DatabaseJob), 'ai', Object(Illuminate/Queue/WorkerOptions))
+#19 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(149): Illuminate/Queue/Worker->daemon('ai', 'ai', Object(Illuminate/Queue/WorkerOptions))
+#20 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(132): Illuminate/Queue/Console/WorkCommand->runWorker('ai', 'ai')
+#21 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Queue/Console/WorkCommand->handle()
+#22 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Command/Command.php(341): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(1127): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(357): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Queue/Console/WorkCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(196): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/artisan(16): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#35 {main}
+"} 
+[2026-11-26 10:47:48] testing.WARNING: Recommendation processing failed. {"run_id":2,"job_version_id":11,"error_code":"embedding_request_failed","exception_class":"RuntimeException"} 
+[2026-11-26 10:57:06] testing.WARNING: Job AI attempt failed. {"job_version_id":6,"stage":"json","error_code":"invalid_ai_output","token_hash":"dc0172cd902b","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:06] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"6618d185aee6","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:06] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"6618d185aee6","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:06] testing.WARNING: Job AI attempt failed. {"job_version_id":7,"stage":"ollama","error_code":"ollama_connection_failed","token_hash":"6618d185aee6","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:06] testing.WARNING: Job AI attempt failed. {"job_version_id":8,"stage":"ollama","error_code":"ollama_response_failed","token_hash":"25f248e33d1d","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:07] testing.WARNING: Job AI attempt failed. {"job_version_id":10,"stage":"evidence","error_code":"empty_job_extraction","token_hash":"bb3fabecaafc","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:07] testing.INFO: Job AI queue trace. {"queue_job_id":"2e5a327a-8607-41e4-a023-2abf6601e314","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"82cc89969ab0","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"started","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:07] testing.INFO: Job AI queue trace. {"queue_job_id":"2e5a327a-8607-41e4-a023-2abf6601e314","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"82cc89969ab0","token_matches":true,"attempt_count":0,"status":"processing","error_code":null,"has_result":false,"outcome":"busy","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:07] testing.INFO: Job AI queue trace. {"queue_job_id":"c50ecd3b-23be-4da2-b274-fb583c24ac93","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"82cc89969ab0","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"started","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:07] testing.INFO: Job AI queue trace. {"queue_job_id":"c50ecd3b-23be-4da2-b274-fb583c24ac93","queue_uuid":null,"queue_attempts":1,"job_version_id":11,"token_hash":"82cc89969ab0","token_matches":true,"attempt_count":0,"status":"failed","error_code":"invalid_ai_json","has_result":false,"outcome":"exception","database":"viejob_models_test_e2cbf85006aa"} 
+[2026-11-26 10:57:13] testing.INFO: CV analysis not executed. {"revision_id":13,"outcome":"completed"} 
+[2026-11-26 10:57:15] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 10:57:15] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 10:57:15] testing.WARNING: CV analysis attempt failed. {"revision_id":18,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 10:57:15] testing.INFO: CV analysis not executed. {"revision_id":18,"outcome":"failed"} 
+[2026-11-26 10:57:15] testing.WARNING: CV analysis attempt failed. {"revision_id":19,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 10:57:16] testing.WARNING: CV analysis attempt failed. {"revision_id":21,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 13:22:35] testing.WARNING: Recommendation processing failed. {"run_id":2,"job_version_id":16,"error_code":"embedding_request_failed","exception_class":"RuntimeException"} 
+[2026-11-26 13:22:43] testing.INFO: CV analysis not executed. {"revision_id":33,"outcome":"completed"} 
+[2026-11-26 13:22:44] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 13:22:44] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 13:22:44] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 13:22:45] testing.INFO: CV analysis not executed. {"revision_id":38,"outcome":"failed"} 
+[2026-11-26 13:22:45] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 13:22:45] testing.WARNING: CV analysis attempt failed. {"revision_id":41,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 13:24:02] testing.WARNING: Recommendation processing failed. {"run_id":2,"job_version_id":16,"error_code":"embedding_request_failed","exception_class":"RuntimeException"} 
+[2026-11-26 13:24:11] testing.INFO: CV analysis not executed. {"revision_id":33,"outcome":"completed"} 
+[2026-11-26 13:24:13] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 13:24:13] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 13:24:13] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 13:24:13] testing.INFO: CV analysis not executed. {"revision_id":38,"outcome":"failed"} 
+[2026-11-26 13:24:13] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 13:24:14] testing.WARNING: CV analysis attempt failed. {"revision_id":41,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 13:25:08] testing.WARNING: Recommendation processing failed. {"run_id":2,"job_version_id":17,"error_code":"embedding_request_failed","exception_class":"RuntimeException"} 
+[2026-11-26 13:25:15] testing.WARNING: Application status email delivery failed. {"application_id":11} 
+[2026-11-26 13:25:16] testing.INFO: CV analysis not executed. {"revision_id":33,"outcome":"completed"} 
+[2026-11-26 13:25:17] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 13:25:17] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 13:25:18] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 13:25:18] testing.INFO: CV analysis not executed. {"revision_id":38,"outcome":"failed"} 
+[2026-11-26 13:25:18] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 13:25:18] testing.WARNING: CV analysis attempt failed. {"revision_id":41,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 13:26:31] testing.WARNING: Recommendation processing failed. {"run_id":2,"job_version_id":17,"error_code":"embedding_request_failed","exception_class":"RuntimeException"} 
+[2026-11-26 13:26:39] testing.WARNING: Application status email delivery failed. {"application_id":11} 
+[2026-11-26 13:26:40] testing.INFO: CV analysis not executed. {"revision_id":33,"outcome":"completed"} 
+[2026-11-26 13:26:41] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 13:26:41] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 13:26:41] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 13:26:41] testing.INFO: CV analysis not executed. {"revision_id":38,"outcome":"failed"} 
+[2026-11-26 13:26:41] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 13:26:42] testing.WARNING: CV analysis attempt failed. {"revision_id":41,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 13:46:15] local.ERROR: Application AI evaluation temporarily unavailable. {"exception":"[object] (RuntimeException(code: 0): Application AI evaluation temporarily unavailable. at D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Services/AIApplicationEvaluationService.php:306)
+[stacktrace]
+#0 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/app/Jobs/AIEvaluateApplicationJob.php(42): App/Services/AIApplicationEvaluationService->process(1, '9d55dbfc-55ad-4...', 2)
+#1 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): App/Jobs/AIEvaluateApplicationJob->handle(Object(App/Services/AIApplicationEvaluationService))
+#2 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#3 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#4 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#5 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#6 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(129): Illuminate/Container/Container->call(Array)
+#7 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Bus/Dispatcher->Illuminate/Bus/{closure}(Object(App/Jobs/AIEvaluateApplicationJob))
+#8 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIEvaluateApplicationJob))
+#9 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Bus/Dispatcher.php(133): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#10 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(136): Illuminate/Bus/Dispatcher->dispatchNow(Object(App/Jobs/AIEvaluateApplicationJob), false)
+#11 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(180): Illuminate/Queue/CallQueuedHandler->Illuminate/Queue/{closure}(Object(App/Jobs/AIEvaluateApplicationJob))
+#12 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(137): Illuminate/Pipeline/Pipeline->Illuminate/Pipeline/{closure}(Object(App/Jobs/AIEvaluateApplicationJob))
+#13 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(129): Illuminate/Pipeline/Pipeline->then(Object(Closure))
+#14 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/CallQueuedHandler.php(70): Illuminate/Queue/CallQueuedHandler->dispatchThroughMiddleware(Object(Illuminate/Queue/Jobs/DatabaseJob), Object(App/Jobs/AIEvaluateApplicationJob))
+#15 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Jobs/Job.php(102): Illuminate/Queue/CallQueuedHandler->call(Object(Illuminate/Queue/Jobs/DatabaseJob), Array)
+#16 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(518): Illuminate/Queue/Jobs/Job->fire()
+#17 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(468): Illuminate/Queue/Worker->process('ai', Object(Illuminate/Queue/Jobs/DatabaseJob), Object(Illuminate/Queue/WorkerOptions))
+#18 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Worker.php(226): Illuminate/Queue/Worker->runJob(Object(Illuminate/Queue/Jobs/DatabaseJob), 'ai', Object(Illuminate/Queue/WorkerOptions))
+#19 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(149): Illuminate/Queue/Worker->daemon('ai', 'ai', Object(Illuminate/Queue/WorkerOptions))
+#20 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Queue/Console/WorkCommand.php(132): Illuminate/Queue/Console/WorkCommand->runWorker('ai', 'ai')
+#21 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(36): Illuminate/Queue/Console/WorkCommand->handle()
+#22 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Util.php(43): Illuminate/Container/BoundMethod::Illuminate/Container/{closure}()
+#23 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(96): Illuminate/Container/Util::unwrapIfClosure(Object(Closure))
+#24 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/BoundMethod.php(35): Illuminate/Container/BoundMethod::callBoundMethod(Object(Illuminate/Foundation/Application), Array, Object(Closure))
+#25 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Container/Container.php(799): Illuminate/Container/BoundMethod::call(Object(Illuminate/Foundation/Application), Array, Array, NULL)
+#26 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(211): Illuminate/Container/Container->call(Array)
+#27 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Command/Command.php(341): Illuminate/Console/Command->execute(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#28 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Console/Command.php(180): Symfony/Component/Console/Command/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Illuminate/Console/OutputStyle))
+#29 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(1127): Illuminate/Console/Command->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#30 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(357): Symfony/Component/Console/Application->doRunCommand(Object(Illuminate/Queue/Console/WorkCommand), Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#31 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/symfony/console/Application.php(196): Symfony/Component/Console/Application->doRun(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#32 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Console/Kernel.php(198): Symfony/Component/Console/Application->run(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#33 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/vendor/laravel/framework/src/Illuminate/Foundation/Application.php(1235): Illuminate/Foundation/Console/Kernel->handle(Object(Symfony/Component/Console/Input/ArgvInput), Object(Symfony/Component/Console/Output/ConsoleOutput))
+#34 D:/ĐỒ ÁN TỐT NGHIỆP/Project Đồ Án/VIEJOB_AI_DATN_2026/artisan(16): Illuminate/Foundation/Application->handleCommand(Object(Symfony/Component/Console/Input/ArgvInput))
+#35 {main}
+"} 
+[2026-11-26 14:01:44] testing.WARNING: Application status email delivery failed. {"application_id":12} 
+[2026-11-26 14:01:44] testing.INFO: CV analysis not executed. {"revision_id":33,"outcome":"completed"} 
+[2026-11-26 14:01:46] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 14:01:46] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 14:01:46] testing.WARNING: CV analysis attempt failed. {"revision_id":38,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 14:01:46] testing.INFO: CV analysis not executed. {"revision_id":38,"outcome":"failed"} 
+[2026-11-26 14:01:46] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 14:01:47] testing.WARNING: CV analysis attempt failed. {"revision_id":41,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 14:02:13] testing.WARNING: Recommendation processing failed. {"run_id":2,"job_version_id":18,"error_code":"embedding_request_failed","exception_class":"RuntimeException"} 
+[2026-11-26 14:02:20] testing.WARNING: Application status email delivery failed. {"application_id":12} 
+[2026-11-26 14:02:21] testing.INFO: CV analysis not executed. {"revision_id":34,"outcome":"completed"} 
+[2026-11-26 14:02:22] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 14:02:22] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 14:02:22] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 14:02:23] testing.INFO: CV analysis not executed. {"revision_id":39,"outcome":"failed"} 
+[2026-11-26 14:02:23] testing.WARNING: CV analysis attempt failed. {"revision_id":40,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 14:02:23] testing.WARNING: CV analysis attempt failed. {"revision_id":42,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 
+[2026-11-26 14:03:23] testing.WARNING: Recommendation processing failed. {"run_id":2,"job_version_id":18,"error_code":"embedding_request_failed","exception_class":"RuntimeException"} 
+[2026-11-26 14:03:30] testing.WARNING: Application status email delivery failed. {"application_id":12} 
+[2026-11-26 14:03:31] testing.INFO: CV analysis not executed. {"revision_id":34,"outcome":"completed"} 
+[2026-11-26 14:03:33] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 14:03:33] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":2} 
+[2026-11-26 14:03:33] testing.WARNING: CV analysis attempt failed. {"revision_id":39,"stage":"ollama","error_code":"ollama_response_failed","attempt":3} 
+[2026-11-26 14:03:33] testing.INFO: CV analysis not executed. {"revision_id":39,"outcome":"failed"} 
+[2026-11-26 14:03:33] testing.WARNING: CV analysis attempt failed. {"revision_id":40,"stage":"ollama","error_code":"ollama_response_failed","attempt":1} 
+[2026-11-26 14:03:33] testing.WARNING: CV analysis attempt failed. {"revision_id":42,"stage":"pdf","error_code":"no_extractable_text","attempt":1} 

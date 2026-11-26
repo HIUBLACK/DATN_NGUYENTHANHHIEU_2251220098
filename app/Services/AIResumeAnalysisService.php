@@ -137,9 +137,8 @@ class AIResumeAnalysisService
                     'next_retry_at' => null,
                 ])->save();
                 // Chỉ liên kết kỹ năng có trong danh mục; không tự tạo kỹ năng từ câu trả lời AI.
-                $names = array_map(fn ($item) => mb_strtolower(trim($item['text'])), $result['technical_skills']);
                 $current->skills()->delete();
-                foreach (JobCatalog::matchingSkills($names) as $skill) {
+                foreach (JobCatalog::skillsInVerifiedClaims($result['technical_skills']) as $skill) {
                     $item = new ResumeSkill;
                     $item->forceFill([
                         'resume_id' => $resume->id,
@@ -222,14 +221,20 @@ class AIResumeAnalysisService
      */
     private function extractPdfText(ResumeRevision $revision): string
     {
+        return $this->extractPrivatePdf($revision->file_path, $revision->file_hash);
+    }
+
+    /** Đọc snapshot hoặc revision đã được Service kiểm tra quyền; chỉ đường dẫn private đúng namespace. */
+    public function extractPrivatePdf(string $path, string $hash): string
+    {
         $disk = Storage::disk('local');
-        if (! preg_match('#^resumes/[0-9]+/[a-f0-9-]+\.pdf$#i', $revision->file_path)
-            || ! $disk->exists($revision->file_path) || $disk->size($revision->file_path) > 5242880) {
+        if (! preg_match('#^(resumes|application-snapshots)/[0-9]+/[a-f0-9-]+\.pdf$#i', $path)
+            || ! $disk->exists($path) || $disk->size($path) > 5242880) {
             throw new RuntimeException('invalid_private_pdf');
         }
         // Kiểm tra hash để bảo đảm đang phân tích đúng PDF của revision đã lưu.
-        $pdf = $disk->get($revision->file_path);
-        if (! hash_equals($revision->file_hash, hash('sha256', $pdf))) {
+        $pdf = $disk->get($path);
+        if (! hash_equals($hash, hash('sha256', $pdf))) {
             throw new RuntimeException('pdf_hash_mismatch');
         }
         $config = new Config;
