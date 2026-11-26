@@ -6,7 +6,7 @@ use App\Enums\CompanyStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\Company;
-use App\Models\Industry;
+use App\Support\JobCatalog;
 use App\Models\User;
 use App\Support\CompanyOptions;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,13 +26,14 @@ class CompanyService
         'company_type' => 'company_type', 'country' => 'country', 'website' => 'website',
         'email' => 'email', 'phone' => 'phone', 'address' => 'address', 'working_hours' => 'working_hours',
         'ot_policy' => 'overtime_policy', 'work_environment' => 'work_environment',
+        'province_code' => 'province_code', 'ward_code' => 'ward_code',
     ];
 
     public function __construct(private CompanyImageStorage $images) {}
 
     public function publicQuery(): Builder
     {
-        return Company::with('industry')->where('status', CompanyStatus::Active)
+        return Company::query()->where('status', CompanyStatus::Active)
             ->whereHas('recruiter', function (Builder $query) {
                 $query->where('role', UserRole::Recruiter)->where('status', UserStatus::Active);
             });
@@ -69,6 +70,7 @@ class CompanyService
             }
         }
         $profile['id'] = $company->public_id;
+        $profile['address'] = $company->full_address;
         $profile['industry'] = $company->industry?->name;
         if (! preg_match('/^https?:\/\//i', $profile['website'] ?? '')) {
             $profile['website'] = null;
@@ -186,9 +188,9 @@ class CompanyService
     {
         $industryId = $selectedId !== null ? (int) $selectedId : null;
         if ($industryId !== null) {
-            $industry = Industry::lockForUpdate()->find($industryId);
-            if (! $industry || (! $industry->is_active && $company->industry_id !== $industryId)) {
-                throw ValidationException::withMessages(['industry_id' => 'Lĩnh vực không còn hoạt động. Vui lòng chọn lại.']);
+            $industry = JobCatalog::find('industries', $industryId);
+            if (! $industry) {
+                throw ValidationException::withMessages(['industry_id' => 'Lĩnh vực không hợp lệ. Vui lòng chọn lại.']);
             }
         }
         $company->industry_id = $industryId;

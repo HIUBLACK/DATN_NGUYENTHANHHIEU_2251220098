@@ -1,9 +1,9 @@
-erDiagram
-    %% Final design: 25 business tables + 8 Laravel infrastructure tables (position catalog update 2026-11-19).
+﻿erDiagram
+    %% Current design: 19 business tables + 8 Laravel infrastructure tables (static catalog update 2026-11-25).
     %% MariaDB 11.5.2: validate generated slots, composite FKs and CHECKs on staging.
     %% Stage 3.2: title-only drafts; nullable drafts; experience no longer required outside draft.
-    %% Industry/level: nullable in draft, required on submission; 33 tables after position catalog approval.
-    %% Referenced specialization cannot change category (Service + locking).
+    %% Industry/level: nullable in draft, required on submission; 27 tables; catalog codes validated by application.
+    %% Static catalog IDs and specialization parents must remain stable in config/job-catalog.php.
     %% Active resumes require exactly one primary (unique slot + Service).
     %% Published version belongs to same job and requires Admin approval.
     %% AI formula v1: 60 percent semantic + 40 percent skill; preserve history.
@@ -24,37 +24,15 @@ erDiagram
     companies {
         bigint id PK
         uuid public_id UK
+        varchar province_code "nullable, length 2, local JSON code"
+        varchar ward_code "nullable, length 5, local JSON code"
+        varchar address "length 255, house number and street"
         varchar logo_path
         text work_environment "nullable, max 3000"
         json office_images
         bigint recruiter_id FK, UK
-        bigint industry_id FK
+        bigint industry_id "static catalog code"
         varchar status
-    }
-    industries {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_categories {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_specializations {
-        bigint id PK
-        bigint job_category_id FK
-        varchar code UK
-    }
-    skills {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_levels {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
     }
     jobs {
         bigint id PK
@@ -63,30 +41,24 @@ erDiagram
         varchar status
         datetime expires_at
     }
-    job_positions {
-        bigint id PK
-        varchar code UK
-        varchar name
-        varchar normalized_name UK
-        varchar slug UK
-        boolean is_active
-    }
     job_versions {
-        bigint job_position_id FK "nullable for legacy"
+        bigint job_position_id "static catalog code"
         varchar province_code "34 provinces, nullable for legacy"
+        varchar ward_code "nullable, length 5, local JSON code"
+        varchar location "nullable, length 150, house number and street"
         bigint id PK
         bigint job_id FK
         int version_number
-        bigint industry_id FK
-        bigint job_specialization_id FK
-        bigint job_level_id FK
+        bigint industry_id "static catalog code"
+        bigint job_specialization_id "static catalog code"
+        bigint job_level_id "static catalog code"
         varchar review_status
         int pending_slot
     }
     job_version_skills {
         bigint id PK
         bigint job_version_id FK
-        bigint skill_id FK
+        bigint skill_id "static catalog code"
     }
     job_moderation_logs {
         bigint id PK
@@ -113,7 +85,7 @@ erDiagram
         bigint id PK
         bigint resume_id FK
         int resume_revision FK
-        bigint skill_id FK
+        bigint skill_id "static catalog code"
     }
     applications {
         bigint id PK
@@ -218,23 +190,15 @@ erDiagram
 
     users ||--o| candidate_profiles : "candidate profile"
     users ||--o| companies : "recruiter owner"
-    industries o|--o{ companies : "optional industry"
     companies ||--o{ jobs : "owns"
-    job_categories ||--o{ job_specializations : "contains"
     jobs ||--o{ job_versions : "content versions"
     jobs o|--o| job_versions : "published pointer same job"
-    industries o|--o{ job_versions : "required on submit"
-    job_positions o|--o{ job_versions : "position snapshot"
-    job_levels o|--o{ job_versions : "required on submit"
-    job_specializations o|--o{ job_versions : "required on submit"
     job_versions ||--o{ job_version_skills : "requirements"
-    skills ||--o{ job_version_skills : "skill"
     job_versions ||--o| job_moderation_logs : "final decision"
     users ||--o{ job_moderation_logs : "reviewer"
     users ||--o{ resumes : "candidate owner"
     resumes ||--|{ resume_revisions : "immutable files"
     resume_revisions ||--o{ resume_skills : "composite revision FK"
-    skills ||--o{ resume_skills : "recognized"
     users ||--o{ applications : "candidate"
     jobs ||--o{ applications : "attempts"
     job_versions ||--o{ applications : "JD at submission"
@@ -261,3 +225,4 @@ erDiagram
     users ||..o{ activity_logs : "subject user - logical only"
     companies ||..o{ activity_logs : "subject company - logical only"
     jobs ||..o{ activity_logs : "subject job - logical only"
+

@@ -56,7 +56,7 @@ class SavedJobService
         Gate::forUser($user)->authorize('viewAny', SavedJob::class);
 
         return SavedJob::where('candidate_id', $user->id)
-            ->with(['job.company.recruiter', 'job.publishedVersion.level'])
+            ->with(['job.company.recruiter', 'job.publishedVersion'])
             ->latest('created_at')->latest('id')->paginate(10)
             ->through(fn (SavedJob $saved) => [
                 'job_id' => $saved->job_id, 'saved_at' => $saved->created_at,
@@ -90,7 +90,7 @@ class SavedJobService
             'salary_max' => $version->salary_max === null ? null : bcdiv($version->salary_max, '1000000', 2),
             'salary_negotiable' => $version->salary_negotiable,
             'location' => Provinces::ALL[$version->province_code] ?? $version->location,
-            'location_detail' => $version->location, 'level' => $version->level?->name,
+            'location_detail' => $version->full_location, 'level' => $version->level?->name,
             'mode' => JobInput::MODES[$version->work_mode] ?? '', 'skills' => [],
             'deadline' => $version->application_deadline,
         ];

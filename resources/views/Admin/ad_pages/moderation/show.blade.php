@@ -3,7 +3,7 @@
 @section('content')
     <div class="card p-4 mb-4">
         <h2 class="h4">{{ $version->job->company->name }}</h2>
-        <p>{{ $version->job->company->address }}</p>
+        <p>{{ $version->job->company->full_address }}</p>
         <p>Nhà tuyển dụng: {{ $version->job->company->recruiter->name }}</p>
         <p>Doanh nghiệp: {{ $version->job->company->status->value === 'active' ? 'Hoạt động' : 'Bị khóa' }} · Tài khoản: {{ $version->job->company->recruiter->status->value === 'active' ? 'Hoạt động' : 'Bị khóa' }}</p>
         <p>Tin: {{ App\Support\JobInput::STATUSES[$version->job->status->value] }} · Phiên bản: {{ App\Support\JobInput::REVIEWS[$version->review_status->value] }}</p>

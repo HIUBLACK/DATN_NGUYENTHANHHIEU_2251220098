@@ -5,7 +5,7 @@ namespace App\Services;
 use App\Enums\JobReviewStatus;
 use App\Jobs\AIAnalyzeJobJob;
 use App\Models\JobVersion;
-use App\Models\Skill;
+use App\Support\JobCatalog;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Client\ConnectionException;
@@ -195,7 +195,7 @@ class AIJobAnalysisService
     /** Giữ nguyên dữ liệu danh mục thật, không để AI sửa yêu cầu Recruiter đã nhập. */
     private function structuredRequirements(JobVersion $version): array
     {
-        $version->load(['skills', 'positionCatalog', 'specialization', 'level']);
+        $version->load(['skillRequirements']);
 
         return [
             'job_version_id' => $version->id,
@@ -236,8 +236,7 @@ class AIJobAnalysisService
     {
         $names = collect(array_merge($result['required_skills'], $result['preferred_skills']))
             ->map(fn ($item) => mb_strtolower(trim($item['text'])))->unique()->all();
-        $catalog = Skill::where('is_active', true)->whereIn(DB::raw('LOWER(name)'), $names)
-            ->get()->keyBy(fn ($skill) => mb_strtolower(trim($skill->name)));
+        $catalog = JobCatalog::matchingSkills($names)->keyBy(fn ($skill) => mb_strtolower(trim($skill->name)));
         $declared = collect($structured['skills'])->keyBy('skill_id');
         $normalized = ['required_skills' => [], 'preferred_skills' => []];
         foreach (array_keys($normalized) as $section) {

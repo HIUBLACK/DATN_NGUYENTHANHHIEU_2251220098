@@ -187,9 +187,10 @@ class JobModerationTest extends AuthenticatedDemoTestCase
             }
             $model->save();
         }
-        DB::table('skills')->where('id', $this->input['skills'][0])->update(['is_active' => false]);
+        $catalog = config('job-catalog.skills');
+        config(['job-catalog.skills' => array_diff_key($catalog, [100 => true])]);
         $this->decide($version)->assertSessionHasErrors('skills');
-        DB::table('skills')->where('id', $this->input['skills'][0])->update(['is_active' => true]);
+        config(['job-catalog.skills' => $catalog]);
         DB::table('job_versions')->where('id', $version->id)->update(['application_deadline' => now('Asia/Ho_Chi_Minh')->subDay()->toDateString()]);
         $this->decide($version)->assertSessionHasErrors('application_deadline');
         $this->assertNull($version->job->fresh()->published_version_id);

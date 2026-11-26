@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\JobCatalog;
+
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,8 +47,8 @@ class ResumeSkill extends Model
         return $this->belongsTo(Resume::class, 'resume_id')->withTrashed();
     }
 
-    public function skill(): BelongsTo
+    public function getSkillAttribute(): ?\stdClass
     {
-        return $this->belongsTo(Skill::class, 'skill_id');
+        return JobCatalog::find('skills', $this->skill_id);
     }
 }

@@ -31,25 +31,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 const defaults = seed.companies.find(entry => entry.id === company.id);
                 return { ...defaults, ...company };
             });
-            // Bổ sung danh mục cho phiên demo cũ mà không đặt lại các thao tác Admin.
-            if (!Array.isArray(state.occupations) || !Array.isArray(state.specialties)) {
-                state.occupations = structuredClone(seed.occupations);
-                state.specialties = structuredClone(seed.specialties);
-            }
+
         }
     } catch (failure) {
         showError('Không đọc được phiên demo. Đang dùng dữ liệu mẫu ban đầu.');
     }
 
-    ['industries', 'skills', 'levels'].forEach(function (key) {
-        if (!Array.isArray(state[key])) {
-            state[key] = structuredClone(seed[key]);
-        }
-        state[key] = state[key].map(function (item) {
-            const original = seed[key].find(entry => entry.id === item.id);
-            return { ...original, ...item };
-        });
-    });
+
 
     function commit(change) {
         const next = structuredClone(state);
@@ -106,7 +94,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
     if (document.getElementById('admin-filters')) {
         list = window.createAdminList(context);
-        window.setupAdminCategories(context, list);
     }
     if (page === 'dashboard') {
         window.setupAdminDashboard(context);

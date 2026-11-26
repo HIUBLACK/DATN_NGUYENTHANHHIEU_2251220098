@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\JobCatalog;
+
 use App\Enums\CompanyStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -11,6 +13,15 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Company extends Model
 {
+    public function getFullAddressAttribute(): string
+    {
+        if ($this->country !== 'Việt Nam') {
+            return $this->address ?? '';
+        }
+
+        return \App\Support\VietnamAddress::format($this->address, $this->province_code, $this->ward_code);
+    }
+
     use HasUuids;
 
     protected $table = 'companies';
@@ -59,9 +70,9 @@ class Company extends Model
         return $this->belongsTo(User::class, 'recruiter_id');
     }
 
-    public function industry(): BelongsTo
+    public function getIndustryAttribute(): ?\stdClass
     {
-        return $this->belongsTo(Industry::class, 'industry_id');
+        return JobCatalog::find('industries', $this->industry_id);
     }
 
     public function jobs(): HasMany

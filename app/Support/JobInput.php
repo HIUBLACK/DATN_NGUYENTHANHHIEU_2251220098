@@ -5,7 +5,7 @@ namespace App\Support;
 class JobInput
 {
     public const FIELDS = [
-        'title', 'position', 'province_code', 'description', 'requirements', 'benefits', 'salary_min', 'salary_max',
+        'title', 'position', 'province_code', 'ward_code', 'description', 'requirements', 'benefits', 'salary_min', 'salary_max',
         'location', 'work_mode', 'employment_type', 'quantity', 'application_deadline',
     ];
 
@@ -31,6 +31,7 @@ class JobInput
             $rules['salary_max'][] = 'gte:salary_min';
         }
         $rules['province_code'] = [$required, 'string', 'in:'.implode(',', array_keys(Provinces::ALL))];
+        $rules['ward_code'] = [$required, 'string', 'size:5', VietnamAddress::wardRule($data['province_code'] ?? null)];
         $rules['job_position_id'] = [$required, 'integer', 'min:1'];
         foreach (['industry_id', 'job_specialization_id', 'job_level_id'] as $field) {
             $rules[$field] = [$required, 'integer', 'min:1'];

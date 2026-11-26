@@ -50,7 +50,7 @@ class AIJobAnalysisTest extends AuthenticatedDemoTestCase
     private function response(JobVersion $version): array
     {
         $result = array_fill_keys(array_keys(AIOllamaService::JOB_SECTIONS), []);
-        $name = $version->skills()->firstOrFail()->name;
+        $name = $version->skills->firstOrFail()->name;
         $result['preferred_skills'] = [['text' => $name, 'evidence' => $name]];
 
         return ['done' => true, 'message' => ['content' => json_encode($result)]];
@@ -98,7 +98,7 @@ class AIJobAnalysisTest extends AuthenticatedDemoTestCase
     {
         $version = $this->version();
         $before = $version->getRawOriginal('updated_at');
-        $skill = $version->skills()->firstOrFail();
+        $skill = $version->skills->firstOrFail();
         DB::table('job_version_skills')->where('job_version_id', $version->id)->update(['is_required' => true]);
         app(AIJobAnalysisService::class)->enqueue($version->id);
         Http::fake(['*' => Http::response($this->response($version))]);

@@ -11,7 +11,7 @@ class AdminJobController extends Controller
 {
     public function show(Request $request, AdminJobService $jobs)
     {
-        Gate::authorize('manage-categories');
+        Gate::authorize('manage-system');
         $page = $request->route('page');
         if ($page === 'jobs.index') {
             $filters = $request->validate([

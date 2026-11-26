@@ -18,12 +18,8 @@ use App\Models\ApplicationNote;
 use App\Models\ApplicationStatusHistory;
 use App\Models\CandidateProfile;
 use App\Models\Company;
-use App\Models\Industry;
 use App\Models\Job;
-use App\Models\JobCategory;
-use App\Models\JobLevel;
 use App\Models\JobModerationLog;
-use App\Models\JobSpecialization;
 use App\Models\JobVersion;
 use App\Models\JobVersionSkill;
 use App\Models\RecommendationItem;
@@ -32,7 +28,6 @@ use App\Models\Resume;
 use App\Models\ResumeRevision;
 use App\Models\ResumeSkill;
 use App\Models\SavedJob;
-use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
@@ -41,6 +36,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\TestCase;
+use App\Support\JobCatalog;
 
 class ModelRelationshipsTest extends TestCase
 {
@@ -81,24 +77,14 @@ class ModelRelationshipsTest extends TestCase
         ]);
     }
 
-    private function catalog(string $class, array $extra = []): Model
-    {
-        $code = substr((string) Str::uuid(), 0, 12);
-        $attributes = ['code' => $code, 'name' => $code, 'normalized_name' => $code];
-        if ($class !== Skill::class) {
-            $attributes['slug'] = $code;
-        }
-
-        return $this->persist($class, $attributes + $extra);
-    }
 
     private function jobGraph(): array
     {
         $recruiter = $this->user(UserRole::Recruiter);
-        $industry = $this->catalog(Industry::class);
-        $level = $this->catalog(JobLevel::class);
-        $category = $this->catalog(JobCategory::class);
-        $specialization = $this->catalog(JobSpecialization::class, ['job_category_id' => $category->id]);
+        $industry = JobCatalog::find('industries', 1);
+        $level = JobCatalog::find('levels', 1);
+        $category = JobCatalog::find('categories', 1);
+        $specialization = JobCatalog::find('specializations', 1);
         $company = $this->persist(Company::class, [
             'recruiter_id' => $recruiter->id, 'industry_id' => $industry->id, 'name' => 'Company',
             'slug' => (string) Str::uuid(), 'office_images' => [['path' => 'office/example.webp', 'caption' => 'Văn phòng']],
@@ -148,8 +134,7 @@ class ModelRelationshipsTest extends TestCase
     {
         $models = [
             User::class => 'users', CandidateProfile::class => 'candidate_profiles', Company::class => 'companies',
-            Industry::class => 'industries', JobCategory::class => 'job_categories', JobSpecialization::class => 'job_specializations',
-            Skill::class => 'skills', JobLevel::class => 'job_levels', Job::class => 'jobs', JobVersion::class => 'job_versions',
+            Job::class => 'jobs', JobVersion::class => 'job_versions',
             JobVersionSkill::class => 'job_version_skills', JobModerationLog::class => 'job_moderation_logs', Resume::class => 'resumes',
             ResumeRevision::class => 'resume_revisions', ResumeSkill::class => 'resume_skills', Application::class => 'applications',
             ApplicationStatusHistory::class => 'application_status_histories', ApplicationNote::class => 'application_notes',
@@ -193,46 +178,39 @@ class ModelRelationshipsTest extends TestCase
         $this->assertTrue($candidate->load('candidateProfile')->candidateProfile->is($profile));
         $this->assertTrue($profile->user->is($candidate));
         $this->assertTrue($graph['recruiter']->load('company')->company->is($graph['company']));
-        $company = $graph['company']->load('recruiter', 'industry', 'jobs');
+        $company = $graph['company']->load('recruiter', 'jobs');
         $this->assertTrue($company->recruiter->is($graph['recruiter']));
-        $this->assertTrue($company->industry->is($graph['industry']));
+        $this->assertEquals($graph['industry'], $company->industry);
         $this->assertTrue($company->jobs->first()->is($graph['job']));
         $this->assertSame('Văn phòng', $company->office_images[0]['caption']);
         $this->assertSame(CompanyStatus::Active, $company->status);
         $this->assertTrue(Str::isUuid($company->public_id));
         $this->assertIsInt($company->id);
         $this->assertSame('id', $company->getRouteKeyName());
-        $version = $graph['version']->load('job.company', 'industry', 'specialization.category', 'level');
+        $version = $graph['version']->load('job.company');
         $this->assertTrue($version->job->company->is($company));
-        $this->assertTrue($version->industry->is($graph['industry']));
-        $this->assertTrue($version->level->is($graph['level']));
-        $this->assertTrue($version->specialization->category->is($graph['category']));
+        $this->assertEquals($graph['industry'], $version->industry);
+        $this->assertEquals($graph['level'], $version->level);
+        $this->assertEquals($graph['category'], $version->specialization->category);
         $this->assertSame('15000000.00', $version->salary_min);
         $this->assertSame('2027-01-01', $version->application_deadline->format('Y-m-d'));
         $this->assertSame(JobReviewStatus::Draft, $version->review_status);
         $this->assertTrue($graph['job']->versions->first()->is($version));
-        $this->assertTrue($graph['industry']->companies->first()->is($company));
-        $this->assertTrue($graph['industry']->jobVersions->first()->is($version));
-        $this->assertTrue($graph['level']->jobVersions->first()->is($version));
-        $this->assertTrue($graph['specialization']->jobVersions->first()->is($version));
-        $this->assertTrue($graph['category']->specializations->first()->is($graph['specialization']));
-        $skill = $this->catalog(Skill::class);
+        $skill = JobCatalog::find('skills', 1);
         $pivot = $this->persist(JobVersionSkill::class, ['job_version_id' => $version->id, 'skill_id' => $skill->id, 'is_required' => true]);
-        $this->assertTrue($version->load('skills')->skills->first()->is($skill));
+        $this->assertSame($skill->id, $version->load('skillRequirements')->skills->first()->id);
         $this->assertInstanceOf(JobVersionSkill::class, $version->skills->first()->pivot);
         $this->assertTrue($version->skills->first()->pivot->is_required);
-        $this->assertTrue($skill->load('jobVersions')->jobVersions->first()->is($version));
         $this->assertTrue($pivot->jobVersion->is($version));
-        $this->assertTrue($pivot->skill->is($skill));
+        $this->assertEquals($skill, $pivot->skill);
         $this->assertTrue($version->skillRequirements->first()->is($pivot));
-        $this->assertTrue($skill->jobVersionSkills->first()->is($pivot));
     }
 
     public function test_resume_queries_keep_revisions_separate_and_soft_deleted_sources_accessible(): void
     {
         $graph = $this->resumeGraph();
         $other = $this->resumeGraph();
-        $skill = $this->catalog(Skill::class);
+        $skill = JobCatalog::find('skills', 1);
         $firstSkill = $this->persist(ResumeSkill::class, ['resume_id' => $graph['resume']->id, 'resume_revision' => 1, 'skill_id' => $skill->id, 'confidence_score' => '0.7500']);
         $secondSkill = $this->persist(ResumeSkill::class, ['resume_id' => $graph['resume']->id, 'resume_revision' => 2, 'skill_id' => $skill->id]);
         $this->persist(ResumeSkill::class, ['resume_id' => $other['resume']->id, 'resume_revision' => 1, 'skill_id' => $skill->id]);
@@ -241,8 +219,7 @@ class ModelRelationshipsTest extends TestCase
         $this->assertSame('0.7500', $firstSkill->confidence_score);
         $this->assertTrue($firstSkill->revisionQuery()->first()->is($graph['first']));
         $this->assertTrue($firstSkill->resume->is($graph['resume']));
-        $this->assertTrue($firstSkill->skill->is($skill));
-        $this->assertCount(3, $skill->resumeSkills);
+        $this->assertEquals($skill, $firstSkill->skill);
         $this->assertSame([$secondSkill->id], $graph['resume']->currentSkillsQuery()->pluck('id')->all());
         $this->assertTrue($graph['resume']->currentRevision()->first()->is($graph['second']));
         $this->assertCount(2, $graph['resume']->load('revisions', 'skills')->revisions);

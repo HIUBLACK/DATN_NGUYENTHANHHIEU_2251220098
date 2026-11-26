@@ -90,7 +90,7 @@ class RecruiterJobController extends Controller
 
         return view('employer.job-form', $this->layout('job-form', 'Chỉnh sửa tin tuyển dụng') + [
             'job' => $record, 'version' => $version, 'form' => $this->jobs->formData($version),
-            'options' => $this->jobs->catalogOptions($version), 'baseline' => $this->jobs->reviewBaseline($record),
+            'options' => $this->jobs->catalogOptions(), 'baseline' => $this->jobs->reviewBaseline($record),
         ]);
     }
 

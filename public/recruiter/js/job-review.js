@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function () {
         ['industry_id', 'Lĩnh vực'], ['job_specialization_id', 'Chuyên môn'],
         ['job_level_id', 'Cấp bậc'], ['skills', 'Kỹ năng yêu cầu'],
         ['salary_min', 'Lương tối thiểu'], ['salary_max', 'Lương tối đa'],
-        ['province_code', 'Tỉnh/thành phố'], ['location', 'Địa điểm chi tiết'],
+        ['province_code', 'Tỉnh/thành phố'], ['ward_code', 'Xã/phường/đặc khu'], ['location', 'Số nhà, tên đường'],
         ['work_mode', 'Hình thức làm việc'], ['employment_type', 'Loại công việc'],
         ['quantity', 'Số lượng tuyển'], ['application_deadline', 'Hạn ứng tuyển'],
         ['description', 'Mô tả công việc'], ['requirements', 'Yêu cầu ứng viên'], ['benefits', 'Quyền lợi'],
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const input = document.getElementById(key);
             result[key] = input.multiple
                 ? Array.from(input.selectedOptions, option => option.value).sort()
-                : input.value;
+                : (input.matches('[data-salary-input]') ? input.closest('[data-salary-control]').querySelector('[data-salary-value]').value : input.value);
         });
         return result;
     }
@@ -108,8 +108,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const minimum = document.getElementById('salary_min');
     const maximum = document.getElementById('salary_max');
     function checkSalary() {
-        const reversed = minimum.value !== '' && maximum.value !== '' && Number(maximum.value) < Number(minimum.value);
-        const message = reversed ? 'Lương tối đa phải lớn hơn hoặc bằng lương tối thiểu.' : '';
+        const current = values();
+        const reversed = current.salary_min !== '' && current.salary_max !== '' && Number(current.salary_max) < Number(current.salary_min);
+        const message = maximum.dataset.salaryError || (reversed ? 'Lương tối đa phải lớn hơn hoặc bằng lương tối thiểu.' : '');
         maximum.setCustomValidity(message);
         return message;
     }

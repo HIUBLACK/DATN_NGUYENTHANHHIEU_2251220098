@@ -51,7 +51,7 @@
                             <option value="">Chọn lĩnh vực</option>
                             @foreach ($industries as $industry)
                                 <option value="{{ $industry->id }}" @selected((string) old('industry_id', $companyForm['industry_id'] ?? '') === (string) $industry->id)>
-                                    {{ $industry->name }}{{ $industry->is_active ? '' : ' (đã ẩn — giá trị đã lưu)' }}
+                                    {{ $industry->name }}
                                 </option>
                             @endforeach
                         </select>
@@ -103,11 +103,12 @@
                         </label>
                         <input id="phone" name="phone" type="tel" value="{{ old('phone', $companyForm['phone'] ?? '') }}" class="form-control-custom" required maxlength="30" pattern="[0-9+() .-]{8,30}">
                     </div>
+                    @include('shared.administrative-address', ['addressValues' => $companyForm, 'addressField' => 'address', 'addressCountry' => 'country'])
                     <div class="col-12 col-lg-6 form-group-custom">
                         <label for="address" class="form-label-custom">
-                            Địa chỉ <span class="text-danger" aria-hidden="true">*</span>
+                            Số nhà, tên đường <span class="text-danger" aria-hidden="true">*</span>
                         </label>
-                        <input id="address" name="address" type="text" value="{{ old('address', $companyForm['address'] ?? '') }}" class="form-control-custom" required maxlength="255">
+                        <input id="address" name="address" type="text" placeholder="Ví dụ: 123 Nguyễn Văn Linh" value="{{ old('address', $companyForm['address'] ?? '') }}" class="form-control-custom" required maxlength="255">
                     </div>
                 </div>
             </fieldset>

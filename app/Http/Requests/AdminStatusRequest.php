@@ -9,7 +9,7 @@ class AdminStatusRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('manage-categories');
+        return Gate::allows('manage-system');
     }
 
     public function rules(): array

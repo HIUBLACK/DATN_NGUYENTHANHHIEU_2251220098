@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreCompanyRequest;
 use App\Http\Requests\UpdateCompanyRequest;
 use App\Models\Company;
-use App\Models\Industry;
+use App\Support\JobCatalog;
 use App\Services\CompanyImageStorage;
 use App\Services\CompanyService;
 use App\Support\CompanyOptions;
@@ -21,7 +21,7 @@ class CompanyProfileController extends Controller
 
     public function show(): View
     {
-        $company = Company::with('industry')->where('recruiter_id', auth()->id())->first();
+        $company = Company::query()->where('recruiter_id', auth()->id())->first();
         if ($company) {
             Gate::authorize('viewManagement', $company);
         }
@@ -41,7 +41,7 @@ class CompanyProfileController extends Controller
 
     public function edit(): View|RedirectResponse
     {
-        $company = Company::with('industry')->where('recruiter_id', auth()->id())->first();
+        $company = Company::query()->where('recruiter_id', auth()->id())->first();
         if (! $company) {
             return redirect()->route('recruiter.company-create');
         }
@@ -111,9 +111,7 @@ class CompanyProfileController extends Controller
             'companyForm' => $company ? $this->companies->formData($company) : [],
             'companyProfile' => $company ? $this->companies->publicData($company, true) : [],
             'canSaveCompany' => $company ? Gate::allows('update', $company) : Gate::allows('create', Company::class),
-            'industries' => Industry::where('is_active', true)->when($company?->industry_id, function ($query, $id) {
-                $query->orWhere('id', $id);
-            })->orderBy('name')->get(),
+            'industries' => JobCatalog::all('industries'),
         ]);
     }
 

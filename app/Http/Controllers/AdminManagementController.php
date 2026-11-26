@@ -22,7 +22,7 @@ class AdminManagementController extends Controller
 {
     public function show(Request $request, AdminManagementService $management, AdminDashboardService $dashboard)
     {
-        Gate::authorize('manage-categories');
+        Gate::authorize('manage-system');
         $page = $request->route('page');
         $section = $request->route('section');
         $filters = $request->validate([
@@ -48,7 +48,7 @@ class AdminManagementController extends Controller
             $id = $request->validate(['id' => ['required', $section === 'applications' ? 'uuid' : 'integer']])['id'];
             $record = match ($section) {
                 'users' => User::whereIn('role', ['candidate', 'recruiter'])->with(['candidateProfile', 'company'])->findOrFail($id),
-                'companies' => Company::with(['recruiter', 'industry'])->withCount('jobs')->findOrFail($id),
+                'companies' => Company::with(['recruiter'])->withCount('jobs')->findOrFail($id),
                 'applications' => Application::with(['candidate', 'job.company.recruiter', 'jobVersion'])->where('public_id', $id)->firstOrFail(),
             };
             if ($section === 'applications') {

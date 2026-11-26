@@ -30,7 +30,7 @@ class AdminJobModerationController extends Controller
 
     public function show(int $version)
     {
-        $version = JobVersion::with(['job.company.recruiter', 'job.publishedVersion.skills', 'job.publishedVersion.specialization.category', 'job.publishedVersion.industry', 'job.publishedVersion.level', 'skills', 'specialization.category', 'industry', 'level', 'moderationLog.admin'])->findOrFail($version);
+        $version = JobVersion::with(['job.company.recruiter', 'job.publishedVersion.skillRequirements', 'job.publishedVersion', 'skillRequirements', 'moderationLog.admin'])->findOrFail($version);
         Gate::authorize('moderate', $version->job);
 
         return view('Admin.ad_pages.moderation.show', $this->layout() + ['version' => $version, 'published' => $version->job->publishedVersion]);

@@ -51,7 +51,21 @@ try {
     if ($testConnection->getName() !== 'models_test' || $testConnection->getDatabaseName() !== $database) {
         throw new RuntimeException('Unsafe test connection identity.');
     }
-    if (Artisan::call('migrate', ['--database' => 'models_test', '--force' => true]) !== 0) {
+    $catalogMigration = 'database/migrations/2026_11_25_160000_replace_managed_catalogs_with_static_options.php';
+    $pendingCatalog = in_array('--pending-static-catalog', $argv, true);
+    $migrationOptions = ['--database' => 'models_test', '--force' => true];
+    $addressMigration = 'database/migrations/2026_11_26_100000_add_administrative_address_codes.php';
+    $pendingAddress = in_array('--pending-address', $argv, true);
+    if ($pendingAddress) {
+        $migrationOptions['--path'] = array_values(array_filter(glob('database/migrations/*.php'), fn ($path) => $path !== $addressMigration));
+    }
+    if ($pendingCatalog) {
+        if ($original->table('migrations')->where('migration', basename($catalogMigration, '.php'))->exists()) {
+            throw new RuntimeException('Catalog migration already applied; omit pending flag.');
+        }
+        $migrationOptions['--path'] = array_values(array_filter(glob('database/migrations/*.php'), fn ($path) => $path !== $catalogMigration));
+    }
+    if (Artisan::call('migrate', $migrationOptions) !== 0) {
         throw new RuntimeException('Cannot prepare model test schema.');
     }
     $pendingPositions = in_array('--pending-job-positions', $argv, true);
@@ -104,6 +118,12 @@ try {
     if (schemaDefinitions($testConnection) !== $before) {
         throw new RuntimeException('Live schema differs from migrations; report drift before testing models.');
     }
+    if ($pendingAddress && Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$addressMigration], '--force' => true]) !== 0) {
+        throw new RuntimeException('Cannot apply address migration on isolated database.');
+    }
+    if ($pendingCatalog && Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$catalogMigration], '--force' => true]) !== 0) {
+        throw new RuntimeException('Cannot apply static catalog migration on isolated database.');
+    }
     if ($pendingPasswordSetup) {
         if (Artisan::call('migrate', ['--database' => 'models_test', '--path' => [$passwordMigration], '--force' => true]) !== 0) {
             throw new RuntimeException('Cannot apply pending password classification on isolated database.');
@@ -126,11 +146,17 @@ try {
     }
     $phpArguments = in_array('--with-gd', $argv, true) ? ['-d', 'extension=gd'] : [];
     $testArguments = in_array('--moderation', $argv, true) ? ['--filter', 'JobModerationTest|RecruiterJobTest|AdminPageTest|AuthenticationTest|PoliciesTest|GooglePreparationTest|GooglePasswordSetupTest|PasswordRecoveryTest'] : [];
+    if (in_array('--address', $argv, true)) {
+        $testArguments = ['--filter', 'VietnamAddressTest|CompanyProfileTest|RecruiterJobTest|JobModerationTest|PoliciesTest'];
+    }
     if (in_array('--cv-analysis', $argv, true)) {
         $testArguments = ['--filter', 'ResumeAnalysisTest|AuthenticationTest|PoliciesTest'];
     }
     if (in_array('--job-analysis', $argv, true)) {
         $testArguments = ['--filter', 'AIJobAnalysisTest|ResumeAnalysisTest|JobModerationTest|RecruiterJobTest'];
+    }
+    if (in_array('--static-catalog', $argv, true)) {
+        $testArguments = ['--filter', 'StaticJobCatalogTest|CompanyProfileTest|RecruiterJobTest|JobModerationTest|AIJobAnalysisTest|ResumeAnalysisTest|CandidateSavedJobsTest|AdminJobsTest|AdminPageTest|JobDraftSchemaTest|JobDiscoveryTest|CandidatePreviewTest'];
     }
     if (in_array('--job-stability-live', $argv, true)) {
         $testArguments = ['--filter', 'test_synthetic_job_corpus_with_real_ollama'];

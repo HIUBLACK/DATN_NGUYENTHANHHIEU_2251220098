@@ -6,7 +6,6 @@ use App\Enums\ResumeParsingStatus;
 use App\Enums\UserRole;
 use App\Jobs\AIAnalyzeResumeJob;
 use App\Models\ResumeRevision;
-use App\Models\Skill;
 use App\Services\AIOllamaService;
 use App\Services\AIResumeAnalysisService;
 use App\Services\CandidateResumeService;
@@ -53,7 +52,6 @@ class ResumeAnalysisTest extends AuthenticatedDemoTestCase
 
     public function test_valid_result_is_saved_once_with_existing_catalog_skills(): void
     {
-        (new Skill)->forceFill(['code' => 'PHP', 'name' => 'PHP', 'normalized_name' => 'php'])->save();
         $revision = $this->revision();
         Http::fake(['127.0.0.1:11434/*' => Http::response($this->response())]);
         $this->process($revision);

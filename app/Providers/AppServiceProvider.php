@@ -35,7 +35,7 @@ class AppServiceProvider extends ServiceProvider
             $view->with('recruiterUnreadCount', auth()->user()?->unreadNotifications()
                 ->where('type', RecruiterApplicationNotice::class)->count() ?? 0);
         });
-        Gate::define('manage-categories', function (User $user) {
+        Gate::define('manage-system', function (User $user) {
             return $user->role === UserRole::Admin
                 && $user->status === UserStatus::Active;
         });

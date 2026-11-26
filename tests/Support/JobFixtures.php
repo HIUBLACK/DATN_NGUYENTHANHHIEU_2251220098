@@ -24,28 +24,16 @@ trait JobFixtures
 
     protected function completeInput(): array
     {
-        $ids = [];
-        foreach (['industries', 'job_categories', 'job_levels', 'job_positions', 'skills', 'job_specializations'] as $table) {
-            $code = substr((string) Str::uuid(), 0, 18);
-            $row = ['code' => $code, 'name' => $table.$code, 'normalized_name' => $code, 'is_active' => true, 'sort_order' => 0, 'created_at' => now(), 'updated_at' => now()];
-            if ($table !== 'skills') {
-                $row['slug'] = $code;
-            }
-            if ($table === 'job_specializations') {
-                $row['job_category_id'] = $ids['job_categories'];
-            }
-            $ids[$table] = DB::table($table)->insertGetId($row);
-        }
-
         return [
             'title' => 'Published backend role', 'position' => 'Backend Developer',
             'description' => 'Public description', 'requirements' => 'Public requirements', 'benefits' => 'Public benefits',
             'salary_min' => '16000000', 'salary_max' => '20000000', 'location' => 'Đà Nẵng',
             'work_mode' => 'remote', 'employment_type' => 'full_time', 'quantity' => 2,
             'experience_summary' => '1–3 năm', 'application_deadline' => now('Asia/Ho_Chi_Minh')->addDays(7)->toDateString(),
-            'job_position_id' => $ids['job_positions'], 'province_code' => '48',
-            'industry_id' => $ids['industries'], 'job_category_id' => $ids['job_categories'],
-            'job_level_id' => $ids['job_levels'], 'job_specialization_id' => $ids['job_specializations'], 'skills' => [$ids['skills']],
+            'job_position_id' => 2, 'province_code' => '48',
+            'ward_code' => collect(\App\Support\VietnamAddress::data()['wards'])->firstWhere('province_code', '48')['code'],
+            'industry_id' => 1, 'job_category_id' => 2,
+            'job_level_id' => 3, 'job_specialization_id' => 2, 'skills' => [100],
         ];
     }
 

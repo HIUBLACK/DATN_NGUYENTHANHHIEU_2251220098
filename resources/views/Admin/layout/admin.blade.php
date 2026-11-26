@@ -30,7 +30,7 @@
                 </nav>
             </div>
             <main id="admin-content">
-                @unless (($realCategories ?? false) || ($realModeration ?? false) || ($realManagement ?? false))
+                @unless (($realModeration ?? false) || ($realManagement ?? false))
                     <div class="alert alert-light border admin-demo-notice" role="note">
                         <i class="bi bi-info-circle me-2" aria-hidden="true"></i>
                         Bản demo giao diện. Thao tác chỉ mô phỏng trong tab trình duyệt, chưa lưu database, chưa khóa tài khoản thật hoặc gửi thông báo.
@@ -40,7 +40,7 @@
             </main>
             @include('Admin.component.footer')
         </div>
-        @unless (($realCategories ?? false) || ($realModeration ?? false) || ($realManagement ?? false))
+        @unless (($realModeration ?? false) || ($realManagement ?? false))
             @include('Admin.component.confirm-modal')
         @endunless
         <script type="application/json" id="admin-seed">{!! Illuminate\Support\Js::encode($seed) !!}</script>
@@ -56,9 +56,7 @@
             data-job-history="{{ route('admin.jobs.history') }}"
             data-queue="{{ route('admin.jobs.queue') }}"
             data-applications="{{ route('admin.applications.index') }}"
-            data-application-detail="{{ route('admin.applications.show') }}"
-            data-occupations="{{ route('admin.occupations.index') }}"
-            data-specialties="{{ route('admin.specialties.index') }}">
+            data-application-detail="{{ route('admin.applications.show') }}">
         </div>
         <script src="{{ asset('admin-assets/libs/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ asset('admin-assets/js/dashboard.js') }}"></script>
@@ -66,17 +64,13 @@
             <script src="{{ asset('admin-assets/libs/apexcharts/apexcharts.min.js') }}"></script>
             <script src="{{ asset('admin-assets/js/admin-dashboard.js') }}"></script>
         @endif
-        @unless (($realCategories ?? false) || ($realModeration ?? false) || ($realManagement ?? false))
+        @unless (($realModeration ?? false) || ($realManagement ?? false))
             <script src="{{ asset('admin-assets/js/admin-domain.js') }}"></script>
             <script src="{{ asset('admin-assets/js/admin-ui.js') }}"></script>
             <script src="{{ asset('admin-assets/js/admin-lists.js') }}"></script>
             <script src="{{ asset('admin-assets/js/admin-company-profile.js') }}"></script>
             <script src="{{ asset('admin-assets/js/admin-details.js') }}"></script>
-            <script src="{{ asset('admin-assets/js/admin-categories-domain.js') }}"></script>
-            <script src="{{ asset('admin-assets/js/admin-categories.js') }}"></script>
             <script src="{{ asset('admin-assets/js/admin.js') }}"></script>
-        @else
-            <script src="{{ asset('admin-assets/js/category-management.js') }}"></script>
         @endunless
         <script src="{{ asset('js/auth-session.js') }}" data-logout-url="{{ route('logout') }}"></script>
         @include('shared.form-validation')

@@ -2,19 +2,15 @@
 
 namespace App\Services;
 
+use App\Support\JobCatalog;
+
 use App\Enums\JobReviewStatus;
 use App\Enums\JobStatus;
 use App\Models\ActivityLog;
 use App\Models\Company;
-use App\Models\Industry;
 use App\Models\Job;
-use App\Models\JobCategory;
-use App\Models\JobLevel;
-use App\Models\JobPosition;
-use App\Models\JobSpecialization;
 use App\Models\JobVersion;
 use App\Models\JobVersionSkill;
-use App\Models\Skill;
 use App\Models\User;
 use App\Support\JobInput;
 use Illuminate\Support\Facades\DB;
@@ -73,6 +69,7 @@ class RecruiterJobService
         $version = $job->publishedVersion ?? $this->latest($job);
         $data = $this->formData($version);
         $labels = [
+            'ward_code' => \App\Support\VietnamAddress::ward($version->ward_code)['name'] ?? null,
             'job_position_id' => $version->position,
             'industry_id' => $version->industry?->name,
             'job_specialization_id' => $version->specialization?->name,
@@ -90,7 +87,7 @@ class RecruiterJobService
 
     public function latest(Job $job): JobVersion
     {
-        return $job->versions()->with(['skills', 'specialization.category', 'industry', 'level', 'moderationLog'])
+        return $job->versions()->with(['skillRequirements', 'moderationLog'])
             ->orderByDesc('version_number')->firstOrFail();
     }
 
@@ -208,26 +205,25 @@ class RecruiterJobService
     {
         $input = $this->formData($version);
         $rules = JobInput::rules($input, true);
+        // Phiên bản chờ duyệt trước cập nhật địa chỉ vẫn được kiểm duyệt nguyên trạng.
+        if ($version->review_status === JobReviewStatus::Pending && $version->ward_code === null) {
+            $rules['ward_code'][0] = 'nullable';
+        }
         // Pending versions created before the catalog rollout remain reviewable without rewriting history.
         if ($version->review_status === JobReviewStatus::Pending && ! $version->job_position_id && ! $version->province_code) {
             $rules['job_position_id'][0] = 'nullable';
             $rules['province_code'][0] = 'nullable';
         }
         Validator::make($input, $rules)->validate();
-        $this->validateCatalogs($input, $version, true);
+        $this->validateCatalogs($input);
     }
 
-    public function catalogOptions(?JobVersion $version = null): array
+    public function catalogOptions(): array
     {
-        $selected = $version ? $this->formData($version) : [];
         $options = [];
-        foreach (['positions' => [JobPosition::class, 'job_position_id'], 'industries' => [Industry::class, 'industry_id'], 'levels' => [JobLevel::class, 'job_level_id'], 'categories' => [JobCategory::class, 'job_category_id']] as $key => [$model, $field]) {
-            $options[$key] = $model::where('is_active', true)->orWhere('id', $selected[$field] ?? 0)->orderBy('name')->get();
+        foreach (['positions', 'industries', 'levels', 'categories', 'specializations', 'skills'] as $group) {
+            $options[$group] = JobCatalog::all($group);
         }
-        $options['specializations'] = JobSpecialization::with('category')->where(function ($query) {
-            $query->where('is_active', true)->whereHas('category', fn ($category) => $category->where('is_active', true));
-        })->orWhere('id', $selected['job_specialization_id'] ?? 0)->orderBy('name')->get();
-        $options['skills'] = Skill::where('is_active', true)->orWhereIn('id', $selected['skills'] ?? [])->orderBy('name')->get();
 
         return $options;
     }
@@ -259,8 +255,8 @@ class RecruiterJobService
 
     private function saveContent(JobVersion $version, array $data, ?JobVersion $previous = null): void
     {
-        $this->validateCatalogs($data, $previous);
-        $position = isset($data['job_position_id']) ? JobPosition::findOrFail($data['job_position_id']) : null;
+        $this->validateCatalogs($data);
+        $position = isset($data['job_position_id']) ? JobCatalog::find('positions', $data['job_position_id']) : null;
         // Preserve the version's snapshot when keeping the same position after a catalog rename.
         $data['position'] = $position && $previous?->job_position_id === $position->id
             ? $previous->position : $position?->name;
@@ -283,30 +279,22 @@ class RecruiterJobService
         }
     }
 
-    private function validateCatalogs(array $data, ?JobVersion $previous, bool $submit = false): void
+    private function validateCatalogs(array $data): void
     {
-        $old = $previous ? $this->formData($previous) : [];
-        // Infer the group server-side; the recruiter no longer chooses a group.
-        $data['job_category_id'] = isset($data['job_specialization_id'])
-            ? JobSpecialization::find($data['job_specialization_id'])?->job_category_id : null;
-        foreach (['job_category_id' => JobCategory::class, 'job_position_id' => JobPosition::class, 'industry_id' => Industry::class, 'job_level_id' => JobLevel::class, 'job_specialization_id' => JobSpecialization::class] as $field => $model) {
-            if (! isset($data[$field])) {
-                continue;
-            }
-            $item = $model::lockForUpdate()->find($data[$field]);
-            $retained = ! $submit && (int) ($old[$field] ?? 0) === (int) $data[$field];
-            if (! $item || (! $item->is_active && ! $retained)) {
-                throw ValidationException::withMessages([$field => 'Danh mục không tồn tại hoặc đã ẩn. Vui lòng chọn lại.']);
-            }
-            if ($field === 'job_specialization_id' && $item->job_category_id !== (int) ($data['job_category_id'] ?? 0)) {
-                throw ValidationException::withMessages([$field => 'Chuyên môn không thuộc nhóm nghề đã chọn.']);
+        $fields = [
+            'job_position_id' => 'positions',
+            'industry_id' => 'industries',
+            'job_level_id' => 'levels',
+            'job_specialization_id' => 'specializations',
+        ];
+        foreach ($fields as $field => $group) {
+            if (isset($data[$field]) && ! JobCatalog::find($group, $data[$field])) {
+                throw ValidationException::withMessages([$field => 'Lựa chọn không hợp lệ. Vui lòng chọn lại.']);
             }
         }
-        foreach (collect($data['skills'] ?? [])->sort()->all() as $id) {
-            $skill = Skill::lockForUpdate()->find($id);
-            $retained = ! $submit && in_array((int) $id, $old['skills'] ?? [], true);
-            if (! $skill || (! $skill->is_active && ! $retained)) {
-                throw ValidationException::withMessages(['skills' => 'Kỹ năng không tồn tại hoặc đã ẩn.']);
+        foreach ($data['skills'] ?? [] as $id) {
+            if (! JobCatalog::find('skills', $id)) {
+                throw ValidationException::withMessages(['skills' => 'Kỹ năng không hợp lệ.']);
             }
         }
     }

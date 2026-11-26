@@ -3,14 +3,10 @@
 namespace App\Services;
 
 use App\Models\Company;
-use App\Models\Industry;
 use App\Models\Job;
-use App\Models\JobCategory;
-use App\Models\JobLevel;
-use App\Models\JobSpecialization;
 use App\Models\JobVersion;
-use App\Models\Skill;
 use App\Support\JobInput;
+use App\Support\JobCatalog;
 use App\Support\Provinces;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -18,7 +14,7 @@ class PublicJobService
 {
     public function query(): Builder
     {
-        return Job::with(['company.industry', 'publishedVersion.skills', 'publishedVersion.level', 'publishedVersion.specialization'])
+        return Job::with(['company', 'publishedVersion.skillRequirements'])
             ->where('status', 'open')->where('expires_at', '>', now())
             ->whereHas('publishedVersion', function (Builder $query) {
                 $query->whereColumn('job_versions.job_id', 'jobs.id')->where('review_status', 'approved')
@@ -35,10 +31,13 @@ class PublicJobService
         $query = $this->query();
         if (! empty($filters['q'])) {
             $pattern = '%'.addcslashes($filters['q'], '%_\\').'%';
-            $query->where(function (Builder $query) use ($pattern) {
-                $query->whereHas('publishedVersion', function (Builder $version) use ($pattern) {
+            $skillIds = JobCatalog::all('skills')->filter(function ($skill) use ($filters) {
+                return mb_stripos($skill->name, $filters['q']) !== false;
+            })->pluck('id')->all();
+            $query->where(function (Builder $query) use ($pattern, $skillIds) {
+                $query->whereHas('publishedVersion', function (Builder $version) use ($pattern, $skillIds) {
                     $version->where('title', 'like', $pattern)->orWhere('description', 'like', $pattern)
-                        ->orWhereHas('skills', fn ($skill) => $skill->where('name', 'like', $pattern));
+                        ->orWhereHas('skillRequirements', fn ($skill) => $skill->whereIn('skill_id', $skillIds));
                 })->orWhereHas('company', fn ($company) => $company->where('name', 'like', $pattern));
             });
         }
@@ -63,13 +62,19 @@ class PublicJobService
                     $version->where($column, $filters[$input]);
                 }
             }
-            foreach (['industry' => 'industry', 'level' => 'level', 'skill' => 'skills'] as $input => $relation) {
+            foreach (['industry' => ['industries', 'industry_id'], 'level' => ['levels', 'job_level_id']] as $input => [$group, $column]) {
                 if (! empty($filters[$input])) {
-                    $version->whereHas($relation, fn ($item) => $item->where('name', $filters[$input]));
+                    $ids = JobCatalog::all($group)->where('name', $filters[$input])->pluck('id')->all();
+                    $version->whereIn($column, $ids);
                 }
             }
+            if (! empty($filters['skill'])) {
+                $ids = JobCatalog::all('skills')->where('name', $filters['skill'])->pluck('id')->all();
+                $version->whereHas('skillRequirements', fn ($item) => $item->whereIn('skill_id', $ids));
+            }
             if (! empty($filters['occupationId'])) {
-                $version->whereHas('specialization', fn ($item) => $item->where('job_category_id', $filters['occupationId']));
+                $ids = JobCatalog::all('specializations')->where('job_category_id', $filters['occupationId'])->pluck('id')->all();
+                $version->whereIn('job_specialization_id', $ids);
             }
             foreach (['mode' => ['work_mode', JobInput::MODES], 'type' => ['employment_type', JobInput::TYPES]] as $input => [$column, $labels]) {
                 if (! empty($filters[$input])) {
@@ -101,7 +106,7 @@ class PublicJobService
             'salary_max' => rtrim(rtrim(bcdiv($version->salary_max, '1000000', 2), '0'), '.'),
             'salary_negotiable' => $version->salary_negotiable,
             'location' => Provinces::ALL[$version->province_code] ?? $version->location,
-            'location_detail' => $version->location, 'level' => $version->level?->name,
+            'location_detail' => $version->full_location, 'level' => $version->level?->name,
             'mode' => JobInput::MODES[$version->work_mode], 'type' => JobInput::TYPES[$version->employment_type],
             'skills' => $version->skills->pluck('name')->all(), 'deadline' => $version->application_deadline,
             'description' => $version->description, 'requirements' => $version->requirements, 'benefits' => $version->benefits,
@@ -112,16 +117,15 @@ class PublicJobService
 
     public function navigation(): array
     {
-        $groups = JobCategory::where('is_active', true)->orderBy('name')->get()->map(fn ($item) => [
+        $groups = JobCatalog::all('categories')->map(fn ($item) => [
             'id' => (string) $item->id, 'name' => $item->name, 'status' => 'active',
         ])->all();
-        $specialties = JobSpecialization::where('is_active', true)->whereHas('category', fn ($query) => $query->where('is_active', true))
-            ->orderBy('name')->get()->map(fn ($item) => [
+        $specialties = JobCatalog::all('specializations')->map(fn ($item) => [
                 'id' => (string) $item->id, 'occupationId' => (string) $item->job_category_id, 'name' => $item->name, 'status' => 'active',
             ])->all();
         $categories = [];
-        foreach (['industries' => Industry::class, 'levels' => JobLevel::class, 'skills' => Skill::class] as $key => $model) {
-            $categories[$key] = $model::where('is_active', true)->orderBy('name')->get()->map(fn ($item) => [
+        foreach (['industries', 'levels', 'skills'] as $key) {
+            $categories[$key] = JobCatalog::all($key)->map(fn ($item) => [
                 'id' => (string) $item->id, 'name' => $item->name, 'status' => 'active',
             ])->all();
         }
@@ -148,7 +152,7 @@ class PublicJobService
             ->orderByDesc('openings')->limit(6)->get()->map(function ($company) {
                 $profile = app(CompanyService::class)->publicData($company);
 
-                return ['name' => $company->name, 'logo_url' => $profile['logo_url'], 'locations' => $company->address, 'openings' => $company->openings];
+                return ['name' => $company->name, 'logo_url' => $profile['logo_url'], 'locations' => $company->full_address, 'openings' => $company->openings];
             })->all();
     }
 }

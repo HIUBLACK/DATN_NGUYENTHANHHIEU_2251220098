@@ -1,6 +1,39 @@
-# Thiết kế database VIEJOB AI
+﻿# Thiết kế database VIEJOB AI
 
-**Cập nhật được chốt ngày 19/11/2026: 25 bảng nghiệp vụ + 8 bảng hạ tầng (33 bảng), thêm danh mục vị trí công việc; mỗi phiên bản vẫn chọn một lĩnh vực.** Baseline 24 + 8 đã triển khai ngày 15/11/2026. Các mô tả 32 bảng ở phần lịch sử phản ánh thời điểm trước cập nhật. Xem [báo cáo triển khai](database-implementation.md) và [phương án cập nhật](job-catalog-update-proposal.md). ERD tổng thể ở mục 12 và [database-erd.mmd](database-erd.mmd).
+**Làm sạch dữ liệu ngày 25/11/2026:** theo yêu cầu người dùng, đã xóa dữ liệu nghiệp vụ để nhập lại và thử AI, chỉ giữ 8 tài khoản cùng lịch sử migration. Các file sao lưu cũ đã xóa. Danh mục code được chuẩn hóa tên, không còn cần ánh xạ dữ liệu database cũ. Cấu trúc vẫn 27 bảng; xem cập nhật mới nhất trong [báo cáo danh mục](cac-thay-doi-danh-muc-co-dinh.md). Các nội dung bảo toàn dữ liệu/backup bên dưới mô tả đợt chuyển đổi trước lần làm sạch này.
+
+**Cập nhật ngày 25/11/2026: 19 bảng nghiệp vụ + 8 bảng hạ tầng = 27 bảng.** Theo yêu cầu mới, bỏ quản lý danh mục Admin và 6 bảng `industries`, `job_categories`, `job_specializations`, `skills`, `job_levels`, `job_positions`. Các lựa chọn chuyển sang `config/job-catalog.php`; `App\Support\JobCatalog` đọc danh sách này.
+
+### Cập nhật địa chỉ ngày 26/11/2026
+
+Đã áp dụng migration `2026_11_26_100000_add_administrative_address_codes` theo phê duyệt. Tổng số bảng vẫn **27**.
+
+| Cột bổ sung | Kiểu dữ liệu | Cho phép NULL | Ý nghĩa |
+| --- | --- | --- | --- |
+| `companies.province_code` | VARCHAR(2) | Có | Mã tỉnh/thành của doanh nghiệp tại Việt Nam |
+| `companies.ward_code` | VARCHAR(5) | Có | Mã xã/phường/đặc khu của doanh nghiệp |
+| `job_versions.ward_code` | VARCHAR(5) | Có | Mã xã/phường/đặc khu của phiên bản tin |
+
+- `job_versions.province_code` VARCHAR(2) nullable đã tồn tại, không tạo lại. Ba cột mới không có PK, FK, UNIQUE, CHECK hoặc index bổ sung; mã lưu dạng chuỗi để giữ số 0 đầu.
+- Danh mục tỉnh/xã nằm trong `resources/data/vietnam-administrative-address.json`, không có bảng hành chính. Backend kiểm tra mã hợp lệ và xã thuộc đúng tỉnh qua `VietnamAddress`.
+- `companies.address` VARCHAR(255) và `job_versions.location` VARCHAR(150) giữ nguyên kiểu dữ liệu, dùng lưu **số nhà, tên đường**. Tên xã/tỉnh chỉ ghép khi hiển thị qua `full_address`/`full_location`, không ghi ngược chuỗi ghép vào database.
+- Doanh nghiệp tại Việt Nam bắt buộc chọn tỉnh/xã khi lưu; quốc gia khác nhập địa chỉ tự do và hai mã để NULL. Tin nháp được phép thiếu mã; gửi duyệt cần đủ tỉnh/xã. Pending cũ thiếu mã xã được giữ tương thích, không sửa nội dung lịch sử.
+- Địa chỉ cũ thiếu mã được giữ nguyên, không suy đoán xã, không backfill phiên bản đã duyệt. Không thêm quan hệ Eloquent tới danh mục tỉnh/xã; dùng helper đọc JSON.
+- Không đổi published pointer, kết quả AI, FK hiện hữu hoặc cơ chế phiên bản. Migration rollback từ chối bỏ cột nếu còn dữ liệu mã địa chỉ.
+- Cập nhật ô lương chỉ thuộc giao diện; `salary_min`/`salary_max` vẫn DECIMAL(15,2), không thêm hoặc đổi cột.
+
+Chi tiết nguồn danh mục và giới hạn đối chiếu cấp xã: [báo cáo địa chỉ](vietnam-administrative-address-implementation.md).
+
+### Quyết định hiện hành về danh mục cố định
+
+- Giữ nguyên mã lựa chọn đã lưu. Các cột `companies.industry_id`, `job_versions.industry_id/job_specialization_id/job_level_id/job_position_id`, `job_version_skills.skill_id`, `resume_skills.skill_id` là **mã trong code**, không còn FK tới bảng danh mục. Kiểu dữ liệu, NULL, index và UNIQUE còn lại giữ nguyên.
+- Bỏ 8 FK tới danh mục (gồm FK nội bộ chuyên môn → nhóm nghề), không thay FK JobVersion, CV revision, ứng tuyển hoặc published pointer.
+- Lĩnh vực, vị trí, chuyên môn, cấp bậc và kỹ năng được kiểm tra tại backend bằng danh sách cố định. Nhóm nghề suy ra từ chuyên môn. Không có API thêm/sửa/ẩn danh mục.
+- Quan hệ Eloquent tới bảng danh mục được thay bằng accessor chỉ đọc. `JobVersion::skillRequirements()` và `Resume::skills()` vẫn là quan hệ với bảng nghiệp vụ. `JobVersion::$skills` trả danh sách tên/mã từ code cùng pivot đã lưu.
+- Không đổi/tái sử dụng mã, không chuyển nhóm chuyên môn đã dùng; muốn bổ sung thì thêm mã mới. Ghi SQL trực tiếp phải tuân thủ danh sách này vì không còn FK kiểm tra mã danh mục.
+- Migration chuyển đổi kiểm tra tên/mã/nhóm cũ, sao lưu JSON gồm DDL và các dòng danh mục vào private storage trước khi bỏ bảng. Không tự rollback; phục hồi cần đối chiếu cả lựa chọn mới đã được sử dụng.
+- Tài liệu khảo sát và quyết định cũ bên dưới là lịch sử theo thời điểm. Mục này và ERD hiện hành thay thế các quy định cũ về CRUD, trạng thái danh mục và FK tới 6 bảng đã bỏ. Xem [báo cáo thay đổi](cac-thay-doi-danh-muc-co-dinh.md).
+
 
 ## 1. Kết quả phân tích hiện trạng
 
@@ -98,7 +131,7 @@ FK user_id→users.id; UNIQUE(user_id). Các ? là input không bắt buộc. Kh
 
 ### 4.3 companies — mới
 
-`id ID`, `public_id UUID`, `recruiter_id`, `name V(150)`, `slug V(160)`, `logo_path V(255)?`, `office_images JSON`, `description TEXT?` (≤10000), `company_size V(30)?`, `industry_id?`, `company_type V(80)?`, `country V(80)?`, `website V(255)?`, `email V(150)`, `phone V(30)`, `address V(255)`, `working_hours V(255)?`, `overtime_policy TEXT?` (≤2000), `work_environment TEXT?` (≤3000), `status V(20) DEFAULT 'active'`, TS.
+`id ID`, `public_id UUID`, `recruiter_id`, `name V(150)`, `slug V(160)`, `logo_path V(255)?`, `office_images JSON`, `description TEXT?` (≤10000), `company_size V(30)?`, `industry_id?`, `company_type V(80)?`, `country V(80)?`, `website V(255)?`, `email V(150)`, `phone V(30)`, `address V(255)`, `province_code V(2)?`, `ward_code V(5)?`, `working_hours V(255)?`, `overtime_policy TEXT?` (≤2000), `work_environment TEXT?` (≤3000), `status V(20) DEFAULT 'active'`, TS.
 
 UNIQUE(public_id), UNIQUE(slug), UNIQUE(recruiter_id). FK recruiter_id→users.id, industry_id→industries.id; INDEX(status,name,id). Các ? do form cho phép thiếu. CHECK status active/locked, work_environment NULL hoặc tối đa 3000 ký tự. Size giữ 6 khoảng nhân sự; mapping size→company_size, ot_policy→overtime_policy. Theo phê duyệt ngày 18/11/2026, migration `2026_11_18_120000_simplify_company_profile` bỏ short_name, short_description, founded_year, benefits, technologies, cover_image_path và CHECK liên quan, thêm work_environment. Không backfill bằng nội dung phúc lợi cũ. Địa chỉ nhập thủ công, không Google Maps. Public projection không xuất email/phone quản trị hoặc disk paths; website http(s) hoặc NULL khi không có website. Vẫn 32 bảng; sao lưu đầy đủ trước khi bỏ cột, không dùng down để khôi phục nội dung đã xóa.
 
@@ -143,7 +176,7 @@ FK company_id→companies.id; **composite FK(id,published_version_id)→job_vers
 
 ### 4.10 job_versions — mới
 
-`id ID`, `job_id`, `version_number U32`, `title V(150)`, `position V(120)?`, `job_position_id?`, `province_code V(2)?`, `description TEXT?`, `requirements TEXT?`, `benefits TEXT?`, `salary_min DECIMAL(15,2)?`, `salary_max DECIMAL(15,2)?`, `salary_currency CHAR(3) DEFAULT 'VND'`, `salary_negotiable BOOL DEFAULT 0`, `location V(150)?`, `work_mode V(10)?`, `employment_type V(20)?`, `quantity U16?`, `experience_summary V(100)?`, `experience_min DECIMAL(4,1)?`, `experience_max DECIMAL(4,1)?`, `industry_id?`, `job_specialization_id?`, `job_level_id?`, `application_deadline DATE?`, `review_status V(20) DEFAULT 'draft'`, `submitted_at DATETIME(6)?`, `reviewed_at DATETIME(6)?`, `pending_slot U8 GENERATED STORED` = CASE WHEN review_status='pending' THEN 1 ELSE NULL END, TS.
+`id ID`, `job_id`, `version_number U32`, `title V(150)`, `position V(120)?`, `job_position_id?`, `province_code V(2)?`, `ward_code V(5)?`, `description TEXT?`, `requirements TEXT?`, `benefits TEXT?`, `salary_min DECIMAL(15,2)?`, `salary_max DECIMAL(15,2)?`, `salary_currency CHAR(3) DEFAULT 'VND'`, `salary_negotiable BOOL DEFAULT 0`, `location V(150)?`, `work_mode V(10)?`, `employment_type V(20)?`, `quantity U16?`, `experience_summary V(100)?`, `experience_min DECIMAL(4,1)?`, `experience_max DECIMAL(4,1)?`, `industry_id?`, `job_specialization_id?`, `job_level_id?`, `application_deadline DATE?`, `review_status V(20) DEFAULT 'draft'`, `submitted_at DATETIME(6)?`, `reviewed_at DATETIME(6)?`, `pending_slot U8 GENERATED STORED` = CASE WHEN review_status='pending' THEN 1 ELSE NULL END, TS.
 
 FK job_position_id→job_positions.id (RESTRICT), INDEX(job_position_id), INDEX(province_code); job_id→jobs.id; industry_id→industries.id; job_specialization_id→job_specializations.id; job_level_id→job_levels.id. UNIQUE(job_id,version_number), UNIQUE(job_id,id), UNIQUE(job_id,pending_slot). INDEX(review_status,submitted_at,id), INDEX(job_specialization_id,id), INDEX(industry_id,id), INDEX(job_level_id,id), INDEX(location,work_mode,id). FK jobs.published_version_id dùng unique composite nói trên để chặn trỏ nhầm tin.
 
@@ -428,11 +461,11 @@ Các cột trong hình là khóa/mốc chính; mục 4 là từ điển cột đ
 
 ```mermaid
 erDiagram
-    %% Final design: 25 business tables + 8 Laravel infrastructure tables (position catalog update 2026-11-19).
+    %% Current design: 19 business tables + 8 Laravel infrastructure tables (static catalog update 2026-11-25).
     %% MariaDB 11.5.2: validate generated slots, composite FKs and CHECKs on staging.
     %% Stage 3.2: title-only drafts; nullable drafts; experience no longer required outside draft.
-    %% Industry/level: nullable in draft, required on submission; 33 tables after position catalog approval.
-    %% Referenced specialization cannot change category (Service + locking).
+    %% Industry/level: nullable in draft, required on submission; 27 tables; catalog codes validated by application.
+    %% Static catalog IDs and specialization parents must remain stable in config/job-catalog.php.
     %% Active resumes require exactly one primary (unique slot + Service).
     %% Published version belongs to same job and requires Admin approval.
     %% AI formula v1: 60 percent semantic + 40 percent skill; preserve history.
@@ -453,37 +486,15 @@ erDiagram
     companies {
         bigint id PK
         uuid public_id UK
+        varchar province_code "nullable, length 2, local JSON code"
+        varchar ward_code "nullable, length 5, local JSON code"
+        varchar address "length 255, house number and street"
         varchar logo_path
         text work_environment "nullable, max 3000"
         json office_images
         bigint recruiter_id FK, UK
-        bigint industry_id FK
+        bigint industry_id "static catalog code"
         varchar status
-    }
-    industries {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_categories {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_specializations {
-        bigint id PK
-        bigint job_category_id FK
-        varchar code UK
-    }
-    skills {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
-    }
-    job_levels {
-        bigint id PK
-        varchar code UK
-        varchar normalized_name UK
     }
     jobs {
         bigint id PK
@@ -492,35 +503,24 @@ erDiagram
         varchar status
         datetime expires_at
     }
-    job_positions {
-        bigint id PK
-        varchar code UK
-        varchar name
-        varchar normalized_name UK
-        varchar slug UK
-        boolean is_active
-    }
     job_versions {
-        json ai_analysis_result
-        varchar ai_analysis_status
-        char ai_processing_token
-        smallint ai_attempt_count
-        datetime ai_analyzed_at
-        bigint job_position_id FK "nullable for legacy"
+        bigint job_position_id "static catalog code"
         varchar province_code "34 provinces, nullable for legacy"
+        varchar ward_code "nullable, length 5, local JSON code"
+        varchar location "nullable, length 150, house number and street"
         bigint id PK
         bigint job_id FK
         int version_number
-        bigint industry_id FK
-        bigint job_specialization_id FK
-        bigint job_level_id FK
+        bigint industry_id "static catalog code"
+        bigint job_specialization_id "static catalog code"
+        bigint job_level_id "static catalog code"
         varchar review_status
         int pending_slot
     }
     job_version_skills {
         bigint id PK
         bigint job_version_id FK
-        bigint skill_id FK
+        bigint skill_id "static catalog code"
     }
     job_moderation_logs {
         bigint id PK
@@ -542,13 +542,12 @@ erDiagram
         int revision
         varchar file_hash
         varchar parsing_status
-        json analysis_result
     }
     resume_skills {
         bigint id PK
         bigint resume_id FK
         int resume_revision FK
-        bigint skill_id FK
+        bigint skill_id "static catalog code"
     }
     applications {
         bigint id PK
@@ -653,23 +652,15 @@ erDiagram
 
     users ||--o| candidate_profiles : "candidate profile"
     users ||--o| companies : "recruiter owner"
-    industries o|--o{ companies : "optional industry"
     companies ||--o{ jobs : "owns"
-    job_categories ||--o{ job_specializations : "contains"
     jobs ||--o{ job_versions : "content versions"
     jobs o|--o| job_versions : "published pointer same job"
-    industries o|--o{ job_versions : "required on submit"
-    job_positions o|--o{ job_versions : "position snapshot"
-    job_levels o|--o{ job_versions : "required on submit"
-    job_specializations o|--o{ job_versions : "required on submit"
     job_versions ||--o{ job_version_skills : "requirements"
-    skills ||--o{ job_version_skills : "skill"
     job_versions ||--o| job_moderation_logs : "final decision"
     users ||--o{ job_moderation_logs : "reviewer"
     users ||--o{ resumes : "candidate owner"
     resumes ||--|{ resume_revisions : "immutable files"
     resume_revisions ||--o{ resume_skills : "composite revision FK"
-    skills ||--o{ resume_skills : "recognized"
     users ||--o{ applications : "candidate"
     jobs ||--o{ applications : "attempts"
     job_versions ||--o{ applications : "JD at submission"
@@ -731,3 +722,5 @@ Không mặc nhiên giữ dữ liệu cá nhân vô hạn. Trong MVP chưa có t
 - [Laravel 12 queues](https://laravel.com/framework/docs/12.x/queues): dispatch sau commit; idempotency/retry vẫn cần ở lớp nghiệp vụ.
 
 Nguồn kỹ thuật kiểm tra giới hạn, không thay kết quả khảo sát repository. Kết quả migration và kiểm thử thực tế được ghi trong [báo cáo triển khai](database-implementation.md).
+
+

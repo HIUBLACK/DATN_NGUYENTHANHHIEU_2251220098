@@ -3,10 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Company;
-use App\Models\Industry;
-use App\Models\JobLevel;
-use App\Models\JobPosition;
-use App\Models\Skill;
+use App\Support\JobCatalog;
 use App\Services\RecruiterJobService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -20,9 +17,9 @@ class CreateDemoJobs extends Command
     public function handle(RecruiterJobService $jobs): int
     {
         $company = Company::with('recruiter')->findOrFail($this->argument('company'));
-        $position = JobPosition::where('is_active', true)->where('name', 'like', '%Java%')->orderBy('id')->first();
-        $industry = Industry::where('is_active', true)->orderBy('id')->first();
-        $skills = Skill::where('is_active', true)->whereIn('name', ['Git', 'GitHub'])->pluck('id')->all();
+        $position = JobCatalog::find('positions', 1);
+        $industry = JobCatalog::find('industries', 1);
+        $skills = JobCatalog::all('skills')->whereIn('name', ['Git', 'GitHub'])->pluck('id')->all();
         $samples = [
             ['Fresher', '01', 'Hà Nội', 8000000, 12000000, 'onsite'],
             ['Junior', '48', 'Đà Nẵng', 15000000, 22000000, 'hybrid'],
@@ -38,7 +35,7 @@ class CreateDemoJobs extends Command
                 if ($company->jobs()->whereHas('versions', fn ($query) => $query->where('title', $title))->exists()) {
                     continue;
                 }
-                $level = JobLevel::where('is_active', true)->where('name', $levelName)->first();
+                $level = JobCatalog::all('levels')->firstWhere('name', $levelName);
                 $job = $jobs->create($owner, [
                     'title' => $title,
                     'job_position_id' => $position?->id,

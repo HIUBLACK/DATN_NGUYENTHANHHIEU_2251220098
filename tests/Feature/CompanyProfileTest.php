@@ -6,7 +6,6 @@ use App\Enums\CompanyStatus;
 use App\Enums\UserRole;
 use App\Enums\UserStatus;
 use App\Models\Company;
-use App\Models\Industry;
 use App\Models\User;
 use App\Support\CompanyOptions;
 use Illuminate\Http\UploadedFile;
@@ -21,7 +20,6 @@ class CompanyProfileTest extends TestCase
 {
     private array $userIds = [];
 
-    private array $industryIds = [];
 
     private User $recruiter;
 
@@ -41,7 +39,6 @@ class CompanyProfileTest extends TestCase
         if ($this->userIds) {
             Company::whereIn('recruiter_id', $this->userIds)->delete();
             User::whereIn('id', $this->userIds)->delete();
-            Industry::whereIn('id', $this->industryIds)->delete();
         }
         parent::tearDown();
     }
@@ -89,6 +86,28 @@ class CompanyProfileTest extends TestCase
         return Company::where('recruiter_id', auth()->id())->firstOrFail();
     }
 
+    public function test_vietnam_address_codes_roundtrip_and_foreign_address_remains_manual(): void
+    {
+        $ward = \App\Support\VietnamAddress::data()['wards'][0];
+        $company = $this->createCompany([
+            'country' => 'Việt Nam', 'province_code' => $ward['province_code'],
+            'ward_code' => $ward['code'], 'address' => '12 Đường nhập tay',
+        ]);
+        $this->assertSame($ward['code'], $company->ward_code);
+        $this->get(route('recruiter.company-edit'))->assertOk()->assertSee($ward['name']);
+        $this->put(route('recruiter.company-update', $company->public_id), $this->updateFields($company, [
+            'country' => 'Việt Nam', 'province_code' => '96', 'ward_code' => $ward['code'],
+        ]))->assertSessionHasErrors('ward_code');
+        $this->put(route('recruiter.company-update', $company->public_id), $this->updateFields($company, [
+            'country' => 'Nhật Bản', 'address' => 'Tokyo, building A',
+            'province_code' => '01', 'ward_code' => $ward['code'],
+        ]))->assertSessionHasNoErrors();
+        $company->refresh();
+        $this->assertNull($company->province_code);
+        $this->assertNull($company->ward_code);
+        $this->assertSame('Tokyo, building A', $company->full_address);
+    }
+
     private function updateFields(Company $company, array $extra = []): array
     {
         return array_replace($this->fields(), ['updated_at' => $company->fresh()->getRawOriginal('updated_at')], $extra);
@@ -115,6 +134,7 @@ class CompanyProfileTest extends TestCase
     {
         $company = $this->createCompany([
             'country' => 'Việt Nam', 'company_type' => CompanyOptions::TYPES[0],
+            'province_code' => '01', 'ward_code' => \App\Support\VietnamAddress::data()['wards'][0]['code'],
             'working_from' => 1, 'working_to' => 5, 'no_website' => 1, 'website' => 'invalid',
         ]);
         $this->assertNull($company->website);
@@ -153,7 +173,7 @@ class CompanyProfileTest extends TestCase
         $this->post(route('recruiter.company-store'), $this->fields() + ['logo' => $this->image()])
             ->assertSessionHasErrors('company');
         $this->assertSame(1, Company::where('recruiter_id', $this->recruiter->id)->count());
-        $this->assertSame($company->public_id, Company::first()->public_id);
+        $this->assertSame($company->public_id, Company::where('recruiter_id', $this->recruiter->id)->first()->public_id);
         $this->assertSame([], Storage::disk('local')->allFiles());
     }
 
@@ -293,21 +313,13 @@ class CompanyProfileTest extends TestCase
         $this->assertCount(1, Storage::disk('local')->allFiles());
     }
 
-    public function test_inactive_industry_cannot_be_selected_but_existing_value_is_retained(): void
+    public function test_static_industry_is_retained_and_unknown_value_is_rejected(): void
     {
-        $industry = new Industry;
-        $industry->forceFill([
-            'code' => 'TEST', 'name' => 'Test industry', 'normalized_name' => 'test industry',
-            'slug' => 'test-industry', 'is_active' => true, 'sort_order' => 0,
-        ])->save();
-        $this->industryIds[] = $industry->id;
-        $company = $this->createCompany(['industry_id' => $industry->id]);
-        $industry->is_active = false;
-        $industry->save();
-        $this->get(route('recruiter.company-edit'))->assertOk()->assertSee('Test industry');
-        $this->put(route('recruiter.company-update', $company->public_id), $this->updateFields($company, ['industry_id' => $industry->id]))->assertSessionHasNoErrors();
-        $this->signIn($this->account());
-        $this->post(route('recruiter.company-store'), $this->fields() + ['industry_id' => $industry->id])->assertSessionHasErrors('industry_id');
+        $company = $this->createCompany(['industry_id' => 1]);
+        $this->get(route('recruiter.company-edit'))->assertOk()->assertSee('Gia công phần mềm');
+        $this->put(route('recruiter.company-update', $company->public_id), $this->updateFields($company, ['industry_id' => 100]))->assertSessionHasNoErrors();
+        $this->assertSame(100, $company->fresh()->industry_id);
+        $this->put(route('recruiter.company-update', $company->public_id), $this->updateFields($company->fresh(), ['industry_id' => 999999]))->assertSessionHasErrors('industry_id');
     }
 
     public function test_demo_company_pages_remain_explicit_and_separate(): void

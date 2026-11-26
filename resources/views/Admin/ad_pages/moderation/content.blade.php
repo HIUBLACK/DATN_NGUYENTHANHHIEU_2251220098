@@ -1,6 +1,6 @@
 <h3 class="h5">{{ $content->title }}</h3>
 <p>Tỉnh/thành phố: {{ App\Support\Provinces::ALL[$content->province_code] ?? 'Chưa cập nhật' }}</p>
-@foreach (['position' => 'Vị trí', 'description' => 'Mô tả', 'requirements' => 'Yêu cầu', 'benefits' => 'Quyền lợi', 'location' => 'Địa điểm chi tiết'] as $field => $label)
+@foreach (['position' => 'Vị trí', 'description' => 'Mô tả', 'requirements' => 'Yêu cầu', 'benefits' => 'Quyền lợi', 'full_location' => 'Địa điểm chi tiết'] as $field => $label)
     <h4 class="h6 mt-3">{{ $label }}</h4>
     <p class="company-profile-text">{{ $content->$field }}</p>
 @endforeach

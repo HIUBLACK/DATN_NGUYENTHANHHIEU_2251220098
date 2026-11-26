@@ -109,10 +109,11 @@ class RecruiterJobTest extends AuthenticatedDemoTestCase
             ->assertSessionHasErrors('province_code');
         $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['industry_id' => [$input['industry_id']]]) + $this->versionToken($job))
             ->assertSessionHasErrors('industry_id');
-        DB::table('job_positions')->where('id', $input['job_position_id'])->update(['is_active' => false]);
+        $catalog = config('job-catalog.positions');
+        config(['job-catalog.positions' => array_diff_key($catalog, [2 => true])]);
         $this->post(route('recruiter.job-submit', $job->id), $this->versionToken($job))->assertSessionHasErrors('job_position_id');
+        config(['job-catalog.positions' => $catalog]);
         $this->get(route('recruiter.job-edit', $job->id))->assertOk()->assertSee($version->position);
-        DB::table('job_positions')->where('id', $input['job_position_id'])->update(['is_active' => true]);
         $this->post(route('recruiter.job-submit', $job->id), $this->versionToken($job))->assertSessionHasNoErrors();
         $this->assertSame('pending', $version->fresh()->review_status->value);
     }
@@ -176,15 +177,16 @@ class RecruiterJobTest extends AuthenticatedDemoTestCase
         $this->assertNull($job->versions()->first()->position);
     }
 
-    public function test_submit_requires_complete_active_catalogs_skills_and_deadline(): void
+    public function test_submit_requires_complete_valid_catalogs_skills_and_deadline(): void
     {
         $job = $this->createJob();
         $this->post(route('recruiter.job-submit', $job->id), $this->versionToken($job))->assertSessionHasErrors(['position', 'skills', 'industry_id']);
         $input = $this->completeInput();
         $this->put(route('recruiter.job-update', $job->id), $input + $this->versionToken($job))->assertSessionHasNoErrors();
-        DB::table('skills')->where('id', $input['skills'][0])->update(['is_active' => false]);
+        $catalog = config('job-catalog.skills');
+        config(['job-catalog.skills' => array_diff_key($catalog, [100 => true])]);
         $this->post(route('recruiter.job-submit', $job->id), $this->versionToken($job))->assertSessionHasErrors('skills');
-        DB::table('skills')->where('id', $input['skills'][0])->update(['is_active' => true]);
+        config(['job-catalog.skills' => $catalog]);
         $version = $job->versions()->first();
         $version->application_deadline = now()->subDay()->toDateString();
         $version->save();
@@ -246,14 +248,15 @@ class RecruiterJobTest extends AuthenticatedDemoTestCase
         $this->assertSame(1, DB::table('job_moderation_logs')->count());
     }
 
-    public function test_catalog_relationships_duplicates_and_inactive_new_values_are_rejected(): void
+    public function test_catalog_relationships_duplicates_and_unknown_new_values_are_rejected(): void
     {
         $input = $this->completeInput();
         $job = $this->createJob();
         $token = $this->versionToken($job);
         $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['skills' => [$input['skills'][0], $input['skills'][0]]]) + $token)->assertSessionHasErrors('skills.0');
         $this->put(route('recruiter.job-update', $job->id), array_replace($input, ['job_specialization_id' => 99999999]) + $token)->assertSessionHasErrors('job_specialization_id');
-        DB::table('job_specializations')->where('id', $input['job_specialization_id'])->update(['is_active' => false]);
+        $catalog = config('job-catalog.specializations');
+        config(['job-catalog.specializations' => array_diff_key($catalog, [2 => true])]);
         $this->put(route('recruiter.job-update', $job->id), $input + $token)->assertSessionHasErrors('job_specialization_id');
     }
 

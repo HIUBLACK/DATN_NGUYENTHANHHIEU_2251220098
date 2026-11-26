@@ -15,9 +15,6 @@
                 <div class="alert alert-info">Bản đã gửi được giữ nguyên. Thay đổi chỉ được gửi kiểm duyệt sau khi bạn xác nhận.</div>
             @endif
         @endif
-        @if ($options['industries']->isEmpty() || $options['positions']->isEmpty() || $options['specializations']->isEmpty() || $options['levels']->isEmpty() || $options['skills']->isEmpty())
-            <div class="alert alert-warning">Danh mục tuyển dụng chưa đủ dữ liệu để gửi duyệt. Vui lòng liên hệ Admin bổ sung.</div>
-        @endif
         <form method="post" id="real-job-form" action="{{ $job ? route('recruiter.job-update', $job->id) : route('recruiter.job-store') }}">
             @csrf
             <input type="hidden" name="intent" id="job-intent" value="submit">
@@ -30,7 +27,10 @@
             @endif
             <fieldset @disabled($version?->review_status->value === 'pending')>
                 <div class="row g-3">
-                    @foreach (['title' => ['Tiêu đề', 150], 'location' => ['Địa điểm chi tiết', 150]] as $field => [$label, $max])
+                    @foreach (['title' => ['Tiêu đề', 150], 'location' => ['Số nhà, tên đường', 150]] as $field => [$label, $max])
+                        @if ($field === 'location')
+                            @include('shared.administrative-address', ['addressValues' => $form, 'addressField' => 'location'])
+                        @endif
                         <div class="col-lg-6 form-group-custom">
                             <label class="form-label-custom" for="{{ $field }}">
                                 {{ $label }}
@@ -41,15 +41,6 @@
                             <input id="{{ $field }}" name="{{ $field }}" class="form-control-custom" maxlength="{{ $max }}" value="{{ old($field, $form[$field] ?? '') }}" required>
                         </div>
                     @endforeach
-                    <div class="col-lg-6 form-group-custom">
-                        <label class="form-label-custom" for="province_code">Tỉnh/thành phố</label>
-                        <select id="province_code" name="province_code" class="form-select-custom" required>
-                            <option value="">Chọn tỉnh/thành phố</option>
-                            @foreach (App\Support\Provinces::ALL as $code => $province)
-                                <option value="{{ $code }}" @selected((string) old('province_code', $form['province_code'] ?? '') === (string) $code)>{{ $province }}</option>
-                            @endforeach
-                        </select>
-                    </div>
                     @foreach (['industry_id' => ['Lĩnh vực', 'industries'], 'job_position_id' => ['Vị trí công việc', 'positions'], 'job_specialization_id' => ['Chuyên môn CNTT', 'specializations'], 'job_level_id' => ['Cấp bậc', 'levels']] as $field => [$label, $key])
                         <div class="col-lg-6 form-group-custom">
                             <label class="form-label-custom" for="{{ $field }}">{{ $label }}</label>
@@ -57,7 +48,7 @@
                                 <option value="">Chưa chọn</option>
                                 @foreach ($options[$key] as $item)
                                     <option value="{{ $item->id }}" data-category="{{ $item->job_category_id ?? '' }}" @selected((string) old($field, $form[$field] ?? '') === (string) $item->id)>
-                                        {{ $item->name }}{{ $item->is_active ? '' : ' (đã ẩn)' }}
+                                        {{ $item->name }}
                                     </option>
                                 @endforeach
                             </select>
@@ -75,7 +66,16 @@
                     @foreach (['salary_min' => ['Lương tối thiểu (VND/tháng)', '0.01', '9999999999999.99'], 'salary_max' => ['Lương tối đa (VND/tháng)', '0.01', '9999999999999.99'], 'quantity' => ['Số lượng tuyển', '1', '1000']] as $field => [$label, $step, $max])
                         <div class="col-lg-6 form-group-custom">
                             <label class="form-label-custom" for="{{ $field }}">{{ $label }}</label>
-                            <input type="number" required id="{{ $field }}" name="{{ $field }}" class="form-control-custom" min="{{ $field === 'quantity' ? '1' : '0' }}" max="{{ $max }}" step="{{ $step }}" value="{{ old($field, $form[$field] ?? '') }}">
+                            @if ($field === 'quantity')
+                                <input type="number" required id="{{ $field }}" name="{{ $field }}" class="form-control-custom" min="1" max="{{ $max }}" step="1" value="{{ old($field, $form[$field] ?? '') }}">
+                            @else
+                                <div class="d-flex gap-2" data-salary-control>
+                                    <button type="button" class="btn btn-outline-primary" data-salary-step="-1" aria-label="Giảm {{ $label }} 100.000 VNĐ">−</button>
+                                    <input type="text" required id="{{ $field }}" class="form-control-custom flex-grow-1 w-50" inputmode="numeric" autocomplete="off" data-salary-input data-limit="{{ $max }}" value="{{ old($field, $form[$field] ?? '') }}">
+                                    <input type="hidden" name="{{ $field }}" data-salary-value value="{{ old($field, $form[$field] ?? '') }}">
+                                    <button type="button" class="btn btn-outline-primary" data-salary-step="1" aria-label="Tăng {{ $label }} 100.000 VNĐ">+</button>
+                                </div>
+                            @endif
                         </div>
                     @endforeach
                     @foreach (['work_mode' => ['Hình thức làm việc', App\Support\JobInput::MODES], 'employment_type' => ['Loại công việc', App\Support\JobInput::TYPES]] as $field => [$label, $choices])
@@ -97,7 +97,7 @@
                         <label class="form-label-custom" for="skills">Kỹ năng yêu cầu (có thể chọn nhiều)</label>
                         <select id="skills" name="skills[]" class="form-select-custom" required multiple size="6">
                             @foreach ($options['skills'] as $skill)
-                                <option value="{{ $skill->id }}" @selected(in_array($skill->id, old('skills', $form['skills'] ?? [])))>{{ $skill->name }}{{ $skill->is_active ? '' : ' (đã ẩn)' }}</option>
+                                <option value="{{ $skill->id }}" @selected(in_array($skill->id, old('skills', $form['skills'] ?? [])))>{{ $skill->name }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -119,4 +119,5 @@
         </div>
     </div>
     @include('employer.component.job-review-modal')
+    <script src="{{ asset('recruiter/js/job-salary.js') }}"></script>
 @endsection

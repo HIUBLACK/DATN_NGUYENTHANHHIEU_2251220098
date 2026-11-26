@@ -119,8 +119,8 @@ try {
     if (Artisan::call('migrate', ['--database' => 'schema_restore', '--force' => true]) !== 0) {
         throw new RuntimeException('Rehearsal migration failed.');
     }
-    if (count($restore->select('SHOW TABLES')) !== 32) {
-        throw new RuntimeException('Rehearsal did not produce 32 tables.');
+    if (count($restore->select('SHOW TABLES')) !== 27) {
+        throw new RuntimeException('Rehearsal did not produce 27 tables.');
     }
     if (databaseManifest($connection) !== $before) {
         throw new RuntimeException('Source changed during maintenance; stop producers before retrying.');
@@ -129,7 +129,7 @@ try {
         throw new RuntimeException('Migration failed; application remains in maintenance.');
     }
     $after = databaseManifest($connection);
-    if (count($after) !== 32) {
+    if (count($after) !== 27) {
         throw new RuntimeException('Unexpected final table count.');
     }
     foreach ($before as $table => $manifest) {
@@ -148,7 +148,7 @@ try {
         'before' => $before, 'after' => $after,
     ], JSON_PRETTY_PRINT));
     Artisan::call('up');
-    echo "PASS: backup restored and verified; migrated $database to 32 tables; existing data preserved.\n";
+    echo "PASS: backup restored and verified; migrated $database to 27 tables; existing data preserved.\n";
     echo 'Backup: '.$backupDirectory."\n";
 } catch (Throwable $exception) {
     fwrite(STDERR, $exception->getMessage()."\n");

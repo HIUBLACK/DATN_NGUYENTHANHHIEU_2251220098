@@ -1,12 +1,10 @@
 <?php
 
-use App\Http\Controllers\AdminCategoryController;
 use App\Http\Controllers\AdminJobController;
 use App\Http\Controllers\AdminJobModerationController;
 use App\Http\Controllers\AdminManagementController;
 use App\Http\Controllers\AdminPageController;
 use App\Http\Controllers\CompanyProfileController;
-use App\Support\AdminCategory;
 use Illuminate\Support\Facades\Route;
 
 $adminPages = [
@@ -42,18 +40,6 @@ Route::patch('/admin/tin-tuyen-dung/{job}/trang-thai', [AdminJobController::clas
     ->whereNumber('job')->middleware('throttle:30,1')->name('admin.jobs.status');
 Route::get('/admin/doanh-nghiep/{company}/anh/{slot}', [CompanyProfileController::class, 'adminMedia'])
     ->whereUuid('company')->where('slot', 'logo|office-[0-5]')->name('admin.company-media');
-
-foreach (AdminCategory::TYPES as $type => [$model, $title, $path]) {
-    Route::prefix('admin/danh-muc/'.$path)->name('admin.'.$type.'.')->group(function () use ($type) {
-        $controller = AdminCategoryController::class;
-        Route::get('/', [$controller, 'index'])->defaults('categoryType', $type)->name('index');
-        Route::get('/tao', [$controller, 'form'])->defaults('categoryType', $type)->name('create');
-        Route::get('/{item}/chinh-sua', [$controller, 'form'])->whereNumber('item')->defaults('categoryType', $type)->name('edit');
-        Route::post('/', [$controller, 'store'])->defaults('categoryType', $type)->middleware('throttle:30,1')->name('store');
-        Route::put('/{item}', [$controller, 'update'])->whereNumber('item')->defaults('categoryType', $type)->middleware('throttle:30,1')->name('update');
-        Route::patch('/{item}/trang-thai', [$controller, 'status'])->whereNumber('item')->defaults('categoryType', $type)->middleware('throttle:30,1')->name('status');
-    });
-}
 
 Route::get('/admin/kiem-duyet', [AdminJobModerationController::class, 'index'])->name('admin.jobs.queue');
 Route::get('/admin/kiem-duyet/{version}', [AdminJobModerationController::class, 'show'])->whereNumber('version')->name('admin.moderation.show');

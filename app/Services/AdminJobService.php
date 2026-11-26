@@ -40,7 +40,7 @@ class AdminJobService
 
     public function detail(int $id, ?int $versionId): array
     {
-        $relations = ['skills', 'specialization.category', 'industry', 'level', 'positionCatalog'];
+        $relations = ['skillRequirements'];
         $job = Job::with(['company.recruiter', 'publishedVersion'])->withCount('applications')->withMax('activityLogs', 'id')->findOrFail($id);
         Gate::authorize('moderate', $job);
         $versions = $job->versions()->with('moderationLog.admin')->latest('version_number')->paginate(15, ['*'], 'versions_page')->withQueryString();
@@ -75,7 +75,7 @@ class AdminJobService
             'Lương tối đa' => $version->salary_max !== null ? number_format((float) $version->salary_max, 0, ',', '.').' '.$version->salary_currency : null,
             'Thương lượng lương' => $version->salary_negotiable ? 'Có' : 'Không',
             'Tỉnh/thành phố' => Provinces::ALL[$version->province_code] ?? null,
-            'Địa điểm chi tiết' => $version->location,
+            'Địa điểm chi tiết' => $version->full_location,
             'Hình thức làm việc' => JobInput::MODES[$version->work_mode] ?? null,
             'Loại công việc' => JobInput::TYPES[$version->employment_type] ?? null,
             'Số lượng' => $version->quantity,

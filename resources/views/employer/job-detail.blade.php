@@ -37,7 +37,7 @@
     </div>
     <div class="card p-4 mb-4">
         <p>Tỉnh/thành phố: {{ App\Support\Provinces::ALL[$version->province_code] ?? 'Chưa cập nhật' }}</p>
-        @foreach (['position' => 'Vị trí', 'description' => 'Mô tả công việc', 'requirements' => 'Yêu cầu ứng viên', 'benefits' => 'Quyền lợi', 'location' => 'Địa điểm chi tiết'] as $field => $label)
+        @foreach (['position' => 'Vị trí', 'description' => 'Mô tả công việc', 'requirements' => 'Yêu cầu ứng viên', 'benefits' => 'Quyền lợi', 'full_location' => 'Địa điểm chi tiết'] as $field => $label)
             <h3 class="h5">{{ $label }}</h3>
             <p class="company-profile-text">{{ $version->$field ?? 'Chưa nhập' }}</p>
         @endforeach

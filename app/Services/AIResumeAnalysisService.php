@@ -7,7 +7,7 @@ use App\Jobs\AIAnalyzeResumeJob;
 use App\Models\Resume;
 use App\Models\ResumeRevision;
 use App\Models\ResumeSkill;
-use App\Models\Skill;
+use App\Support\JobCatalog;
 use App\Models\User;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
@@ -139,7 +139,7 @@ class AIResumeAnalysisService
                 // Chỉ liên kết kỹ năng có trong danh mục; không tự tạo kỹ năng từ câu trả lời AI.
                 $names = array_map(fn ($item) => mb_strtolower(trim($item['text'])), $result['technical_skills']);
                 $current->skills()->delete();
-                foreach (Skill::where('is_active', true)->whereIn(DB::raw('LOWER(name)'), $names)->get() as $skill) {
+                foreach (JobCatalog::matchingSkills($names) as $skill) {
                     $item = new ResumeSkill;
                     $item->forceFill([
                         'resume_id' => $resume->id,
